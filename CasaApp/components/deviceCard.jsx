@@ -8,7 +8,18 @@ export function DeviceCard() {
   const [isEnabled, setIsEnabled] = useState(false);
   return (
     <View style={styles.card}>
-      <Image source={icon} style={{ width: 30, height: 30 }} />
+      <View
+        style={{
+          backgroundColor: "#fff",
+          width: 45,
+          height: 45,
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 100,
+        }}
+      >
+        <Image source={icon} style={{ width: 30, height: 30 }} />
+      </View>
       <Text>Led</Text>
       <View
         style={{
@@ -28,11 +39,11 @@ export function DeviceCard() {
 const globalStyles = StyleSheet.create(getGlobalStyles());
 const styles = StyleSheet.create({
   card: {
-    flexBasis: "48.4%",
+    width: 170,
     padding: 20,
     marginBottom: 10,
     gap: 10,
-    backgroundColor: "#ddd",
+    backgroundColor: "#f4f4f4",
     borderRadius: 15,
   },
 });
