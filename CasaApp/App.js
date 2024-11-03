@@ -1,6 +1,7 @@
 import { StyleSheet, View, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Chip } from "./components/chip";
+import { DeviceCard } from "./components/deviceCard";
 
 export default function App() {
   return (
@@ -12,7 +13,14 @@ export default function App() {
         </View>
         <View style={styles.connectedDevices}>
           <Text style={styles.semibold}>Connected Devices</Text>
-          <Chip text="10" />
+          <Chip text="5" />
+        </View>
+        <View style={styles.connectedDevices}>
+          <DeviceCard />
+          <DeviceCard />
+          <DeviceCard />
+          <DeviceCard />
+          <DeviceCard />
         </View>
       </View>
     </SafeAreaProvider>
@@ -23,6 +31,7 @@ const styles = StyleSheet.create({
   connectedDevices: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
     gap: 10,
   },
   container: {
@@ -36,8 +45,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 10,
     borderBottomWidth: 1,
-  },
-  semibold: {
-    fontWeight: "600",
   },
 });
