@@ -1,4 +1,5 @@
 import { View, Text } from "react-native";
+import { getGlobalStyles } from "../lib/globalStyles";
 
 export function Chip({ text }) {
   return (
@@ -6,7 +7,7 @@ export function Chip({ text }) {
       style={{
         padding: 2,
         paddingHorizontal: 7,
-        backgroundColor: "#0066ff",
+        backgroundColor: getGlobalStyles().enabledColor,
         borderRadius: 7,
         justifyContent: "center",
         alignItems: "center",
