@@ -1,4 +1,6 @@
-﻿namespace CasaAPI.Utils.Responses
+﻿using Newtonsoft.Json;
+
+namespace CasaAPI.Utils.Responses
 {
 	public class Response<T>
 	{
@@ -14,6 +16,10 @@
 			dsRes = "";
 			errors = new List<string>();
 			alerts = new List<string>();
+		}
+		public string Json()
+		{
+			return JsonConvert.SerializeObject(this);
 		}
 	}
 }
