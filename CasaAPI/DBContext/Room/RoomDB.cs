@@ -19,7 +19,7 @@ namespace CasaAPI.DBContext.Room
 		{
 			foreach (var room in rooms)
 			{
-				if(room.Name == name) return room;
+				if(room.Name.ToLower() == name.ToLower()) return room;
 			}
 			return null;
 		} 
