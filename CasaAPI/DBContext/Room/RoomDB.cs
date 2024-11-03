@@ -8,6 +8,12 @@ namespace CasaAPI.DBContext.Room
 		public RoomDB()
 		{
 			rooms = new List<RoomModel>();
+			RoomModel placeholder = new RoomModel();
+			LedModel led = new LedModel(1, 1, false, 255, 0, 0);
+			placeholder.Name = "Living";
+			placeholder.Id = 1;
+			placeholder.Leds.Add(led);
+			rooms.Add(placeholder);
 		}
 		public RoomModel? GetByName(string name)
 		{
