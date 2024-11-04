@@ -4,7 +4,7 @@ import { Chip } from "../../components/chip";
 import { DeviceCard } from "../../components/deviceCard";
 
 {
-  /* TODO: Aca se deberia usar el componente FlatList: https://reactnative.dev/docs/using-a-listview:
+  /* TODO: Aca se deberia usar el componente FlatList: https://reactnative.dev/docs/u sing-a-listview:
    * Dato: SectionList tambien podria ser util en caso de serparlo por tipo de dispositivo (led, cooler, etc)
    * Checkear si al utilizar FlatList el scroll vertical es automatico
    */
@@ -12,6 +12,7 @@ import { DeviceCard } from "../../components/deviceCard";
 
 export default function RoomView() {
   const { room_name } = useLocalSearchParams();
+
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: "white" }}>
       <Text>{room_name}</Text>
