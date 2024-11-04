@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { StyleSheet, Animated, Pressable } from "react-native";
-import { getGlobalStyles } from "../lib/globalStyles";
+import { getGlobalStyles } from "../Utils/globalStyles";
 
 export function Switch({ isEnabled, setIsEnabled }) {
   const animation = useRef(new Animated.Value(isEnabled ? 26 : 2)).current;
