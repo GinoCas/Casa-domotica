@@ -19,7 +19,7 @@ namespace CasaAPI.Utils.Responses
 		}
 		public string Json()
 		{
-			return JsonConvert.SerializeObject(this);
+			return JsonConvert.SerializeObject(this, Formatting.Indented);
 		}
 	}
 }
