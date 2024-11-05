@@ -5,7 +5,7 @@ import { getGlobalStyles } from "@/Utils/globalStyles";
 import { Device } from "@/types/Device";
 
 export function DeviceCard({ device }: { device: Device }) {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(device.State);
 
   const toggleEnabled = () => setIsEnabled(!isEnabled);
   /*
