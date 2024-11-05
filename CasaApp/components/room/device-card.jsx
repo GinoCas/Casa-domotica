@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Switch } from "../ui/switch";
 import { getGlobalStyles } from "../../Utils/globalStyles";
 
-export function DeviceCard() {
+export function DeviceCard({ device }) {
   const [isEnabled, setIsEnabled] = useState(false);
   return (
     <View style={styles.card}>
@@ -20,7 +20,7 @@ export function DeviceCard() {
       >
         <Image source={icon} style={{ width: 30, height: 30 }} />
       </View>
-      <Text>Led</Text>
+      <Text>{device.pin}</Text>
       <View
         style={{
           flexDirection: "row",
