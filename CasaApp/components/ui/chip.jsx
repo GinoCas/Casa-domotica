@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { getGlobalStyles } from "../Utils/globalStyles";
+import { getGlobalStyles } from "../../Utils/globalStyles";
 
 export function Chip({ text }) {
   return (

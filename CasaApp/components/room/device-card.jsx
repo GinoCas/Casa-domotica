@@ -1,8 +1,8 @@
 import { Image, StyleSheet, Text, View } from "react-native";
-import icon from "../assets/icon.png";
+import icon from "../../assets/icon.png";
 import { useState } from "react";
-import { Switch } from "./switch";
-import { getGlobalStyles } from "../Utils/globalStyles";
+import { Switch } from "../ui/switch";
+import { getGlobalStyles } from "../../Utils/globalStyles";
 
 export function DeviceCard() {
   const [isEnabled, setIsEnabled] = useState(false);
