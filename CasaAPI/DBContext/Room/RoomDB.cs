@@ -22,7 +22,16 @@ namespace CasaAPI.DBContext.Room
 				if(room.Name.ToLower() == name.ToLower()) return room;
 			}
 			return null;
-		} 
+		}
+		public List<string> GetNameList()
+		{
+			List<string> list = new List<string>();
+			foreach (var room in rooms)
+			{
+				list.Add(room.Name);
+			}
+			return list;
+		}
 
 	}
 }

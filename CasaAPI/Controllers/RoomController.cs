@@ -15,14 +15,20 @@ namespace CasaAPI.Controllers
 		{
 			this.getHandler = getHandler;
 		}
-		[HttpGet("/{roomName}")]
-		public IActionResult GetRoomDevices(string roomName)
+		[HttpGet("/room/{roomName}")]
+		public IActionResult GetRoomByName(string roomName)
 		{
 			Response<RoomModel> response = getHandler.GetRoomByName(roomName);
 			if (response.cdRes != "OK")
 			{
 				return NotFound(response.Json());
 			}
+			return Ok(response.Json());
+		}
+		[HttpGet("/rooms")]
+		public IActionResult GetRoomListName()
+		{
+			Response<string> response = getHandler.GetRoomNameList();
 			return Ok(response.Json());
 		}
 	}
