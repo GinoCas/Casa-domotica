@@ -1,14 +1,16 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-import icon from "@/assets/icon.png";
+import { StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
 import { getGlobalStyles } from "@/Utils/globalStyles";
+import { Device } from "@/types/Device";
 
-export function DeviceCard({ device }: { device: any }) {
+export function DeviceCard({ device }: { device: Device }) {
   const [isEnabled, setIsEnabled] = useState(false);
 
   const toggleEnabled = () => setIsEnabled(!isEnabled);
-
+  /*
+    <Image source={icon} style={{ width: 30, height: 30 }} />
+  */
   return (
     <View style={styles.card}>
       <View
@@ -20,10 +22,8 @@ export function DeviceCard({ device }: { device: any }) {
           alignItems: "center",
           borderRadius: 100,
         }}
-      >
-        <Image source={icon} style={{ width: 30, height: 30 }} />
-      </View>
-      <Text>{device.pin}</Text>
+      ></View>
+      <Text>{device.Id}</Text>
       <View
         style={{
           flexDirection: "row",
