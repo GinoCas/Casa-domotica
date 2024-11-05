@@ -1,14 +1,22 @@
-import { err } from "react-native-svg";
 import { GetHandler } from "../Utils/apiHandlers.js";
-import { Response } from "../Utils/responseFormat.js";
 
 export async function GetDeviceList() {
   try {
-    const json = await GetHandler("living");
-    /*const { data, cdRes, dsRes, errors, alerts } = components[0];
-      console.log("Test:" + components[0]);*/
-    console.log(json);
-    return [];
+    const response = await GetHandler("living");
+    const connectedLeds = response.data[0].Leds.map((led) => {
+      const { Id, Pin, State, Brightness, Voltage, Energy } = led;
+      return {
+        id: Id,
+        pin: Pin,
+        state: State,
+        brightness: Brightness,
+        voltage: Voltage,
+        energy: Energy,
+      };
+    });
+    return {
+      leds: connectedLeds,
+    };
   } catch (error) {
     return error;
   }
