@@ -1,11 +1,13 @@
 ﻿using CasaAPI.Handlers.Room;
 using CasaAPI.Models;
 using CasaAPI.Utils.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CasaAPI.Controllers
 {
 	[ApiController]
+	[AllowAnonymous]
 	public class RoomController : ControllerBase
 	{
 		private readonly GetHandler getHandler;
