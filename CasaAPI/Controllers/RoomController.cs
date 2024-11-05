@@ -25,5 +25,11 @@ namespace CasaAPI.Controllers
 			}
 			return Ok(response.Json());
 		}
+		[HttpGet("/rooms")]
+		public IActionResult GetRoomListName()
+		{
+			Response<string> response = getHandler.GetRoomNameList();
+			return Ok(response.Json());
+		}
 	}
 }

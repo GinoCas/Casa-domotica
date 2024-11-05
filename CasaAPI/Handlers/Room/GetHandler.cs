@@ -25,5 +25,11 @@ namespace CasaAPI.Handlers.Room
 			response.data.Add(room);
 			return response;
 		}
+		public Response<string> GetRoomNameList()
+		{
+			Response<string> response = new Response<string>();
+			response.data = context.GetNameList();
+			return response;
+		}
 	}
 }
