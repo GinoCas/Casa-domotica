@@ -9,7 +9,6 @@ export function RoomView({ roomName = "living" }: { roomName: string }) {
   const [devices, setDevices] = useState<Device[]>([]);
   useEffect(() => {
     GetDeviceList().then((devicesResponse) => {
-      console.log(devicesResponse.leds);
       setDevices(devicesResponse.leds);
     });
   }, []);
@@ -20,23 +19,20 @@ export function RoomView({ roomName = "living" }: { roomName: string }) {
         <Text>Connected Devices</Text>
         <Chip text="5" />
       </View>
-      <View style={styles.deviceList}>
-        <FlatList
-          data={devices}
-          keyExtractor={(device) => device.Id.toString()}
-          renderItem={({ item, index }) => (
-            <DeviceCard device={item} key={index} />
-          )}
-        />
-      </View>
+      <FlatList
+        data={devices}
+        keyExtractor={(device) => device.Id.toString()}
+        numColumns={2}
+        columnWrapperStyle={{
+          justifyContent: "space-between",
+        }}
+        renderItem={({ item, index }) => (
+          <DeviceCard device={item} key={index} />
+        )}
+      />
     </View>
   );
 }
-/*
-{Array.from({ length: 5 }).map((_, i) => (
-          <DeviceCard key={i} />
-        ))}
-*/
 
 const styles = StyleSheet.create({
   connectedDevices: {
@@ -45,11 +41,5 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
     marginVertical: 10,
-  },
-  deviceList: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
   },
 });
