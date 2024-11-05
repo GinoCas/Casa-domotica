@@ -1,11 +1,11 @@
-const API_URL = "https://localhost:7031/";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-export async function GetHandler(route, apiUrl = API_URL) {
-  const response = await fetch("https://localhost:7031/living");
+export async function GetHandler(route) {
+  const response = await fetch(`${API_URL}/${route}`);
   return await response.json();
 }
 
-export async function PostHandler(route, data, apiUrl = API_URL) {
+export async function PostHandler(route, data) {
   return await fetch(API_URL + route, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

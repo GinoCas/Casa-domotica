@@ -7,7 +7,8 @@ export async function GetDeviceList() {
     const json = await GetHandler("living");
     /*const { data, cdRes, dsRes, errors, alerts } = components[0];
       console.log("Test:" + components[0]);*/
-    return [json];
+    console.log(json);
+    return [];
   } catch (error) {
     return error;
   }
