@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import { getGlobalStyles } from "../../Utils/globalStyles";
 
-export function Chip({ text }) {
+export function Chip({ text }: { text: string }) {
   return (
     <View
       style={{

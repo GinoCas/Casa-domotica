@@ -1,15 +1,13 @@
-import { Response } from "./responseFormat";
-
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-export async function GetHandler(route) {
+export async function GetHandler(route: string) {
   const response = await fetch(`${API_URL}/${route}`);
   const json = await response.json();
   const { data, cdRes, dsRes, errors, alerts } = json;
-  return new Response(data, cdRes, dsRes, errors, alerts);
+  return { data, cdRes, dsRes, errors, alerts };
 }
 
-export async function PostHandler(route, data) {
+export async function PostHandler(route: string, data: any) {
   return await fetch(`${API_URL}/${route}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

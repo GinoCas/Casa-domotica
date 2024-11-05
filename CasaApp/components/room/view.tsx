@@ -3,27 +3,27 @@ import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import { useEffect, useState } from "react";
 import { GetDeviceList } from "../../lib/deviceController";
+import { Device } from "@/types/Device";
 
-export function RoomView() {
-  const [devices, setDevices] = useState([]);
+export function RoomView({ roomName = "living" }: { roomName: string }) {
+  const [devices, setDevices] = useState<Device[]>([]);
   useEffect(() => {
-    GetDeviceList().then((devices) => {
-      setDevices(devices);
-      console.log(devices);
+    GetDeviceList().then((devicesResponse) => {
+      console.log(devicesResponse.leds);
+      setDevices(devicesResponse.leds);
     });
   }, []);
-  const roomName = useState("living");
 
   return (
     <View>
       <View style={styles.connectedDevices}>
-        <Text style={styles.semibold}>Connected Devices</Text>
+        <Text>Connected Devices</Text>
         <Chip text="5" />
       </View>
       <View style={styles.deviceList}>
         <FlatList
-          data={devices.leds}
-          keyExtractor={(device) => device.Id}
+          data={devices}
+          keyExtractor={(device) => device.Id.toString()}
           renderItem={({ item, index }) => (
             <DeviceCard device={item} key={index} />
           )}

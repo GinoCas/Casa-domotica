@@ -1,11 +1,14 @@
 import { Image, StyleSheet, Text, View } from "react-native";
-import icon from "../../assets/icon.png";
+import icon from "@/assets/icon.png";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
-import { getGlobalStyles } from "../../Utils/globalStyles";
+import { getGlobalStyles } from "@/Utils/globalStyles";
 
-export function DeviceCard({ device }) {
+export function DeviceCard({ device }: { device: any }) {
   const [isEnabled, setIsEnabled] = useState(false);
+
+  const toggleEnabled = () => setIsEnabled(!isEnabled);
+
   return (
     <View style={styles.card}>
       <View
@@ -28,7 +31,7 @@ export function DeviceCard({ device }) {
           justifyContent: "space-between",
         }}
       >
-        <Switch isEnabled={isEnabled} setIsEnabled={setIsEnabled} />
+        <Switch isEnabled={isEnabled} toggleEnabled={toggleEnabled} />
         <Text style={globalStyles.disabledText}>
           {isEnabled ? "On" : "Off"}
         </Text>
@@ -36,7 +39,7 @@ export function DeviceCard({ device }) {
     </View>
   );
 }
-const globalStyles = StyleSheet.create(getGlobalStyles());
+const globalStyles = getGlobalStyles();
 const styles = StyleSheet.create({
   card: {
     width: 170,

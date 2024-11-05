@@ -2,10 +2,15 @@ import React, { useEffect, useRef } from "react";
 import { StyleSheet, Animated, Pressable } from "react-native";
 import { getGlobalStyles } from "../../Utils/globalStyles";
 
-export function Switch({ isEnabled, setIsEnabled }) {
+export function Switch({
+  isEnabled,
+  toggleEnabled,
+}: {
+  isEnabled: boolean;
+  toggleEnabled: () => void;
+}) {
   const animation = useRef(new Animated.Value(isEnabled ? 26 : 2)).current;
   const globalStyles = getGlobalStyles();
-  const toggleSwitch = () => setIsEnabled((prev) => !prev);
 
   useEffect(() => {
     Animated.timing(animation, {
@@ -25,7 +30,7 @@ export function Switch({ isEnabled, setIsEnabled }) {
             : globalStyles.disabledColor,
         },
       ]}
-      onPress={toggleSwitch}
+      onPress={toggleEnabled}
     >
       <Animated.View
         style={[styles.thumb, { transform: [{ translateX: animation }] }]}

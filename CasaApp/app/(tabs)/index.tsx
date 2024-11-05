@@ -1,8 +1,6 @@
 import { Text } from "react-native";
-import { Container } from "../../components/ui/container";
-import { RoomView } from "../../components/room/view";
-import { GetDeviceList } from "../../lib/deviceController";
-import { useEffect, useState } from "react";
+import { Container } from "@/components/ui/container";
+import { RoomView } from "@/components/room/view";
 
 export default function Home() {
   const roomName = "living";
