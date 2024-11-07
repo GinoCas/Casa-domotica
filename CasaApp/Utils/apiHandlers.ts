@@ -1,10 +1,11 @@
+import ApiResponse from "@/types/ApiResponse";
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-export async function GetHandler(route: string) {
+export async function GetHandler<T>(route: string): Promise<ApiResponse<T>> {
   const response = await fetch(`${API_URL}/${route}`);
   const json = await response.json();
-  const { data, cdRes, dsRes, errors, alerts } = json;
-  return { data, cdRes, dsRes, errors, alerts };
+  return json;
 }
 
 export async function PostHandler(route: string, data: any) {

@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <Container>
       <Text>{roomName}</Text>
-      <RoomView roomName={roomName}></RoomView>
+      <RoomView roomName={roomName} />
     </Container>
   );
 }

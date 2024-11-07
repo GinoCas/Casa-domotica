@@ -1,20 +1,14 @@
-import { Text } from "react-native";
 import { Stack } from "expo-router";
+import AppHeader from "@/components/ui/AppHeader";
 
 export default function Layout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#ddd" },
-        headerTitle: "",
-        headerLeft: () => <Text>ComboRooms</Text>,
-        headerRight: () => <Text>Profile</Text>,
+        header: () => <AppHeader />,
       }}
-    ></Stack>
+    >
+      <Stack.Screen name="(tabs)" />
+    </Stack>
   );
 }
-
-/*
-<Stack.Screen name="index" options={{}} />
-<Stack.Screen name="nashei" options={{}} />
-*/

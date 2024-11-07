@@ -3,14 +3,12 @@ import { useState } from "react";
 import { Switch } from "../ui/switch";
 import { getGlobalStyles } from "@/Utils/globalStyles";
 import { Device } from "@/types/Device";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 export function DeviceCard({ device }: { device: Device }) {
   const [isEnabled, setIsEnabled] = useState(device.State);
 
   const toggleEnabled = () => setIsEnabled(!isEnabled);
-  /*
-    <Image source={icon} style={{ width: 30, height: 30 }} />
-  */
   return (
     <View style={styles.card}>
       <View
@@ -22,7 +20,9 @@ export function DeviceCard({ device }: { device: Device }) {
           alignItems: "center",
           borderRadius: 100,
         }}
-      ></View>
+      >
+        <FontAwesome5 name="lightbulb" size={24} color="black" />
+      </View>
       <Text>{device.Id}</Text>
       <View
         style={{

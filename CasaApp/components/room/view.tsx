@@ -9,7 +9,7 @@ export function RoomView({ roomName = "living" }: { roomName: string }) {
   const [devices, setDevices] = useState<Device[]>([]);
   useEffect(() => {
     GetDeviceList().then((devicesResponse) => {
-      setDevices(devicesResponse.leds);
+      setDevices(devicesResponse.data[0].Leds);
     });
   }, []);
 
