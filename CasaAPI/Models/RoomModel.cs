@@ -1,15 +1,17 @@
-﻿namespace CasaAPI.Models
+﻿using CasaAPI.Interfaces;
+
+namespace CasaAPI.Models
 {
-	public class RoomModel
+    public class RoomModel
 	{
 		public int Id { get; set; }
 		public string Name { get; set; }
-		public List<LedModel> Leds { get; set; }
+		public List<IDevice> Devices { get; set; }
 
 		public RoomModel()
 		{
 			Name = "room_name";
-			Leds = new List<LedModel>();
+			Devices = new List<IDevice>();
 		}
 	}
 }
