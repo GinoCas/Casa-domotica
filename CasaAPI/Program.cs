@@ -1,5 +1,6 @@
+using CasaAPI.DBContext.Device;
 using CasaAPI.DBContext.Room;
-using CasaAPI.Handlers.Room;
+using CasaAPI.Factories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<GetHandler>();
+builder.Services.AddSingleton<CasaAPI.Handlers.Device.GetHandler>();
+builder.Services.AddSingleton<CasaAPI.Handlers.Device.PostHandler>();
+builder.Services.AddSingleton<DeviceFactory>();
+builder.Services.AddSingleton<DeviceDtoFactory>();
+builder.Services.AddSingleton<DeviceDB>();
+builder.Services.AddSingleton<CasaAPI.Handlers.Room.GetHandler>();
 builder.Services.AddSingleton<RoomDB>();
 
 var app = builder.Build();
