@@ -1,9 +1,13 @@
-﻿using CasaAPI.Handlers.Device;
+﻿using CasaAPI.DBContext.Device;
+using CasaAPI.Factories;
+using CasaAPI.Handlers.Device;
 using CasaAPI.Interfaces;
 using CasaAPI.Models;
+using CasaAPI.Utils.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Dynamic;
 
 namespace CasaAPI.Controllers
 {
@@ -11,34 +15,22 @@ namespace CasaAPI.Controllers
 	[AllowAnonymous]
 	public class DeviceController : ControllerBase
 	{
-		private readonly Dictionary<string, Func<dynamic, IDevice>> deviceFactory;
+		private readonly DeviceFactory deviceFactory;
 		private readonly GetHandler getHandler;
 		private readonly PostHandler postHandler;
-		public DeviceController(GetHandler getHandler, PostHandler postHandler)
-		{
+		public DeviceController(GetHandler getHandler, PostHandler postHandler, DeviceFactory deviceFactory){
 			this.getHandler = getHandler;
 			this.postHandler = postHandler;
-			deviceFactory = new Dictionary<string, Func<dynamic, IDevice>> // Fabrica de dispositivos
-			{
-				{ "Led", device => new LedModel
-	{
-					id = (int)device.baseProperties.id,
-					state = (bool)device.baseProperties.state,
-					voltage = (double)device.baseProperties.voltage,
-					amperes = (double)device.baseProperties.amperes,
-					brightness = (int)device.brightness,
-	}
-				},
-				{ "Fan", device => new FanModel
-					{
-						id = (int)device.baseProperties.id,
-						state = (bool)device.basePropertiesstate,
-						voltage = (double)device.baseProperties.voltage,
-						amperes = (double)device.baseProperties.amperes,
-						speed = (int)device.speed,
-					}
-				}
-			};
+			this.deviceFactory = deviceFactory;
+
+			postHandler.CreateDevice(new LedModel 
+			{ id = 0, pin = 1, state = true, amperes = 0, voltage = 0, brightness = 255 });
+			postHandler.CreateDevice(new LedModel
+			{ id = 1, pin = 2, state = false, amperes = 0, voltage = 0, brightness = 255 });
+			postHandler.CreateDevice(new LedModel
+			{ id = 2, pin = 3, state = false, amperes = 0, voltage = 0, brightness = 255 });
+			postHandler.CreateDevice(new FanModel
+			{ id = 3, pin = 4, state = false, amperes = 0, voltage = 0, speed = 10 });
 		}
 
 		[HttpGet("/device/list")]
@@ -54,6 +46,7 @@ namespace CasaAPI.Controllers
 		[HttpPost("/device/create")]
 		public IActionResult CreateDevice([FromBody] dynamic request)
 		{
+			Response<IDevice> response = new Response<IDevice>();
 			request = JsonConvert.DeserializeObject<dynamic>(request.ToString());
 			string deviceType;
 			try
@@ -62,13 +55,24 @@ namespace CasaAPI.Controllers
 			}
 			catch
 			{
-				return BadRequest("Device format was invalid");
+				response.cdRes = "ERROR";
+				response.dsRes = "Device format was invalid";
+				response.errors.Add(response.dsRes);
+				return BadRequest(response.Json());
 			}
-			if(deviceFactory.TryGetValue(deviceType, out var createDevice))
+			if (deviceFactory.factory.TryGetValue(deviceType, out var createDevice))
 			{
 				IDevice device = createDevice(request);
-				return Ok(postHandler.CreateDevice(device).Json());
+				response = postHandler.CreateDevice(device);
+				if(response.cdRes == "ERROR")
+				{
+					return BadRequest(response.Json());
+				}
+				return Ok(response.Json());
 			}
+			response.cdRes = "ERROR";
+			response.dsRes = "Device Type not supported";
+			response.errors.Add(response.dsRes);
 			return BadRequest("Device Type not supported");
 		}
 	}
