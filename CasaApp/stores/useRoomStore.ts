@@ -4,7 +4,7 @@ import { create } from "zustand";
 interface RoomState {
   roomName: string;
   devices: Device[];
-  handleLoadDevice: (newDevices: any) => void;
+  handleLoadDevices: (newDevices: Device[]) => void;
   changeCurrentRoom: (newRoom: string) => void;
   isLoadingRooms: boolean;
   isLoadingDevices: boolean;
@@ -15,7 +15,7 @@ interface RoomState {
 const useRoomStore = create<RoomState>()((set) => ({
   devices: [],
   roomName: "",
-  handleLoadDevice: (newDevices) =>
+  handleLoadDevices: (newDevices) =>
     set((state) => ({ ...state, devices: newDevices })),
   changeCurrentRoom: (newRoom) =>
     set((state) => ({ ...state, roomName: newRoom })),
