@@ -1,4 +1,7 @@
-﻿using CasaAPI.Interfaces;
+﻿using CasaAPI.DBContext.Room;
+using CasaAPI.Handlers.Device;
+using CasaAPI.Interfaces;
+using CasaAPI.Models;
 
 namespace CasaAPI.DBContext.Device
 {
@@ -9,9 +12,19 @@ namespace CasaAPI.DBContext.Device
 		{
 			list = new List<IDevice>();
 		}
+		public void AddPlaceholders()
+		{
+			Add(new LedModel
+			{ id = 0, pin = 1, state = true, amperes = 0, voltage = 0, brightness = 255 });
+			Add(new LedModel
+			{ id = 1, pin = 2, state = false, amperes = 0, voltage = 0, brightness = 255 });
+			Add(new LedModel
+			{ id = 2, pin = 3, state = false, amperes = 0, voltage = 0, brightness = 255 });
+			Add(new FanModel
+			{ id = 3, pin = 4, state = false, amperes = 0, voltage = 0, speed = 10 });
+		}
 		public List<IDevice> GetList()
 		{
-			Console.WriteLine(list.Count);
 			return list;
 		}
 		public IDevice? GetById(int id)

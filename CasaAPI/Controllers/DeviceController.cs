@@ -1,4 +1,5 @@
 ﻿using CasaAPI.DBContext.Device;
+using CasaAPI.DBContext.Room;
 using CasaAPI.Factories;
 using CasaAPI.Handlers.Device;
 using CasaAPI.Interfaces;
@@ -18,21 +19,13 @@ namespace CasaAPI.Controllers
 		private readonly DeviceFactory deviceFactory;
 		private readonly GetHandler getHandler;
 		private readonly PostHandler postHandler;
+		private readonly RoomDB roomDbContext;
+		private readonly DeviceDB deviceDbContext;
 		public DeviceController(GetHandler getHandler, PostHandler postHandler, DeviceFactory deviceFactory){
 			this.getHandler = getHandler;
 			this.postHandler = postHandler;
 			this.deviceFactory = deviceFactory;
-
-			postHandler.CreateDevice(new LedModel 
-			{ id = 0, pin = 1, state = true, amperes = 0, voltage = 0, brightness = 255 });
-			postHandler.CreateDevice(new LedModel
-			{ id = 1, pin = 2, state = false, amperes = 0, voltage = 0, brightness = 255 });
-			postHandler.CreateDevice(new LedModel
-			{ id = 2, pin = 3, state = false, amperes = 0, voltage = 0, brightness = 255 });
-			postHandler.CreateDevice(new FanModel
-			{ id = 3, pin = 4, state = false, amperes = 0, voltage = 0, speed = 10 });
 		}
-
 		[HttpGet("/device/list")]
 		public IActionResult GetDeviceList()
 		{
