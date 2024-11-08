@@ -1,23 +1,20 @@
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
-import { useEffect, useState } from "react";
-import { GetDeviceList } from "../../lib/deviceController";
-import { Device } from "@/types/Device";
 
-export function RoomView({ roomName = "living" }: { roomName: string }) {
-  const [devices, setDevices] = useState<Device[]>([]);
-  useEffect(() => {
-    GetDeviceList().then((devicesResponse) => {
-      setDevices(devicesResponse.data[0].Leds);
-    });
-  }, []);
-
+export function RoomView({
+  roomName,
+  devices,
+}: {
+  roomName: string;
+  devices: any[];
+}) {
   return (
     <View>
+      <Text>{roomName}</Text>
       <View style={styles.connectedDevices}>
         <Text>Connected Devices</Text>
-        <Chip text="5" />
+        <Chip text={devices.length} />
       </View>
       <FlatList
         data={devices}

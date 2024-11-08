@@ -1,13 +1,12 @@
-import { Text } from "react-native";
 import { Container } from "@/components/ui/container";
 import { RoomView } from "@/components/room/view";
+import useRoomStore from "@/stores/useRoomStore";
 
 export default function Home() {
-  const roomName = "living";
+  const { roomName, devices } = useRoomStore();
   return (
     <Container>
-      <Text>{roomName}</Text>
-      <RoomView roomName={roomName} />
+      <RoomView roomName={roomName} devices={devices} />
     </Container>
   );
 }
