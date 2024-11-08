@@ -1,17 +1,14 @@
-export default interface Room {
-  Id: number;
-  Name: string;
-  Leds: Led[];
+export type DeviceType = "Led" | "Fan";
+
+export interface BaseDevice {
+  deviceType: DeviceType;
+  id: number;
+  state: boolean;
+  voltage: number;
+  amperes: number;
 }
 
-export interface Led extends Device {
-  Brightness: number;
-}
-
-export interface Device {
-  Id: number;
-  Pin: number;
-  State: boolean;
-  Voltage: number;
-  Energy: number;
+export default interface Device {
+  baseProperties: BaseDevice;
+  [key: string]: any;
 }

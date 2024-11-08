@@ -1,8 +1,8 @@
 import ApiResponse from "@/types/ApiResponse";
-import Room from "@/types/Device";
+import Device from "@/types/Device";
 import { GetHandler } from "@/Utils/apiHandlers";
 
-export async function GetDeviceList(): Promise<ApiResponse<Room[]>> {
-  const response = await GetHandler<Room[]>("room/living");
+export async function GetDeviceList(): Promise<ApiResponse<Device[]>> {
+  const response = await GetHandler<Device[]>("room/living");
   return response;
 }
