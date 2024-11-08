@@ -1,3 +1,4 @@
+using CasaAPI.Arduino;
 using CasaAPI.DBContext.Device;
 using CasaAPI.DBContext.Room;
 using CasaAPI.Factories;
@@ -20,6 +21,9 @@ builder.Services.AddSingleton<DeviceDB>();
 builder.Services.AddSingleton<CasaAPI.Handlers.Room.GetHandler>();
 builder.Services.AddSingleton<RoomDB>();
 builder.Services.AddSingleton<Placeholders>();
+
+builder.Services.AddSingleton<ArduinoConnection>();
+builder.Services.AddSingleton<ArduinoManager>();
 
 var app = builder.Build();
 
