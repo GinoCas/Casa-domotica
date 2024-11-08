@@ -13,8 +13,18 @@ namespace CasaAPI.Handlers.Device
 		}
 		public Response<IDevice> CreateDevice(IDevice device)
 		{
-			dbContext.AddDevice(device);
-			return new Response<IDevice>();
+			Response<IDevice> response = new Response<IDevice>();
+			try
+			{
+				dbContext.AddDevice(device);
+			}
+			catch
+			{
+				response.cdRes = "ERROR";
+				response.dsRes = "Device couldn't be added - Check it's format";
+				response.errors.Add(response.dsRes);
+			}
+			return response;
 		}
 	}
 }
