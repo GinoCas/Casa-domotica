@@ -22,9 +22,22 @@ namespace CasaAPI.DBContext.Device
 			}
 			return list[id];
 		}
-		public void AddDevice(IDevice device)
+		public string Add(IDevice device)
 		{
+			if (Exists(device.id))
+			{
+				return "Device already exists";
+			}
 			list.Add(device);
+			return "OK";
+		}
+		public bool Exists(int id)
+		{
+			if (list.Any(device => device.id == id))
+			{
+				return true;
+			}
+			return false;
 		}
 	}
 }

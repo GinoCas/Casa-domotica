@@ -1,4 +1,5 @@
-﻿using CasaAPI.Handlers.Device;
+﻿using CasaAPI.Dto;
+using CasaAPI.Handlers.Device;
 using CasaAPI.Interfaces;
 using CasaAPI.Models;
 
@@ -21,7 +22,7 @@ namespace CasaAPI.Factories
 			{
 				{ "Led", device =>
 					{
-						LedModel led = MapBaseProperties(device, new LedModel());
+						LedModel led = MapBaseProperties<DevicePropertiesDto>(device, new LedModel());
 						led.brightness = (int)device.brightness;
 						return led;
 					}

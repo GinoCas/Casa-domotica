@@ -16,7 +16,12 @@ namespace CasaAPI.Handlers.Device
 			Response<IDevice> response = new Response<IDevice>();
 			try
 			{
-				dbContext.AddDevice(device);
+				response.dsRes = dbContext.Add(device);
+				if(response.dsRes != "OK")
+				{
+					response.cdRes = "ERROR";
+					response.errors.Add(response.dsRes);
+				}
 			}
 			catch
 			{
