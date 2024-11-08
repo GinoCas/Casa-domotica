@@ -35,6 +35,5 @@ app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Casa Domotica"));
 
 var placeholders = app.Services.GetRequiredService<Placeholders>();
-placeholders.Make();
 
 app.Run();
