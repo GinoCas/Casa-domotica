@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
 import GlobalStyles from "@/Utils/globalStyles";
-import { Device } from "@/types/Device";
+import Device from "@/types/Device";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 export function DeviceCard({ device }: { device: Device }) {
