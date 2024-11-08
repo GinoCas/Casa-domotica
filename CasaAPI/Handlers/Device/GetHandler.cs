@@ -35,10 +35,21 @@ namespace CasaAPI.Handlers.Device
 			response.dsRes = "Device type not supported";
 			return response;
 		}
-		public Response<IDevice> GetList()
+		public Response<IDeviceDto> GetList()
 		{
-			Response<IDevice> response = new Response<IDevice>();
-			response.data = dbContext.GetList();
+			Response<IDeviceDto> response = new Response<IDeviceDto>();
+			foreach (var device in dbContext.GetList())
+			{
+				if (dtoFactory.factory.TryGetValue(device.deviceType, out var createDto))
+				{
+					var dto = createDto(device);
+					response.data.Add(dto);
+				}
+				else
+				{
+					response.errors.Add($"Device type: {device.deviceType} isn't supported");
+				}
+			}
 			return response;
 		}
 	}
