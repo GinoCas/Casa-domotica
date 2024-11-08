@@ -4,32 +4,49 @@ import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
 import { GetRoomsList } from "@/lib/roomController";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import useRoomStore from "@/stores/useRoomStore";
+import Loader from "./Loader";
 
 export default function AppHeader() {
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [rooms, setRooms] = useState<string[]>([]);
+
+  const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
+    useRoomStore();
 
   useEffect(() => {
     const getAllRoms = async () => {
+      changeLoadingRooms(true);
       const roomsResult = await GetRoomsList();
       const roomsList = roomsResult.data;
-      setRooms(roomsList);
-      setSelectedRoom(roomsList[0]);
+      setRooms([...roomsList, "test"]);
+      changeCurrentRoom(roomsList[0]);
+      changeLoadingRooms(false);
     };
     getAllRoms();
-  }, []);
+  }, [changeCurrentRoom, changeLoadingRooms]);
 
   return (
     <View style={styles.headerContainer}>
-      <Picker
-        selectedValue={selectedRoom}
-        style={{ width: 150 }}
-        onValueChange={(itemValue) => setSelectedRoom(itemValue)}
-      >
-        {rooms.map((room) => (
-          <Picker.Item label={room} key={room} value={room} />
-        ))}
-      </Picker>
+      {isLoadingRooms ? (
+        <View
+          style={{
+            width: 150,
+            justifyContent: "center",
+          }}
+        >
+          <Loader size="small" />
+        </View>
+      ) : (
+        <Picker
+          selectedValue={roomName}
+          style={{ width: 150 }}
+          onValueChange={(itemValue) => changeCurrentRoom(itemValue)}
+        >
+          {rooms.map((room) => (
+            <Picker.Item label={room} key={room} value={room} />
+          ))}
+        </Picker>
+      )}
       <View style={styles.actionsContainer}>
         <Pressable style={styles.iconButton}>
           <FontAwesome5 name="lightbulb" size={22} color="black" />
