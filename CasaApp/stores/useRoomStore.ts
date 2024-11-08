@@ -1,8 +1,9 @@
+import Device from "@/types/Device";
 import { create } from "zustand";
 
 interface RoomState {
   roomName: string;
-  devices: [];
+  devices: Device[];
   handleLoadDevice: (newDevices: any) => void;
   changeCurrentRoom: (newRoom: string) => void;
   isLoadingRooms: boolean;

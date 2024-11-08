@@ -1,13 +1,14 @@
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
+import Device from "@/types/Device";
 
 export function RoomView({
   roomName,
   devices,
 }: {
   roomName: string;
-  devices: any[];
+  devices: Device[];
 }) {
   return (
     <View>
