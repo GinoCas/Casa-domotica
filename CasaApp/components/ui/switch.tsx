@@ -1,6 +1,6 @@
+import GlobalStyles from "@/Utils/globalStyles";
 import React, { useEffect, useRef } from "react";
 import { StyleSheet, Animated, Pressable } from "react-native";
-import { getGlobalStyles } from "../../Utils/globalStyles";
 
 export function Switch({
   isEnabled,
@@ -10,7 +10,6 @@ export function Switch({
   toggleEnabled: () => void;
 }) {
   const animation = useRef(new Animated.Value(isEnabled ? 26 : 2)).current;
-  const globalStyles = getGlobalStyles();
 
   useEffect(() => {
     Animated.timing(animation, {
@@ -26,8 +25,8 @@ export function Switch({
         styles.track,
         {
           backgroundColor: isEnabled
-            ? globalStyles.enabledColor
-            : globalStyles.disabledColor,
+            ? GlobalStyles.enabledColor
+            : GlobalStyles.disabledColor,
         },
       ]}
       onPress={toggleEnabled}

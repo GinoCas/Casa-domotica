@@ -1,13 +1,13 @@
 import { View, Text } from "react-native";
-import { getGlobalStyles } from "../../Utils/globalStyles";
+import GlobalStyles from "../../Utils/globalStyles";
 
-export function Chip({ text }: { text: string }) {
+export function Chip({ text }: { text: string | number }) {
   return (
     <View
       style={{
         padding: 2,
         paddingHorizontal: 7,
-        backgroundColor: getGlobalStyles().enabledColor,
+        backgroundColor: GlobalStyles.enabledColor,
         borderRadius: 7,
         justifyContent: "center",
         alignItems: "center",
