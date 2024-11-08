@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
-import { getGlobalStyles } from "@/Utils/globalStyles";
+import GlobalStyles from "@/Utils/globalStyles";
 import { Device } from "@/types/Device";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
@@ -32,14 +32,13 @@ export function DeviceCard({ device }: { device: Device }) {
         }}
       >
         <Switch isEnabled={isEnabled} toggleEnabled={toggleEnabled} />
-        <Text style={globalStyles.disabledText}>
+        <Text style={GlobalStyles.disabledText}>
           {isEnabled ? "On" : "Off"}
         </Text>
       </View>
     </View>
   );
 }
-const globalStyles = getGlobalStyles();
 const styles = StyleSheet.create({
   card: {
     width: 170,
