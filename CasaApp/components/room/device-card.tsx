@@ -5,16 +5,35 @@ import GlobalStyles from "@/Utils/globalStyles";
 import Device, { DeviceType } from "@/types/Device";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { UpdateDevice } from "@/lib/deviceController";
 
 export function DeviceCard({ device }: { device: Device }) {
   const [isEnabled, setIsEnabled] = useState(device.baseProperties.state);
 
-  const toggleEnabled = () => setIsEnabled(!isEnabled);
+  const toggleEnabled = async () => {
+    setIsEnabled(!isEnabled);
+    await UpdateDevice({
+      ...device,
+      baseProperties: {
+        ...device.baseProperties,
+        state: !isEnabled,
+      },
+    });
+  };
 
   const renderIcon = (deviceType: DeviceType) => {
+    const iconColor = isEnabled ? "#f1c40f" : GlobalStyles.disabledColor;
     switch (deviceType) {
       case "Led":
-        return <FontAwesome5 name="lightbulb" size={24} color="black" />;
+        return (
+          <Ionicons
+            name={isEnabled ? "bulb" : "bulb-outline"}
+            size={24}
+            color={iconColor}
+          />
+        );
       case "Fan":
         return <MaterialCommunityIcons name="fan" size={24} color="black" />;
       default:
@@ -51,17 +70,35 @@ export function DeviceCard({ device }: { device: Device }) {
           >
             Voltage
           </Text>
-          <Text
+          <View
             style={{
-              fontSize: 16,
-              fontWeight: 500,
-              color: isEnabled
-                ? GlobalStyles.enabledColor
-                : GlobalStyles.disabledColor,
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            {device.baseProperties.voltage}v
-          </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: 500,
+                color: isEnabled
+                  ? GlobalStyles.enabledColor
+                  : GlobalStyles.disabledColor,
+              }}
+            >
+              {device.baseProperties.voltage}
+            </Text>
+            <FontAwesome6
+              name="bolt-lightning"
+              size={12}
+              color={
+                isEnabled
+                  ? GlobalStyles.enabledColor
+                  : GlobalStyles.disabledColor
+              }
+            />
+          </View>
         </View>
       </View>
       <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.deviceType}</Text>

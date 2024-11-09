@@ -15,3 +15,17 @@ export async function PostHandler(route: string, data: any) {
     body: JSON.stringify(data),
   });
 }
+
+export async function PutHandler<T>(
+  route: string,
+  data: any,
+): Promise<ApiResponse<T>> {
+  const request = await fetch(`${API_URL}/${route}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const response = await request.json();
+
+  return response;
+}
