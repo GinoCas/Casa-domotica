@@ -15,7 +15,7 @@ namespace CasaAPI.DBContext.Device
 		public void AddPlaceholders()
 		{
 			Add(new LedModel
-			{ id = 0, pin = 1, state = true, amperes = 0, voltage = 0, brightness = 255 });
+			{ id = 0, pin = 11, state = true, amperes = 0, voltage = 0, brightness = 255 });
 			Add(new LedModel
 			{ id = 1, pin = 2, state = false, amperes = 0, voltage = 0, brightness = 255 });
 			Add(new LedModel
@@ -42,6 +42,19 @@ namespace CasaAPI.DBContext.Device
 				return "Device already exists";
 			}
 			list.Add(device);
+			return "OK";
+		}
+		public string Update(IDevice device)
+		{
+			if (!Exists(device.id))
+			{
+				return "Device doesn't exist";
+			}
+			if (device.pin == null)
+			{
+				device.pin = list[device.id].pin;
+			}
+			list[device.id] = device;
 			return "OK";
 		}
 		public bool Exists(int id)
