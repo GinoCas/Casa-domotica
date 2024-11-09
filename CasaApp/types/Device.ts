@@ -1,7 +1,6 @@
 export type DeviceType = "Led" | "Fan";
 
 export interface BaseDevice {
-  deviceType: DeviceType;
   id: number;
   state: boolean;
   voltage: number;
@@ -9,6 +8,7 @@ export interface BaseDevice {
 }
 
 export default interface Device {
+  deviceType: DeviceType;
   baseProperties: BaseDevice;
   [key: string]: any;
 }
