@@ -15,6 +15,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<CasaAPI.Handlers.Device.GetHandler>();
 builder.Services.AddSingleton<CasaAPI.Handlers.Device.PostHandler>();
+builder.Services.AddSingleton<CasaAPI.Handlers.Device.PutHandler>();
 builder.Services.AddSingleton<DeviceFactory>();
 builder.Services.AddSingleton<DeviceDtoFactory>();
 builder.Services.AddSingleton<DeviceDB>();
