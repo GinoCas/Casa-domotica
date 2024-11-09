@@ -6,32 +6,26 @@ import { GetRoomsList } from "@/lib/roomController";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
-import { GetDeviceList } from "@/lib/deviceController";
 
 export default function AppHeader() {
   const [rooms, setRooms] = useState<string[]>([]);
 
-  const {
-    changeCurrentRoom,
-    roomName,
-    changeLoadingRooms,
-    isLoadingRooms,
-    changeLoadingDevices,
-    handleLoadDevice,
-    isLoadingDevices,
-  } = useRoomStore();
+  const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
+    useRoomStore();
 
   useEffect(() => {
     const getAllRoms = async () => {
       changeLoadingRooms(true);
-      const roomsResult = await GetRoomsList();
-      const roomsList = roomsResult.data;
-      setRooms(roomsList);
-      changeCurrentRoom(roomsList[0]);
-
-      const devicesResult = await GetDeviceList(roomsList[0]);
-      console.log(devicesResult.data);
-      changeLoadingRooms(false);
+      try {
+        const roomsResult = await GetRoomsList();
+        const roomsList = roomsResult.data;
+        setRooms(roomsList);
+        changeCurrentRoom(roomsList[0]);
+      } catch (err) {
+        console.log("errorr loading rooms", err);
+      } finally {
+        changeLoadingRooms(false);
+      }
     };
     getAllRoms();
   }, [changeCurrentRoom, changeLoadingRooms]);
