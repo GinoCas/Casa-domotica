@@ -1,4 +1,7 @@
-﻿namespace CasaAPI.Arduino
+﻿using CasaAPI.Interfaces;
+using Newtonsoft.Json;
+
+namespace CasaAPI.Arduino
 {
 	public class ArduinoManager
 	{
@@ -6,18 +9,31 @@
 		public ArduinoManager(ArduinoConnection arduinoConnection)
 		{
 			this.arduinoConnection = arduinoConnection;
-		}
-		public void LedOn()
-		{
 			arduinoConnection.Open();
-			arduinoConnection.Write("on\n");
-			arduinoConnection.Close();
+			Thread thread = new Thread(SerialHear);
+			thread.Start();
+			
 		}
-		public void LedOff()
+		public void UpdateDevice(IDevice device)
 		{
-			arduinoConnection.Open();
-			arduinoConnection.Write("off\n");
-			arduinoConnection.Close();
+			string deviceJson = JsonConvert.SerializeObject(device);
+			Console.WriteLine(deviceJson);
+			arduinoConnection.Port.WriteLine(deviceJson);
+		}
+		public void SerialHear()
+		{
+			while (arduinoConnection.Port.IsOpen)
+			{
+				try
+				{
+					string cadena = arduinoConnection.Port.ReadLine();
+					Console.WriteLine(cadena);
+				}
+				catch
+				{
+
+				}
+			}
 		}
 	}
 }

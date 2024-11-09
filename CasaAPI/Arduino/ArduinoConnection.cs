@@ -41,17 +41,5 @@ namespace CasaAPI.Arduino
 				return "Arduino Serial Port could'nt be closed";
 			}
 		}
-		public string Write(string command)
-		{
-			try
-			{
-				Port.Write(command);
-				return "OK";
-			}
-			catch
-			{
-				return "Command couldn't be written on Arduino. Check if the connection is open";
-			}
-		}
 	}
 }
