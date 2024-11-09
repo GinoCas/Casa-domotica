@@ -1,11 +1,19 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import Device from "@/types/Device";
 import Loader from "../ui/Loader";
+import GlobalStyles from "@/Utils/globalStyles";
+import { Feather } from "@expo/vector-icons";
 
 export function RoomView({
-  roomName,
+  /*   roomName, */
   devices,
   isLoadingDevices,
 }: {
@@ -15,7 +23,6 @@ export function RoomView({
 }) {
   return (
     <View>
-      <Text>{roomName}</Text>
       {isLoadingDevices ? (
         <View
           style={{
@@ -29,7 +36,7 @@ export function RoomView({
       ) : (
         <>
           <View style={styles.connectedDevices}>
-            <Text>Connected Devices</Text>
+            <Text style={{ fontWeight: 600 }}>Connected Devices</Text>
             <Chip text={devices.length} />
           </View>
           <FlatList
@@ -43,6 +50,16 @@ export function RoomView({
               <DeviceCard device={item} key={index} />
             )}
           />
+          <TouchableOpacity style={[styles.largeButton, { marginVertical: 8 }]}>
+            <Text>
+              <Feather
+                name="plus"
+                size={24}
+                color={GlobalStyles.enabledColor}
+              />
+            </Text>
+            <Text style={styles.buttonText}>Add Device</Text>
+          </TouchableOpacity>
         </>
       )}
     </View>
@@ -54,7 +71,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
+    marginBottom: 10,
     gap: 10,
-    marginVertical: 10,
+  },
+  largeButton: {
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    borderStyle: "dashed",
+    borderWidth: 2,
+    borderColor: GlobalStyles.enabledColor,
+    paddingVertical: 6,
+    borderRadius: 8,
+    flexDirection: "row",
+  },
+  buttonText: {
+    textAlign: "center",
+    color: GlobalStyles.enabledColor,
   },
 });
