@@ -21,7 +21,7 @@ export async function PutHandler<T>(
   data: any,
 ): Promise<ApiResponse<T>> {
   const request = await fetch(`${API_URL}/${route}`, {
-    method: "POST",
+    method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
