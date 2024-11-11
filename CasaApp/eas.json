@@ -1,0 +1,15 @@
+{
+  "build": {
+    "development": {
+      "android": {
+        "developmentClient": true,
+        "distribution": "internal",
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://dd7kc9c5-5155.brs.devtunnels.ms"
+        }
+      }
+    },
+    "production": {}
+  }
+}
