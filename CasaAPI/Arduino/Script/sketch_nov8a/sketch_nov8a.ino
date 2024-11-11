@@ -7,13 +7,14 @@ struct Device {
   int id;
   int pin;
   int mode;
-  void ToggleState(bool state){
-    digitalWrite(pin, state);
-  }
+  bool state;
 };
 
 void handleLed(Device& device, JsonDocument& content) {
-  Serial.println("Increible");
+  if(!device.state){
+    analogWrite(device.pin, 0);
+    return;
+  }
   int brightness = content["brightness"];
   analogWrite(device.pin, brightness / 4);
 }
@@ -48,9 +49,9 @@ void parseData(String jsonCommand) {
   Device device = {
     content["id"],
     content["pin"],
-    content["mode"]
+    content["mode"],
+    content["state"]
   };
   pinMode(device.pin, device.mode);
-  device.ToggleState((bool)content["state"]);
   deviceHandlers[deviceType](device, content);
 }
