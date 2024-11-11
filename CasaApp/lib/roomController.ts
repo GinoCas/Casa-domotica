@@ -1,4 +1,5 @@
 import ApiResponse from "@/types/ApiResponse";
+import Room from "@/types/Room";
 import { GetHandler } from "@/Utils/apiHandlers";
 
 export async function GetRoomsList(): Promise<ApiResponse<string[]>> {
@@ -8,7 +9,7 @@ export async function GetRoomsList(): Promise<ApiResponse<string[]>> {
 
 export async function GetRoomByName(
   roomName: string,
-): Promise<ApiResponse<Response[]>> {
-  const response = await GetHandler<Response[]>(`room/${roomName}`);
+): Promise<ApiResponse<Room[]>> {
+  const response = await GetHandler<Room[]>(`room/${roomName}`);
   return response;
 }
