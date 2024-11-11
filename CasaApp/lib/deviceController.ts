@@ -11,11 +11,11 @@ interface Response {
 export async function GetDeviceList(
   roomName: string,
 ): Promise<ApiResponse<Response[]>> {
-  const response = await GetHandler<Response[]>(`room/${roomName}`);
+  const response = await GetHandler<Response[]>(`device/list`);
   return response;
 }
 
 export async function UpdateDevice(body: Device) {
-  const response = await PutHandler<any[]>("room/update", body);
+  const response = await PutHandler<any[]>("device/update", body);
   return response;
 }

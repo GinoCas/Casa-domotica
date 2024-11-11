@@ -1,6 +1,6 @@
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
-import { GetDeviceList } from "@/lib/deviceController";
+import { GetRoomByName } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
 import { useEffect } from "react";
 
@@ -17,8 +17,8 @@ export default function Home() {
       changeLoadingDevices(true);
       if (roomName) {
         try {
-          const deviceResult = await GetDeviceList(roomName);
-          handleLoadDevices(deviceResult.data[0].Devices);
+          const roomResult = await GetRoomByName(roomName);
+          handleLoadDevices(roomResult.data[0].Devices);
         } catch (err) {
           console.log("Error on load devices", err);
         } finally {
