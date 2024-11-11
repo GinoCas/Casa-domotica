@@ -1,5 +1,6 @@
 export const disabledColor = "#b7b8b9";
 export const enabledColor = "#086ce5";
+export const secondaryColor = "#4e9af6";
 
 const GlobalStyles = {
   semibold: {
@@ -8,11 +9,12 @@ const GlobalStyles = {
   disabledText: {
     color: disabledColor,
   },
-  disabledColor: disabledColor,
+  disabledColor,
   enabledText: {
     color: enabledColor,
   },
-  enabledColor: enabledColor,
+  enabledColor,
+  secondaryColor,
 };
 
 export default GlobalStyles;

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Pressable } from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import Device from "@/types/Device";
@@ -6,6 +6,9 @@ import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import DottedButton from "../ui/dotted-button";
+import { useState } from "react";
+import CustomModal from "../ui/modal";
+import Slider from "@react-native-community/slider";
 
 export function RoomView({
   /*   roomName, */
@@ -16,6 +19,8 @@ export function RoomView({
   devices: Device[];
   isLoadingDevices: boolean;
 }) {
+  const [isModalOpen, setisModalOpen] = useState(false);
+
   return (
     <View>
       {isLoadingDevices ? (
@@ -42,7 +47,9 @@ export function RoomView({
               justifyContent: "space-between",
             }}
             renderItem={({ item, index }) => (
-              <DeviceCard device={item} key={index} />
+              <Pressable key={index} onPress={() => setisModalOpen(true)}>
+                <DeviceCard device={item} />
+              </Pressable>
             )}
           />
           <DottedButton
@@ -57,6 +64,20 @@ export function RoomView({
           />
         </>
       )}
+      <CustomModal
+        isOpen={isModalOpen}
+        onClose={() => setisModalOpen(false)}
+        title="Brightness"
+      >
+        <Slider
+          style={{ width: 200, height: 40 }}
+          minimumValue={0}
+          maximumValue={1}
+          minimumTrackTintColor={GlobalStyles.secondaryColor}
+          maximumTrackTintColor={GlobalStyles.secondaryColor}
+          thumbTintColor={GlobalStyles.enabledColor}
+        />
+      </CustomModal>
     </View>
   );
 }
