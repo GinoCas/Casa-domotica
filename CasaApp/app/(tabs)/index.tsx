@@ -1,3 +1,4 @@
+import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
 import { GetRoomByName } from "@/lib/roomController";
@@ -35,6 +36,7 @@ export default function Home() {
         devices={devices}
         isLoadingDevices={isLoadingDevices}
       />
+      <TimePickerTest />
     </Container>
   );
 }
