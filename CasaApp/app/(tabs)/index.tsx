@@ -1,9 +1,11 @@
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
+import BluetoothApp from "@/lib/bluetooth";
 import { GetRoomByName } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
 import { useEffect } from "react";
+import { Text } from "react-native";
 
 export default function Home() {
   const {
