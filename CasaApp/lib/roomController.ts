@@ -1,7 +1,7 @@
-import ApiResponse from "@/types/ApiResponse";
 import Room from "@/types/Room";
-import { GetHandler } from "@/Utils/apiHandlers";
+import Device from "@/types/Device";
 import RoomData from "@/stores/rooms.json";
+import { GetDeviceList } from "./deviceController";
 
 export function GetRoomsList(): string[] {
   return RoomData.map((room) => room.Name);
@@ -9,4 +9,12 @@ export function GetRoomsList(): string[] {
 
 export function GetRoomByName(roomName: string): Room {
   return RoomData.find((room) => room.Name === roomName) as Room;
+}
+
+export function GetRoomDevices(roomName: string): Device[] {
+  const room = GetRoomByName(roomName);
+  const roomDevices = GetDeviceList().filter((device) =>
+    room.DevicesId.includes(device.baseProperties.id),
+  ) as Device[];
+  return roomDevices;
 }

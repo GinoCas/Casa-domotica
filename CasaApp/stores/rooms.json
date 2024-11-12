@@ -2,46 +2,11 @@
   {
     "Id": 1,
     "Name": "Living",
-    "Devices": [
-      {
-        "deviceType": "Led",
-        "baseProperties": {
-          "id": 1,
-          "pin": 11,
-          "state": true,
-          "voltage": 3.3,
-          "amperes": 0.02
-        },
-        "brightness": 75
-      },
-      {
-        "deviceType": "Fan",
-        "baseProperties": {
-          "id": 2,
-          "pin": 10,
-          "state": false,
-          "voltage": 5.0,
-          "amperes": 0.5
-        },
-        "speed": 1200
-      }
-    ]
+    "DevicesId": [1, 2]
   },
   {
     "Id": 2,
     "Name": "Kitchen",
-    "Devices": [
-      {
-        "deviceType": "Led",
-        "baseProperties": {
-          "id": 3,
-          "pin": 12,
-          "state": false,
-          "voltage": 5.0,
-          "amperes": 0.05
-        },
-        "brightness": 50
-      }
-    ]
+    "DevicesId": [3]
   }
 ]
