@@ -8,7 +8,7 @@ import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 
 export default function AppHeader() {
-  const [rooms, setRooms] = useState<string[]>([]);
+  const rooms: string[] = GetRoomsList();
 
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
@@ -17,10 +17,7 @@ export default function AppHeader() {
     const getAllRoms = async () => {
       changeLoadingRooms(true);
       try {
-        const roomsResult = await GetRoomsList();
-        const roomsList = roomsResult.data;
-        setRooms(roomsList);
-        changeCurrentRoom(roomsList[0]);
+        changeCurrentRoom(rooms[0]);
       } catch (err) {
         console.log("errorr loading rooms", err);
       } finally {

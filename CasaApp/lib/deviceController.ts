@@ -1,12 +1,10 @@
 import ApiResponse from "@/types/ApiResponse";
 import Device from "@/types/Device";
 import { GetHandler, PutHandler } from "@/Utils/apiHandlers";
+import DevicesData from "@/stores/devices.json";
 
-export async function GetDeviceList(
-  roomName: string,
-): Promise<ApiResponse<Response[]>> {
-  const response = await GetHandler<Response[]>(`device/list`);
-  return response;
+export function GetDeviceList(): Device[] {
+  return DevicesData as Device[];
 }
 
 export async function UpdateDevice(body: Device) {

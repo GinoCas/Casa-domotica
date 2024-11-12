@@ -1,11 +1,9 @@
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
-import BluetoothApp from "@/lib/bluetooth";
 import { GetRoomByName } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
 import { useEffect } from "react";
-import { Text } from "react-native";
 
 export default function Home() {
   const {
@@ -21,7 +19,7 @@ export default function Home() {
       if (roomName) {
         try {
           const roomResult = await GetRoomByName(roomName);
-          handleLoadDevices(roomResult.data[0].Devices);
+          handleLoadDevices(roomResult.Devices);
         } catch (err) {
           console.log("Error on load devices", err);
         } finally {
