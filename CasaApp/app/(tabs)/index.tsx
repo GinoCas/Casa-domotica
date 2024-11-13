@@ -33,12 +33,12 @@ export default function Home() {
   }, [changeLoadingDevices, roomName, handleLoadDevices]);
   return (
     <Container>
+      <TimePickerTest />
       <RoomView
         roomName={roomName}
         devices={devices}
         isLoadingDevices={isLoadingDevices}
       />
-      <TimePickerTest />
     </Container>
   );
 }

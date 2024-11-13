@@ -3,7 +3,7 @@ import {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useState } from "react";
-import { Button, SafeAreaView, Text } from "react-native";
+import { StyleSheet, Button, SafeAreaView, Text, View } from "react-native";
 
 export const TimePickerTest = () => {
   const [date, setDate] = useState(new Date());
@@ -27,9 +27,30 @@ export const TimePickerTest = () => {
   };
 
   return (
-    <SafeAreaView>
-      <Button onPress={showTimepicker} title="Show time picker" />
-      <Text>selected: {date.toLocaleTimeString()}</Text>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Selecciona la Hora</Text>
+      <View style={styles.buttonContainer}>
+        <Button onPress={showTimepicker} title={date.toLocaleTimeString()} />
+      </View>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#333",
+  },
+  buttonContainer: {
+    width: 200,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+});
