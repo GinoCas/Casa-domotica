@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, Pressable } from "react-native";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import Device from "@/types/Device";
@@ -6,9 +6,11 @@ import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import DottedButton from "../ui/dotted-button";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
+import { debounce } from "lodash";
+import { UpdateDevice } from "@/lib/deviceController";
 
 export function RoomView({
   /*   roomName, */
@@ -20,6 +22,26 @@ export function RoomView({
   isLoadingDevices: boolean;
 }) {
   const [isModalOpen, setisModalOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const openBrightnessModal = (device: Device) => {
+    if (device.deviceType === "Led") {
+      setSelectedDevice(device);
+      setisModalOpen(true);
+    }
+  };
+
+  const handleBrightnessChange = useCallback(
+    debounce((value) => {
+      if (selectedDevice) {
+        const newLedState = {
+          ...selectedDevice,
+          brightness: value,
+        };
+        UpdateDevice(newLedState);
+      }
+    }, 300),
+    [selectedDevice],
+  );
 
   return (
     <View>
@@ -50,7 +72,7 @@ export function RoomView({
               <DeviceCard
                 key={index}
                 device={item}
-                onPressAction={() => setisModalOpen(true)}
+                onPressAction={() => openBrightnessModal(item)}
               />
             )}
           />
@@ -74,10 +96,12 @@ export function RoomView({
         <Slider
           style={{ width: 200, height: 40 }}
           minimumValue={0}
-          maximumValue={1}
+          maximumValue={255}
+          step={1}
           minimumTrackTintColor={GlobalStyles.secondaryColor}
           maximumTrackTintColor={GlobalStyles.secondaryColor}
           thumbTintColor={GlobalStyles.enabledColor}
+          onValueChange={handleBrightnessChange}
         />
       </CustomModal>
     </View>
