@@ -7,6 +7,13 @@ export function GetDeviceList(): Device[] {
   return DevicesData as Device[];
 }
 
+export function GetDeviceById(id: number): Device {
+  const deviceIndex = DevicesData.findIndex(
+    (device) => device.baseProperties.id === id
+  );
+  return DevicesData[deviceIndex] as Device;
+}
+
 export async function UpdateDevice(updatedDevice: Device) {
   const deviceIndex = DevicesData.findIndex(
     (device) => device.baseProperties.id === updatedDevice.baseProperties.id
@@ -19,7 +26,7 @@ export async function UpdateDevice(updatedDevice: Device) {
       ...updatedDevice.baseProperties,
     },
   };
-  const dto = createDeviceDto(updatedDevice);
+  const dto = createDeviceDto(DevicesData[deviceIndex] as Device);
   bluetoothConnection.sendData(dto);
   return;
 }

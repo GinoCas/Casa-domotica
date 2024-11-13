@@ -10,7 +10,7 @@ import { useCallback, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
-import { UpdateDevice } from "@/lib/deviceController";
+import { GetDeviceById, UpdateDevice } from "@/lib/deviceController";
 
 export function RoomView({
   /*   roomName, */
@@ -25,7 +25,7 @@ export function RoomView({
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const openBrightnessModal = (device: Device) => {
     if (device.deviceType === "Led") {
-      setSelectedDevice(device);
+      setSelectedDevice(GetDeviceById(device.baseProperties.id));
       setisModalOpen(true);
     }
   };
@@ -35,12 +35,15 @@ export function RoomView({
       if (selectedDevice) {
         const newLedState = {
           ...selectedDevice,
+          baseProperties: {
+            ...selectedDevice.baseProperties,
+          },
           brightness: value,
         };
         UpdateDevice(newLedState);
       }
     }, 300),
-    [selectedDevice],
+    [selectedDevice]
   );
 
   return (

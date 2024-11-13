@@ -16,7 +16,7 @@ void handleLed(Device& device, String& prop) {
     return;
   }
   int brightness = prop.toInt();
-  analogWrite(device.pin, brightness * 2);
+  analogWrite(device.pin, brightness);
 }
 
 void handleFan(Device& device, String& prop) {
