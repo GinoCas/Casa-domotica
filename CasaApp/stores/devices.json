@@ -3,8 +3,8 @@
     "deviceType": "Led",
     "baseProperties": {
       "id": 1,
-      "pin": 11,
-      "state": true,
+      "pin": 7,
+      "state": false,
       "voltage": 3.3,
       "amperes": 0.02
     },
@@ -14,7 +14,7 @@
     "deviceType": "Fan",
     "baseProperties": {
       "id": 2,
-      "pin": 10,
+      "pin": 6,
       "state": false,
       "voltage": 5.0,
       "amperes": 0.5
@@ -25,7 +25,7 @@
     "deviceType": "Led",
     "baseProperties": {
       "id": 3,
-      "pin": 12,
+      "pin": 5,
       "state": false,
       "voltage": 5.0,
       "amperes": 0.05

@@ -1,4 +1,3 @@
-// BluetoothManager.ts
 import { BleManager, Device } from "react-native-ble-plx";
 import { PermissionsAndroid } from "react-native";
 
@@ -24,6 +23,7 @@ const bluetoothConnection: IBluetoothConnection = {
   requestEnableBluetooth: async () => {
     await bleManager.enable();
   },
+
   requestPermissions: async () => {
     try {
       const granted = await PermissionsAndroid.requestMultiple([
@@ -47,6 +47,7 @@ const bluetoothConnection: IBluetoothConnection = {
       const device = await bleManager.connectToDevice(this.deviceID);
       await device.discoverAllServicesAndCharacteristics();
       this.deviceConnected = device;
+      console.log("Connected to device:", device.name);
       return device;
     } catch (error) {
       console.error("Error connecting to device:", error);
@@ -58,6 +59,7 @@ const bluetoothConnection: IBluetoothConnection = {
     if (!this.deviceConnected) return;
     await this.deviceConnected.cancelConnection();
     this.deviceConnected = null;
+    console.log("Disconnected from device.");
   },
 };
 
