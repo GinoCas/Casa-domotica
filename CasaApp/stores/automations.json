@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "title": "Movie night 🍿",
+    "description": "Turn off living lights",
+    "devicesId": [1, 2],
+    "initTime": "22:00",
+    "endTime": "00:00",
+    "initialState": "true",
+    "endState": "false"
+  },
+  {
+    "id": 2,
+    "title": "Study 📚",
+    "description": "Bedroom desktop light on",
+    "devicesId": [3, 4],
+    "initTime": "18:00",
+    "endTime": "20:00",
+    "initialState": "false",
+    "endState": "true"
+  }
+]

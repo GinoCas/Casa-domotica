@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import GlobalStyles from "@/Utils/globalStyles";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
+import { Link } from "expo-router";
 
 export default function AutomationCard({ automation }: { automation?: any }) {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -15,7 +16,7 @@ export default function AutomationCard({ automation }: { automation?: any }) {
       ]}
     >
       <View>
-        <Text style={styles.title}>{automation.name}</Text>
+        <Text style={styles.title}>{automation.title}</Text>
         <Text style={styles.subtitle}>{automation.description}</Text>
       </View>
       <View style={styles.actionsContainer}>
@@ -23,7 +24,7 @@ export default function AutomationCard({ automation }: { automation?: any }) {
           toggleEnabled={() => setIsEnabled(!isEnabled)}
           isEnabled={isEnabled}
         />
-        <TouchableOpacity>
+        <Link href={`/automation/${automation.id}`}>
           <Text>
             <FontAwesome5
               name="chevron-right"
@@ -31,7 +32,7 @@ export default function AutomationCard({ automation }: { automation?: any }) {
               color={GlobalStyles.enabledColor}
             />
           </Text>
-        </TouchableOpacity>
+        </Link>
       </View>
     </View>
   );
