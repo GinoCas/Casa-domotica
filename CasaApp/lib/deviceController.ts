@@ -1,7 +1,7 @@
 import Device from "@/types/Device";
 import DevicesData from "@/stores/devices.json";
-import { sendData } from "./bluetoothDataSender";
 import { createDeviceDto } from "@/Utils/DeviceDtoFactory";
+import bluetoothConnection from "./bluetoothLE";
 
 export function GetDeviceList(): Device[] {
   return DevicesData as Device[];
@@ -20,6 +20,6 @@ export async function UpdateDevice(updatedDevice: Device) {
     },
   };
   const dto = createDeviceDto(updatedDevice);
-  sendData(dto);
+  bluetoothConnection.sendData(dto);
   return;
 }

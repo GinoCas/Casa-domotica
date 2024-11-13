@@ -63,7 +63,8 @@ void parseData(String jsonCommand) {
   String type = elements[0];
   if(type == "Led"){
     handleLed(device, elements[3]);
+    btSerial.println("OK");
   }else{
-    btSerial.println("unhandled type");
+    btSerial.println("ERROR");
   }
 }
