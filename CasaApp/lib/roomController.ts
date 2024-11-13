@@ -1,15 +1,20 @@
-import ApiResponse from "@/types/ApiResponse";
 import Room from "@/types/Room";
-import { GetHandler } from "@/Utils/apiHandlers";
+import Device from "@/types/Device";
+import RoomData from "@/stores/rooms.json";
+import { GetDeviceList } from "./deviceController";
 
-export async function GetRoomsList(): Promise<ApiResponse<string[]>> {
-  const roomsResponse = await GetHandler<string[]>("rooms");
-  return roomsResponse;
+export function GetRoomsList(): string[] {
+  return RoomData.map((room) => room.Name);
 }
 
-export async function GetRoomByName(
-  roomName: string,
-): Promise<ApiResponse<Room[]>> {
-  const response = await GetHandler<Room[]>(`room/${roomName}`);
-  return response;
+export function GetRoomByName(roomName: string): Room {
+  return RoomData.find((room) => room.Name === roomName) as Room;
+}
+
+export function GetRoomDevices(roomName: string): Device[] {
+  const room = GetRoomByName(roomName);
+  const roomDevices = GetDeviceList().filter((device) =>
+    room.DevicesId.includes(device.baseProperties.id),
+  ) as Device[];
+  return roomDevices;
 }
