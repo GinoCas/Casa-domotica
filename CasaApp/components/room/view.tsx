@@ -47,9 +47,11 @@ export function RoomView({
               justifyContent: "space-between",
             }}
             renderItem={({ item, index }) => (
-              <Pressable key={index} onPress={() => setisModalOpen(true)}>
-                <DeviceCard device={item} />
-              </Pressable>
+              <DeviceCard
+                key={index}
+                device={item}
+                onPressAction={() => setisModalOpen(true)}
+              />
             )}
           />
           <DottedButton
