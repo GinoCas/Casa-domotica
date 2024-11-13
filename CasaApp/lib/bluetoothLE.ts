@@ -1,5 +1,6 @@
 import { BleManager, Characteristic, Device } from "react-native-ble-plx";
 import { PermissionsAndroid } from "react-native";
+import { UpdateAllDevices } from "./deviceController";
 
 interface IBluetoothConnection {
   deviceConnected: Device | null;
@@ -60,6 +61,7 @@ const bluetoothConnection: IBluetoothConnection = {
       bluetoothConnection.deviceConnected = device;
       await new Promise((resolve) => setTimeout(resolve, 1000));
       bluetoothConnection.startStreamingData();
+      await UpdateAllDevices();
       console.log("Connected to device:", device.name);
       return device;
     } catch (error) {

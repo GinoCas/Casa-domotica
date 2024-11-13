@@ -30,3 +30,24 @@ export async function UpdateDevice(updatedDevice: Device) {
   bluetoothConnection.sendData(dto);
   return;
 }
+
+export async function UpdateAllDevices() {
+  GetDeviceList().forEach((updatedDevice) => {
+    const deviceIndex = DevicesData.findIndex(
+      (device) => device.baseProperties.id === updatedDevice.baseProperties.id
+    );
+    if (deviceIndex !== -1) {
+      DevicesData[deviceIndex] = {
+        ...DevicesData[deviceIndex],
+        ...updatedDevice,
+        baseProperties: {
+          ...DevicesData[deviceIndex].baseProperties,
+          ...updatedDevice.baseProperties,
+        },
+      };
+      const dto = createDeviceDto(DevicesData[deviceIndex] as Device);
+      bluetoothConnection.sendData(dto);
+    }
+  });
+  return;
+}
