@@ -45,9 +45,9 @@ export default function TabsLayout() {
                 ]}
               >
                 <FontAwesome
-                  name="microphone"
-                  size={30}
-                  color={isModalOpen ? "white" : "gray"}
+                  name={isModalOpen ? "microphone" : "microphone-slash"}
+                  size={24}
+                  color={"white"}
                 />
               </TouchableOpacity>
             ),
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginTop: 5,
     borderRadius: 25,
+    backgroundColor: "#e74c3c",
   },
   modalButtonActivated: {
     backgroundColor: globalStyles.enabledColor,
