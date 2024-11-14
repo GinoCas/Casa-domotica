@@ -1,13 +1,7 @@
 import { Tabs } from "expo-router";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { FontAwesome } from "@expo/vector-icons";
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { SafeAreaView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
 import CustomModal from "@/components/ui/modal";
 import GlobalStyles from "@/Utils/globalStyles";
@@ -42,9 +36,9 @@ export default function TabsLayout() {
                 ]}
               >
                 <FontAwesome
-                  name="microphone"
-                  size={30}
-                  color={isModalOpen ? "white" : "gray"}
+                  name={isModalOpen ? "microphone" : "microphone-slash"}
+                  size={24}
+                  color={"white"}
                 />
               </TouchableOpacity>
             ),
@@ -82,6 +76,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginTop: 5,
     borderRadius: 25,
+    backgroundColor: "#e74c3c",
   },
   modalButtonActivated: {
     backgroundColor: globalStyles.enabledColor,
