@@ -8,11 +8,15 @@ import {
 
 export default function SpeechToText() {
   const [hearing, setHearing] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const [result, setResult] = useState([]);
+  const [partialResults, setPartialResults] = useState([]);
 
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
+    Voice.onSpeechPartialResults = writeSpeech;
     Voice.onSpeechEnd = stopHearing;
+    startHearing();
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
@@ -25,12 +29,18 @@ export default function SpeechToText() {
 
   const stopHearing = async () => {
     await Voice.stop();
+    setSpeaking(false);
     setHearing(false);
   };
 
   const onSpeechResults = (result: any) => {
     setResult(result.value);
     handleVoiceCommands(result.value);
+  };
+
+  const writeSpeech = (result: any) => {
+    setPartialResults(result.value);
+    setSpeaking(true);
   };
 
   const verbs: { [key: string]: string } = {
@@ -164,14 +174,17 @@ export default function SpeechToText() {
 
   return (
     <View>
-      {!hearing ? (
-        <Button title="Start Speaking" onPress={startHearing}></Button>
+      {hearing ? (
+        !speaking ? (
+          <Text style={{ marginTop: 10, color: "gray" }}>
+            ¿Puedes prender las luces de la cocina?
+          </Text>
+        ) : (
+          <Text>{partialResults[0]}</Text>
+        )
       ) : (
-        <Button title="Stop Speaking" onPress={stopHearing}></Button>
+        <Text>{result[0]}</Text>
       )}
-      {result.map((result, index) => (
-        <Text key={index}>{result}</Text>
-      ))}
     </View>
   );
 }
