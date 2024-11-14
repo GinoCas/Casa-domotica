@@ -9,6 +9,7 @@ export default function Layout() {
       }}
     >
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="automation/[id]" />
     </Stack>
   );
 }
