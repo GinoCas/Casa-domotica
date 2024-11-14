@@ -1,7 +1,7 @@
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
-import { GetRoomDevices } from "@/lib/roomController";
+import { GetRoomByName } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
 import { useEffect } from "react";
 
@@ -18,8 +18,8 @@ export default function Home() {
       changeLoadingDevices(true);
       if (roomName) {
         try {
-          const devices = GetRoomDevices(roomName);
-          handleLoadDevices(devices);
+          const roomResult = await GetRoomByName(roomName);
+          handleLoadDevices(roomResult.data[0].Devices);
         } catch (err) {
           console.log("Error on load devices", err);
         } finally {

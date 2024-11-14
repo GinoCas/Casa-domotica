@@ -1,28 +1,15 @@
+import ApiResponse from "@/types/ApiResponse";
 import Device from "@/types/Device";
-import DevicesData from "@/stores/devices.json";
-import { sendData } from "./bluetoothDataSender";
+import { GetHandler, PutHandler } from "@/Utils/apiHandlers";
 
-export function GetDeviceList(): Device[] {
-  return DevicesData as Device[];
+export async function GetDeviceList(
+  roomName: string,
+): Promise<ApiResponse<Response[]>> {
+  const response = await GetHandler<Response[]>(`device/list`);
+  return response;
 }
 
-export async function UpdateDevice(updatedDevice: Device) {
-  const deviceIndex = DevicesData.findIndex(
-    (device) => device.baseProperties.id === updatedDevice.baseProperties.id
-  );
-  DevicesData[deviceIndex] = {
-    ...DevicesData[deviceIndex],
-    ...updatedDevice,
-    baseProperties: {
-      ...DevicesData[deviceIndex].baseProperties,
-      ...updatedDevice.baseProperties,
-    },
-  };
-  const dto = [
-    updatedDevice.deviceType,
-    updatedDevice.baseProperties.id,
-    updatedDevice.baseProperties.state,
-  ]; //Solo de prueba
-  sendData(updatedDevice);
-  return;
+export async function UpdateDevice(body: Device) {
+  const response = await PutHandler<any[]>("device/update", body);
+  return response;
 }

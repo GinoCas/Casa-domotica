@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GetRoomsList } from "@/lib/roomController";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 
 export default function AppHeader() {
-  const rooms: string[] = GetRoomsList();
+  const [rooms, setRooms] = useState<string[]>([]);
 
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
@@ -17,7 +17,10 @@ export default function AppHeader() {
     const getAllRoms = async () => {
       changeLoadingRooms(true);
       try {
-        changeCurrentRoom(rooms[0]);
+        const roomsResult = await GetRoomsList();
+        const roomsList = roomsResult.data;
+        setRooms(roomsList);
+        changeCurrentRoom(roomsList[0]);
       } catch (err) {
         console.log("errorr loading rooms", err);
       } finally {
