@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import Device from "@/types/Device";
@@ -47,7 +47,7 @@ export function RoomView({
   );
 
   return (
-    <View>
+    <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
       {isLoadingDevices ? (
         <View
           style={{
@@ -59,7 +59,7 @@ export function RoomView({
           <Loader size="large" />
         </View>
       ) : (
-        <>
+        <View style={{ flex: 2 }}>
           <View style={styles.connectedDevices}>
             <Text style={{ fontWeight: 600 }}>Connected Devices</Text>
             <Chip text={devices.length} />
@@ -73,41 +73,43 @@ export function RoomView({
             }}
             renderItem={({ item, index }) => (
               <DeviceCard
-                key={index}
+                key={item.baseProperties.id}
                 device={item}
                 onPressAction={() => openBrightnessModal(item)}
               />
             )}
           />
-          <DottedButton
-            label="Add Device"
-            icon={
-              <Feather
-                name="plus"
-                size={24}
-                color={GlobalStyles.enabledColor}
+          <View>
+            <DottedButton
+              label="Add Device"
+              icon={
+                <Feather
+                  name="plus"
+                  size={24}
+                  color={GlobalStyles.enabledColor}
+                />
+              }
+            />
+            <CustomModal
+              isOpen={isModalOpen}
+              onClose={() => setisModalOpen(false)}
+              title="Brightness"
+            >
+              <Slider
+                style={{ width: 200, height: 40 }}
+                minimumValue={0}
+                maximumValue={255}
+                step={1}
+                minimumTrackTintColor={GlobalStyles.secondaryColor}
+                maximumTrackTintColor={GlobalStyles.secondaryColor}
+                thumbTintColor={GlobalStyles.enabledColor}
+                onValueChange={handleBrightnessChange}
               />
-            }
-          />
-        </>
+            </CustomModal>
+          </View>
+        </View>
       )}
-      <CustomModal
-        isOpen={isModalOpen}
-        onClose={() => setisModalOpen(false)}
-        title="Brightness"
-      >
-        <Slider
-          style={{ width: 200, height: 40 }}
-          minimumValue={0}
-          maximumValue={255}
-          step={1}
-          minimumTrackTintColor={GlobalStyles.secondaryColor}
-          maximumTrackTintColor={GlobalStyles.secondaryColor}
-          thumbTintColor={GlobalStyles.enabledColor}
-          onValueChange={handleBrightnessChange}
-        />
-      </CustomModal>
-    </View>
+    </SafeAreaView>
   );
 }
 
