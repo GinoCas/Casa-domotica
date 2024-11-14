@@ -55,7 +55,7 @@ const bluetoothConnection: IBluetoothConnection = {
       await bluetoothConnection.requestPermissions();
       await new Promise((resolve) => setTimeout(resolve, 500));
       const device = await bleManager.connectToDevice(
-        bluetoothConnection.deviceID
+        bluetoothConnection.deviceID,
       );
       await device.discoverAllServicesAndCharacteristics();
       bluetoothConnection.deviceConnected = device;
@@ -92,7 +92,7 @@ const bluetoothConnection: IBluetoothConnection = {
           const data = atob(characteristic.value);
           console.log("Received data:", data);
         }
-      }
+      },
     );
   },
   sendData: async (rawData: any) => {
@@ -106,7 +106,7 @@ const bluetoothConnection: IBluetoothConnection = {
       bluetoothConnection.deviceConnected.writeCharacteristicWithResponseForService(
         bluetoothConnection.serviceUUID,
         bluetoothConnection.characteristicUUID,
-        btoa(json)
+        btoa(json),
       );
     } catch (error) {}
   },

@@ -43,7 +43,7 @@ export function RoomView({
         UpdateDevice(newLedState);
       }
     }, 300),
-    [selectedDevice]
+    [selectedDevice],
   );
 
   return (

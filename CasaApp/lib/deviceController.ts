@@ -9,14 +9,14 @@ export function GetDeviceList(): Device[] {
 
 export function GetDeviceById(id: number): Device {
   const deviceIndex = DevicesData.findIndex(
-    (device) => device.baseProperties.id === id
+    (device) => device.baseProperties.id === id,
   );
   return DevicesData[deviceIndex] as Device;
 }
 
 export async function UpdateDevice(updatedDevice: Device) {
   const deviceIndex = DevicesData.findIndex(
-    (device) => device.baseProperties.id === updatedDevice.baseProperties.id
+    (device) => device.baseProperties.id === updatedDevice.baseProperties.id,
   );
   DevicesData[deviceIndex] = {
     ...DevicesData[deviceIndex],
@@ -27,27 +27,13 @@ export async function UpdateDevice(updatedDevice: Device) {
     },
   };
   const dto = createDeviceDto(DevicesData[deviceIndex] as Device);
-  bluetoothConnection.sendData(dto);
+  await bluetoothConnection.sendData(dto);
   return;
 }
 
 export async function UpdateAllDevices() {
-  GetDeviceList().forEach((updatedDevice) => {
-    const deviceIndex = DevicesData.findIndex(
-      (device) => device.baseProperties.id === updatedDevice.baseProperties.id
-    );
-    if (deviceIndex !== -1) {
-      DevicesData[deviceIndex] = {
-        ...DevicesData[deviceIndex],
-        ...updatedDevice,
-        baseProperties: {
-          ...DevicesData[deviceIndex].baseProperties,
-          ...updatedDevice.baseProperties,
-        },
-      };
-      const dto = createDeviceDto(DevicesData[deviceIndex] as Device);
-      bluetoothConnection.sendData(dto);
-    }
+  GetDeviceList().forEach(async (device) => {
+    await UpdateDevice(device);
   });
   return;
 }

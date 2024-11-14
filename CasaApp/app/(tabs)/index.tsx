@@ -1,6 +1,7 @@
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
+import SpeechToText from "@/components/ui/speechToText";
 import bluetoothConnection from "@/lib/bluetoothLE";
 import { GetRoomDevices } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
@@ -34,6 +35,7 @@ export default function Home() {
   return (
     <Container>
       <TimePickerTest />
+      <SpeechToText />
       <RoomView
         roomName={roomName}
         devices={devices}
