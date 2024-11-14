@@ -3,20 +3,24 @@
     "id": 1,
     "title": "Movie night 🍿",
     "description": "Turn off living lights",
-    "devicesId": [1, 2],
+    "devices": [
+      { "id": 1, "state": false },
+      { "id": 2, "state": true }
+    ],
     "initTime": "22:00",
     "endTime": "00:00",
-    "initialState": "true",
-    "endState": "false"
+    "state": true
   },
   {
     "id": 2,
     "title": "Study 📚",
     "description": "Bedroom desktop light on",
-    "devicesId": [3, 4],
+    "devices": [
+      { "id": 3, "state": false },
+      { "id": 4, "state": true }
+    ],
     "initTime": "18:00",
     "endTime": "20:00",
-    "initialState": "false",
-    "endState": "true"
+    "state": false
   }
 ]
