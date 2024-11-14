@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import GlobalStyles from "@/Utils/globalStyles";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -24,13 +24,19 @@ export default function AutomationCard({ automation }: { automation?: any }) {
           toggleEnabled={() => setIsEnabled(!isEnabled)}
           isEnabled={isEnabled}
         />
-        <Link href={`/automation/${automation.id}`}>
+        <Link
+          style={{
+            backgroundColor: GlobalStyles.enabledColor,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 5,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          href={`/automation/${automation.id}`}
+        >
           <Text>
-            <FontAwesome5
-              name="chevron-right"
-              size={20}
-              color={GlobalStyles.enabledColor}
-            />
+            <FontAwesome5 name="chevron-right" size={20} color="#fff" />
           </Text>
         </Link>
       </View>
@@ -60,6 +66,6 @@ const styles = StyleSheet.create({
   actionsContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 24,
   },
 });
