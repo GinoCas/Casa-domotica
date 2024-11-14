@@ -36,11 +36,41 @@ export default function SpeechToText() {
   const verbs: { [key: string]: string } = {
     prender: "on",
     prende: "on",
+    prendes: "on",
+    prenderme: "on",
+    prenda: "on",
     activar: "on",
+    activa: "on",
+    activas: "on",
+    activame: "on",
     encender: "on",
+    enciende: "on",
+    encendes: "on",
+    encéndeme: "on",
     iluminar: "on",
+    iluminas: "on",
+    ilumina: "on",
+    iluminame: "on",
+    arrancar: "on",
+    arranca: "on",
+    arrancas: "on",
+    arráncame: "on",
+    poner: "on",
+    pone: "on",
+    pones: "on",
+    ponerme: "on",
     apagar: "off",
+    apaga: "off",
+    apagas: "off",
+    apágame: "off",
     desactivar: "off",
+    desactiva: "off",
+    desactivas: "off",
+    desactivame: "off",
+    suspender: "off",
+    suspende: "off",
+    suspendes: "off",
+    suspéndeme: "off",
   };
 
   const locations: { [key: string]: string } = {
@@ -74,23 +104,36 @@ export default function SpeechToText() {
       }
 
       const commandParts = lowerText.split(" y ");
-      const actions = [];
-      for (const part of commandParts) {
-        const verb = Object.keys(verbs).find((v) => part.includes(v));
+      const actions: {
+        verb: string;
+        location: string;
+        device: string | undefined;
+      }[] = [];
+      let usingVerb: string = "";
+      commandParts.forEach((part, index) => {
+        let verb = Object.keys(verbs).find((v) => part.includes(v));
         const locationKey = Object.keys(locations).find((loc) =>
           part.includes(loc)
         );
         const device = Object.keys(devices).find((syn) => part.includes(syn));
 
-        if (verb && locationKey && device) {
-          actions.push({ action: verb, location: locationKey, device: device });
+        if (!verb && index !== 0) {
+          verb = usingVerb;
         }
-      }
+        if (verb && locationKey) {
+          console.log("VOICE:" + `${verb} ${device} en ${locationKey}`);
+          usingVerb = verb;
+          actions.push({
+            verb: verbs[verb],
+            location: locations[locationKey],
+            device: device ? devices[device] : undefined,
+          });
+        }
+      });
       if (actions.length > 0) {
-        actions.forEach(({ action, location, device }) => {
-          console.log(`${action} ${device} en ${location}`);
+        actions.forEach(({ verb, location, device }) => {
           try {
-            executeCommand(verbs[action], locations[location], devices[device]);
+            executeCommand(verb, location, device);
           } catch {}
         });
         return;
@@ -98,11 +141,15 @@ export default function SpeechToText() {
     }
   };
 
-  const executeCommand = (action: string, location: string, device: string) => {
+  const executeCommand = (
+    action: string,
+    location: string,
+    device: string | undefined
+  ) => {
     if (action === "activate" && device === "cinemaMode") {
       return;
     }
-    console.log(`${action} ${device} en ${location}`);
+    console.log("COMMAND:" + `${action} ${device} en ${location}`);
     switch (action) {
       case "on":
         TurnOnAllLedsOfRoom(location);
