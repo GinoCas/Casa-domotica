@@ -46,6 +46,12 @@ export function RoomView({
     [selectedDevice],
   );
 
+  const handleToggleEnabled = async (device: Device, newState: boolean) => {
+    const getDevice = GetDeviceById(device.baseProperties.id);
+    getDevice.baseProperties.state = !newState;
+    await UpdateDevice(getDevice);
+  };
+
   return (
     <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
       {isLoadingDevices ? (
@@ -73,6 +79,7 @@ export function RoomView({
             }}
             renderItem={({ item, index }) => (
               <DeviceCard
+                handleToogleEnabled={handleToggleEnabled}
                 key={item.baseProperties.id}
                 device={item}
                 onPressAction={() => openBrightnessModal(item)}

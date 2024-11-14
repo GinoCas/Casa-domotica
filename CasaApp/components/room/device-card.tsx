@@ -7,22 +7,21 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { GetDeviceById, UpdateDevice } from "@/lib/deviceController";
 
 export function DeviceCard({
   device,
   onPressAction,
+  handleToogleEnabled,
 }: {
   device: Device;
-  onPressAction: () => void;
+  onPressAction?: () => void;
+  handleToogleEnabled: (device: Device, newState: boolean) => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(device.baseProperties.state);
 
   const toggleEnabled = async () => {
     setIsEnabled(!isEnabled);
-    const getDevice = GetDeviceById(device.baseProperties.id);
-    getDevice.baseProperties.state = !isEnabled;
-    await UpdateDevice(getDevice);
+    handleToogleEnabled(device, isEnabled);
   };
 
   const renderIcon = (deviceType: DeviceType) => {
