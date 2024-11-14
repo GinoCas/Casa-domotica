@@ -1,22 +1,25 @@
 import { Tabs } from "expo-router";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { FontAwesome } from "@expo/vector-icons";
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { useState } from "react";
+import { SafeAreaView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
 import CustomModal from "@/components/ui/modal";
 import GlobalStyles from "@/Utils/globalStyles";
 import SpeechToText from "@/components/ui/speechToText";
+import useSpeechStore from "@/stores/useSpeechStore";
 
 const globalStyles = GlobalStyles;
 
 export default function TabsLayout() {
+  const { isHearing } = useSpeechStore();
   const [isModalOpen, setisModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isHearing && isModalOpen) {
+      setisModalOpen(false);
+    }
+  }, [isHearing]);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Tabs screenOptions={{ headerShown: false }}>
@@ -74,6 +77,7 @@ export default function TabsLayout() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   modalButton: {
     alignItems: "center",

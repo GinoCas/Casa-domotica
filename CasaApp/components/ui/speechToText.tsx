@@ -5,13 +5,18 @@ import {
   TurnOffAllLedsOfRoom,
   TurnOnAllLedsOfRoom,
 } from "@/Utils/GeneralCommands";
+import useSpeechStore from "@/stores/useSpeechStore";
 
 export default function SpeechToText() {
-  const [hearing, setHearing] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [result, setResult] = useState([]);
+  const {
+    isHearing,
+    isSpeaking,
+    results,
+    changeHearing,
+    changeSpeaking,
+    handleLoadResults,
+  } = useSpeechStore();
   const [partialResults, setPartialResults] = useState([]);
-
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
     Voice.onSpeechPartialResults = writeSpeech;
@@ -24,23 +29,23 @@ export default function SpeechToText() {
 
   const startHearing = async () => {
     await Voice.start("es-ES");
-    setHearing(true);
+    changeHearing(true);
   };
 
   const stopHearing = async () => {
     await Voice.stop();
-    setSpeaking(false);
-    setHearing(false);
+    changeSpeaking(false);
+    changeHearing(false);
   };
 
   const onSpeechResults = (result: any) => {
-    setResult(result.value);
+    handleLoadResults(result.value);
     handleVoiceCommands(result.value);
   };
 
   const writeSpeech = (result: any) => {
     setPartialResults(result.value);
-    setSpeaking(true);
+    changeSpeaking(true);
   };
 
   const verbs: { [key: string]: string } = {
@@ -174,8 +179,8 @@ export default function SpeechToText() {
 
   return (
     <View>
-      {hearing ? (
-        !speaking ? (
+      {isHearing ? (
+        !isSpeaking ? (
           <Text style={{ marginTop: 10, color: "gray" }}>
             ¿Puedes prender las luces de la cocina?
           </Text>
@@ -183,7 +188,7 @@ export default function SpeechToText() {
           <Text>{partialResults[0]}</Text>
         )
       ) : (
-        <Text>{result[0]}</Text>
+        <Text>{results[0]}</Text>
       )}
     </View>
   );
