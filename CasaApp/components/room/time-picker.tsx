@@ -1,14 +1,33 @@
+import useTimeStore from "@/stores/useTimeStore";
+import getTimeString from "@/Utils/getTimeString";
 import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Button, SafeAreaView, Text, View } from "react-native";
 
 export const TimePickerTest = () => {
   const [date, setDate] = useState(new Date());
+  const { changeGlobalTime } = useTimeStore();
 
+  useEffect(() => {
+    const interval = setInterval(incrementTime, 1000);
+    return () => clearInterval(interval);
+  });
+
+  const incrementTime = () => {
+    setDate((prevTime: Date) => {
+      const newTime = new Date(prevTime);
+      newTime.setMilliseconds(0);
+      newTime.setSeconds(0);
+      newTime.setMinutes(newTime.getMinutes() + 1);
+      changeGlobalTime(newTime);
+      return newTime;
+    });
+  };
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (event.type === "dismissed") return;
     const currentDate = selectedDate;
     setDate(currentDate || new Date());
   };
@@ -30,7 +49,7 @@ export const TimePickerTest = () => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Selecciona la Hora</Text>
       <View style={styles.buttonContainer}>
-        <Button onPress={showTimepicker} title={date.toLocaleTimeString()} />
+        <Button onPress={showTimepicker} title={getTimeString(date)} />
       </View>
     </SafeAreaView>
   );
