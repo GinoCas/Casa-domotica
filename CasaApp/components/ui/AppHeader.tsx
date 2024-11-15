@@ -1,15 +1,23 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GetRoomsList } from "@/lib/roomController";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
+import { Feather } from "@expo/vector-icons";
+import GlobalStyles from "@/Utils/globalStyles";
+import useModeSotre from "@/stores/useModeStore";
 
 export default function AppHeader() {
+  const {
+    saveEnergyMode,
+    activityMode,
+    changeSaveEnergyMode,
+    changeActivityMode,
+  } = useModeSotre();
   const rooms: string[] = GetRoomsList();
-
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
 
@@ -50,12 +58,25 @@ export default function AppHeader() {
         </Picker>
       )}
       <View style={styles.actionsContainer}>
-        <Pressable style={styles.iconButton}>
-          <FontAwesome5 name="lightbulb" size={22} color="black" />
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => changeSaveEnergyMode(!saveEnergyMode)}
+        >
+          <Feather
+            name="battery-charging"
+            size={22}
+            color={saveEnergyMode ? GlobalStyles.enabledColor : "black"}
+          />
         </Pressable>
-
-        <Pressable style={styles.iconButton}>
-          <FontAwesome5 name="user" size={22} color="black" />
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => changeActivityMode(!activityMode)}
+        >
+          <Feather
+            name="activity"
+            size={22}
+            color={activityMode ? GlobalStyles.enabledColor : "black"}
+          />
         </Pressable>
       </View>
     </View>
