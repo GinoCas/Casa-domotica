@@ -22,5 +22,40 @@
     "initTime": "18:00",
     "endTime": "20:00",
     "state": false
+  },
+  {
+    "id": 3,
+    "title": "Sleep time 💤",
+    "description": "All lights off",
+    "devices": [
+      { "id": 1, "state": false },
+      { "id": 3, "state": false },
+      { "id": 5, "state": false },
+      { "id": 4, "state": false }
+    ],
+    "initTime": "00:00",
+    "endTime": "08:00",
+    "state": false
+  },
+  {
+    "id": 4,
+    "title": "Dinner 🍔",
+    "description": "Turn on living lights",
+    "devices": [{ "id": 1, "state": true }],
+    "initTime": "22:00",
+    "endTime": "23:00",
+    "state": false
+  },
+  {
+    "id": 7,
+    "title": "Morning Routine ☀️",
+    "description": "Turn on kitchen and bathroom lights",
+    "devices": [
+      { "id": 2, "state": true },
+      { "id": 3, "state": true }
+    ],
+    "initTime": "06:30",
+    "endTime": "07:30",
+    "state": true
   }
 ]
