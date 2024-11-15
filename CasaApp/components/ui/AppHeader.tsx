@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { GetRoomsList } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
