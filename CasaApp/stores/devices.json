@@ -33,6 +33,16 @@
     "brightness": 50
   },
   {
+    "deviceType": "Tv",
+    "baseProperties": {
+      "id": 5,
+      "pin": 5,
+      "state": false,
+      "voltage": 5.0,
+      "amperes": 0.05
+    }
+  },
+  {
     "deviceType": "Led",
     "baseProperties": {
       "id": 4,

@@ -1,4 +1,4 @@
-export type DeviceType = "Led" | "Fan";
+export type DeviceType = "Led" | "Fan" | "Tv";
 
 export interface BaseDevice {
   id: number;

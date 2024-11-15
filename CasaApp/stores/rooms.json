@@ -7,7 +7,7 @@
   {
     "Id": 2,
     "Name": "Living",
-    "DevicesId": [1]
+    "DevicesId": [1, 5]
   },
   {
     "Id": 3,

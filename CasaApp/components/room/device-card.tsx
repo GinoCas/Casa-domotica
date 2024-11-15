@@ -26,6 +26,7 @@ export function DeviceCard({
 
   const renderIcon = (deviceType: DeviceType) => {
     const iconColor = isEnabled ? "#f1c40f" : GlobalStyles.disabledColor;
+    const defaultColor = isEnabled ? "#000" : GlobalStyles.disabledColor;
     switch (deviceType) {
       case "Led":
         return (
@@ -36,9 +37,13 @@ export function DeviceCard({
           />
         );
       case "Fan":
-        return <MaterialCommunityIcons name="fan" size={24} color="black" />;
+        return (
+          <MaterialCommunityIcons name="fan" size={24} color={defaultColor} />
+        );
+      case "Tv":
+        return <FontAwesome5 name="tv" size={24} color={defaultColor} />;
       default:
-        return <FontAwesome5 name="plug" size={24} color="black" />;
+        return <FontAwesome5 name="plug" size={24} color={defaultColor} />;
     }
   };
 
