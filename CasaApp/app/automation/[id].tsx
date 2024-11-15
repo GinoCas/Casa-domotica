@@ -24,6 +24,7 @@ import {
   UpdateAutomation,
 } from "@/lib/automationController";
 import { Automation } from "@/types/Automation";
+import { parseTimeString } from "@/Utils/parseTimeString";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams();
@@ -58,22 +59,26 @@ export default function AutomationId() {
     })*/
 
   const [date, setDate] = useState({
-    starts: new Date(),
-    ends: new Date(),
+    initTime: new Date(parseTimeString(currentAutomation.initTime)),
+    endTime: new Date(parseTimeString(currentAutomation.endTime)),
   });
 
   const onChange = (
-    value: "starts" | "ends",
+    value: "initTime" | "endTime",
     event: DateTimePickerEvent,
     selectedDate?: Date
   ) => {
     if (!currentAutomation) return;
-    const currentDate = selectedDate;
+    const currentDate = selectedDate || date[value];
     setDate({ ...date, [value]: currentDate });
-    UpdateAutomation(currentAutomation);
+    const updatedAuto: Automation = {
+      ...currentAutomation,
+      [value]: getTimeString(currentDate),
+    };
+    UpdateAutomation(updatedAuto);
   };
 
-  const showTimepicker = (value: "starts" | "ends") => {
+  const showTimepicker = (value: "initTime" | "endTime") => {
     DateTimePickerAndroid.open({
       value: date[value],
       onChange: (e, date) => onChange(value, e, date),
@@ -127,18 +132,18 @@ export default function AutomationId() {
         >
           <TouchableOpacity
             style={styles.timeButton}
-            onPress={() => showTimepicker("starts")}
+            onPress={() => showTimepicker("initTime")}
           >
             <Text style={{ color: "#fff" }}>
-              Inicio: {getTimeString(date.starts)}
+              Inicio: {getTimeString(date.initTime)}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.timeButton}
-            onPress={() => showTimepicker("ends")}
+            onPress={() => showTimepicker("endTime")}
           >
             <Text style={{ color: "#fff" }}>
-              Fin: {getTimeString(date.ends)}
+              Fin: {getTimeString(date.endTime)}
             </Text>
           </TouchableOpacity>
         </View>
