@@ -7,11 +7,9 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import AutomationsData from "@/stores/automations.json";
 import { Container } from "@/components/ui/container";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Chip } from "@/components/ui/chip";
-import DevicesData from "@/stores/devices.json";
 import { DeviceCard } from "@/components/room/device-card";
 import Device from "@/types/Device";
 import {
@@ -20,22 +18,33 @@ import {
 } from "@react-native-community/datetimepicker";
 import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
+import {
+  GetAutomationById,
+  GetAutomationDeviceList,
+  UpdateAutomation,
+} from "@/lib/automationController";
+import { Automation } from "@/types/Automation";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams();
 
-  const [currentAutomation, setCurrentAutomation] = useState(
-    AutomationsData.find((el) => el.id === Number(id)),
-  );
+  const [currentAutomation, setCurrentAutomation] = useState(() => {
+    return GetAutomationById(Number(id));
+  });
 
-  const [devicesList, setDevicesList] = useState(
-    DevicesData.filter((device) =>
+  const [devicesList, setDevicesList] = useState(() => {
+    if (!currentAutomation) {
+      return [];
+    }
+    return GetAutomationDeviceList(currentAutomation.id);
+  });
+  /*DevicesData.filter((device) =>
       currentAutomation?.devices.some(
-        (automationDevice) => automationDevice.id === device.baseProperties.id,
-      ),
+        (automationDevice) => automationDevice.id === device.baseProperties.id
+      )
     ).map((device) => {
       const matchingAutomationDevice = currentAutomation?.devices.find(
-        (automationDevice) => automationDevice.id === device.baseProperties.id,
+        (automationDevice) => automationDevice.id === device.baseProperties.id
       );
       return {
         ...device,
@@ -46,8 +55,7 @@ export default function AutomationId() {
             : device.baseProperties.state,
         },
       };
-    }),
-  );
+    })*/
 
   const [date, setDate] = useState({
     starts: new Date(),
@@ -57,10 +65,12 @@ export default function AutomationId() {
   const onChange = (
     value: "starts" | "ends",
     event: DateTimePickerEvent,
-    selectedDate?: Date,
+    selectedDate?: Date
   ) => {
+    if (!currentAutomation) return;
     const currentDate = selectedDate;
     setDate({ ...date, [value]: currentDate });
+    UpdateAutomation(currentAutomation);
   };
 
   const showTimepicker = (value: "starts" | "ends") => {
@@ -73,7 +83,18 @@ export default function AutomationId() {
   };
 
   const handleToggleEnabled = (device: Device, newState: boolean) => {
-    console.log("cambiar..", { device, newState });
+    if (!currentAutomation) return;
+    const updatedAuto: Automation = {
+      ...currentAutomation,
+      devices: currentAutomation.devices.map((d) => {
+        if (d.id === device.baseProperties.id) {
+          return { ...d, state: !newState };
+        }
+        return d;
+      }),
+    };
+    setCurrentAutomation(updatedAuto);
+    UpdateAutomation(updatedAuto);
   };
 
   return (

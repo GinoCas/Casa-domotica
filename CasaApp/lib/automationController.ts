@@ -1,10 +1,31 @@
 import AutomationsData from "@/stores/automations.json";
 import { Automation } from "@/types/Automation";
 import { GetDeviceById, UpdateDevice } from "./deviceController";
+import Device from "@/types/Device";
 
 export function GetAutomationById(id: number) {
   const autoIndex = AutomationsData.findIndex((auto) => auto.id === id);
   return AutomationsData[autoIndex] as Automation;
+}
+
+export function UpdateAutomation(updatedAuto: Automation) {
+  const deviceIndex = AutomationsData.findIndex(
+    (auto) => auto.id === updatedAuto.id
+  );
+  AutomationsData[deviceIndex] = {
+    ...AutomationsData[deviceIndex],
+    ...updatedAuto,
+  };
+}
+
+export function GetAutomationDeviceList(id: number) {
+  let deviceList: Device[] = [];
+  GetAutomationById(id).devices.forEach((dev) => {
+    const device = GetDeviceById(dev.id);
+    device.baseProperties.state = dev.state;
+    deviceList.push(GetDeviceById(dev.id));
+  });
+  return deviceList;
 }
 
 export function checkAutomationsTriggers(time: string) {
