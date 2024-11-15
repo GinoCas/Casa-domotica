@@ -2,10 +2,12 @@ import { Text, View } from "react-native";
 import Voice from "@react-native-voice/voice";
 import { useEffect, useState } from "react";
 import {
+  ToggleTv,
   TurnOffAllLedsOfRoom,
   TurnOnAllLedsOfRoom,
 } from "@/Utils/GeneralCommands";
 import useSpeechStore from "@/stores/useSpeechStore";
+import { GetDeviceById } from "@/lib/deviceController";
 
 export default function SpeechToText() {
   const {
@@ -76,7 +78,10 @@ export default function SpeechToText() {
     ponerme: "on",
     apagar: "off",
     apaga: "off",
+    apague: "off",
+    apagá: "off",
     apagas: "off",
+    apagás: "off",
     apágame: "off",
     desactivar: "off",
     desactiva: "off",
@@ -89,11 +94,36 @@ export default function SpeechToText() {
   };
 
   const locations: { [key: string]: string } = {
-    cocina: "kitchen",
-    comedor: "diningRoom",
-    sala: "living",
-    living: "living",
-    baño: "bathroom",
+    cocina: "cocina",
+    comedor: "comedor",
+    sala: "sala",
+    salon: "sala",
+    living: "sala",
+    baño: "baño",
+    aseo: "baño",
+    lavabo: "baño",
+    patio: "patio",
+    jardín: "patio",
+    huerto: "patio",
+    garage: "garage",
+    garaje: "garage",
+    estacionamiento: "garage",
+    cochera: "garage",
+    "primera habitación": "habitacion azul",
+    "segunda habitación": "habitacion marron",
+    "habitación principal": "habitacion azul",
+    "habitación secundaria": "habitacion marron",
+    "habitación azul": "habitacion azul",
+    "habitación marrón": "habitacion marron",
+    habitación: "habitacion azul",
+    dormitorio: "habitacion azul",
+    cuarto: "habitacion azul",
+    "primer cuarto": "habitacion azul",
+    "segundo cuarto": "habitacion marron",
+    "cuarto azul": "habitacion azul",
+    "cuarto marrón": "habitacion azul",
+    "cuarto principal": "habitacion azul",
+    "cuarto secundario": "habitacion azul",
   };
 
   const devices: { [key: string]: string } = {
@@ -109,7 +139,10 @@ export default function SpeechToText() {
     bombilla: "led",
     bombillas: "led",
     farol: "led",
-    "   foco led": "led",
+    "foco led": "led",
+    tele: "tv",
+    tv: "tv",
+    televisor: "tv",
   };
 
   const handleVoiceCommands = (results: string[]) => {
@@ -127,6 +160,7 @@ export default function SpeechToText() {
       }[] = [];
       let usingVerb: string = "";
       commandParts.forEach((part, index) => {
+        console.log(part);
         let verb = Object.keys(verbs).find((v) => part.includes(v));
         const locationKey = Object.keys(locations).find((loc) =>
           part.includes(loc)
@@ -136,15 +170,28 @@ export default function SpeechToText() {
         if (!verb && index !== 0) {
           verb = usingVerb;
         }
-        if (verb && locationKey) {
+        if (verb) {
           console.log("VOICE:" + `${verb} ${device} en ${locationKey}`);
           usingVerb = verb;
+          let location = "todas";
+          if (locationKey) {
+            location = locations[locationKey];
+          }
           actions.push({
             verb: verbs[verb],
-            location: locations[locationKey],
+            location: location,
             device: device ? devices[device] : undefined,
           });
         }
+      });
+      actions.sort((a, b) => {
+        if (a.location === "todas" && b.location !== "todas") {
+          return -1;
+        }
+        if (a.location !== "todas" && b.location === "todas") {
+          return 1;
+        }
+        return 0;
       });
       if (actions.length > 0) {
         actions.forEach(({ verb, location, device }) => {
@@ -168,9 +215,17 @@ export default function SpeechToText() {
     console.log("COMMAND:" + `${action} ${device} en ${location}`);
     switch (action) {
       case "on":
+        if (device === "tv") {
+          ToggleTv(true);
+          return;
+        }
         TurnOnAllLedsOfRoom(location);
         break;
       case "off":
+        if (device === "tv") {
+          ToggleTv(false);
+          return;
+        }
         TurnOffAllLedsOfRoom(location);
         break;
       default:

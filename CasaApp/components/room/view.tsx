@@ -6,7 +6,7 @@ import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import DottedButton from "../ui/dotted-button";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
@@ -31,7 +31,6 @@ export function RoomView({
       setisModalOpen(true);
     }
   };
-
   const handleBrightnessChange = useCallback(
     debounce((value) => {
       if (selectedDevice) {
@@ -46,7 +45,7 @@ export function RoomView({
         UpdateDevice(newLedState);
       }
     }, 300),
-    [selectedDevice],
+    [selectedDevice]
   );
 
   const handleToggleEnabled = async (device: Device, newState: boolean) => {

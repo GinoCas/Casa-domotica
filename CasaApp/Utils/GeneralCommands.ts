@@ -1,4 +1,5 @@
 import {
+  GetDeviceById,
   GetDeviceList,
   GetLedList,
   UpdateDevice,
@@ -9,7 +10,7 @@ import Device from "@/types/Device";
 function getRandomDevices(arr: Device[], n: number): Device[] {
   if (n > arr.length)
     throw new Error(
-      "La cantidad de elementos solicitados supera el tamaño del array.",
+      "La cantidad de elementos solicitados supera el tamaño del array."
     );
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, n);
@@ -44,4 +45,10 @@ export function TurnOffAllLedsOfRoom(roomName: string) {
     updatedDevice.baseProperties.state = false;
     UpdateDevice(device);
   });
+}
+
+export function ToggleTv(state: boolean) {
+  const tv = GetDeviceById(6);
+  tv.baseProperties.state = state;
+  UpdateDevice(tv);
 }

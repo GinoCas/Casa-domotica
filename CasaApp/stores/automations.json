@@ -1,11 +1,11 @@
 [
   {
     "id": 1,
-    "title": "Movie night 🍿",
-    "description": "Turn off living lights",
+    "title": "Noche de pelicula 🍿",
+    "description": "Apagar luces del living",
     "devices": [
-      { "id": 1, "state": false },
-      { "id": 2, "state": true }
+      { "id": 8, "state": false },
+      { "id": 6, "state": true }
     ],
     "initTime": "22:00",
     "endTime": "00:00",
@@ -13,25 +13,27 @@
   },
   {
     "id": 2,
-    "title": "Study 📚",
-    "description": "Bedroom desktop light on",
-    "devices": [
-      { "id": 3, "state": false },
-      { "id": 4, "state": true }
-    ],
+    "title": "Estudiar 📚",
+    "description": "Prender lampara de habitación",
+    "devices": [{ "id": 5, "state": true }],
     "initTime": "18:00",
     "endTime": "20:00",
     "state": false
   },
   {
     "id": 3,
-    "title": "Sleep time 💤",
-    "description": "All lights off",
+    "title": "Tiempo de dormir 💤",
+    "description": "Todas las luces apagadas",
     "devices": [
-      { "id": 1, "state": false },
+      { "id": 2, "state": false },
       { "id": 3, "state": false },
+      { "id": 4, "state": false },
       { "id": 5, "state": false },
-      { "id": 4, "state": false }
+      { "id": 6, "state": false },
+      { "id": 7, "state": false },
+      { "id": 8, "state": false },
+      { "id": 12, "state": false },
+      { "id": 13, "state": false }
     ],
     "initTime": "00:00",
     "endTime": "08:00",
@@ -39,20 +41,20 @@
   },
   {
     "id": 4,
-    "title": "Dinner 🍔",
-    "description": "Turn on living lights",
-    "devices": [{ "id": 1, "state": true }],
+    "title": "Cena 🍔",
+    "description": "Prende las luces del comedor",
+    "devices": [{ "id": 4, "state": true }],
     "initTime": "22:00",
     "endTime": "23:00",
     "state": false
   },
   {
     "id": 7,
-    "title": "Morning Routine ☀️",
-    "description": "Turn on kitchen and bathroom lights",
+    "title": "Rutina mañanera ☀️",
+    "description": "Prende las luces de la cocina y el baño",
     "devices": [
-      { "id": 2, "state": true },
-      { "id": 3, "state": true }
+      { "id": 3, "state": true },
+      { "id": 13, "state": true }
     ],
     "initTime": "06:30",
     "endTime": "07:30",

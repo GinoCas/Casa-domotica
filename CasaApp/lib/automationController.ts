@@ -11,7 +11,7 @@ export function GetAutomationById(id: number) {
 
 export function UpdateAutomation(updatedAuto: Automation) {
   const deviceIndex = AutomationsData.findIndex(
-    (auto) => auto.id === updatedAuto.id,
+    (auto) => auto.id === updatedAuto.id
   );
   AutomationsData[deviceIndex] = {
     ...AutomationsData[deviceIndex],
@@ -35,7 +35,7 @@ export function checkAutomationsTriggers(time: string) {
   const matchingAutomations = AutomationsData.filter(
     (auto) =>
       (auto.initTime.trim() === time || auto.endTime.trim() === time) &&
-      auto.state,
+      auto.state
   );
   matchingAutomations.forEach((auto: Automation) => {
     triggerAutomation(auto, auto.endTime.trim() === time);
@@ -45,6 +45,9 @@ export function checkAutomationsTriggers(time: string) {
 function triggerAutomation(auto: Automation, end: boolean) {
   auto.devices.forEach((newDevice) => {
     let device = GetDeviceById(newDevice.id);
+    if (end && device.baseProperties.state === false) {
+      return;
+    }
     device.baseProperties.state = end ? !newDevice.state : newDevice.state;
     UpdateDevice(device);
   });

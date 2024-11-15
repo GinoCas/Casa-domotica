@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Switch } from "../ui/switch";
 import GlobalStyles from "@/Utils/globalStyles";
 import Device, { DeviceType } from "@/types/Device";
@@ -18,7 +18,6 @@ export function DeviceCard({
   handleToogleEnabled: (device: Device, newState: boolean) => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(device.baseProperties.state);
-
   const toggleEnabled = async () => {
     setIsEnabled(!isEnabled);
     handleToogleEnabled(device, isEnabled);
