@@ -33,14 +33,14 @@ export function checkAutomationsTriggers(time: string) {
     (auto) => auto.initTime.trim() === time || auto.endTime.trim() === time
   );
   matchingAutomations.forEach((auto: Automation) => {
-    triggerAutomation(auto);
+    triggerAutomation(auto, auto.endTime.trim() === time);
   });
 }
 
-function triggerAutomation(auto: Automation) {
+function triggerAutomation(auto: Automation, end: boolean) {
   auto.devices.forEach((newDevice) => {
     let device = GetDeviceById(newDevice.id);
-    device.baseProperties.state = newDevice.state;
+    device.baseProperties.state = end ? !newDevice.state : newDevice.state;
     UpdateDevice(device);
   });
 }

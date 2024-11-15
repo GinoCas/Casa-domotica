@@ -91,7 +91,8 @@ export default function SpeechToText() {
   const locations: { [key: string]: string } = {
     cocina: "kitchen",
     comedor: "diningRoom",
-    sala: "livingRoom",
+    sala: "living",
+    living: "living",
     baño: "bathroom",
   };
 
@@ -128,7 +129,7 @@ export default function SpeechToText() {
       commandParts.forEach((part, index) => {
         let verb = Object.keys(verbs).find((v) => part.includes(v));
         const locationKey = Object.keys(locations).find((loc) =>
-          part.includes(loc),
+          part.includes(loc)
         );
         const device = Object.keys(devices).find((syn) => part.includes(syn));
 
@@ -159,7 +160,7 @@ export default function SpeechToText() {
   const executeCommand = (
     action: string,
     location: string,
-    device: string | undefined,
+    device: string | undefined
   ) => {
     if (action === "activate" && device === "cinemaMode") {
       return;
