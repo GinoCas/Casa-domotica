@@ -2,6 +2,7 @@ export type DeviceType = "Led" | "Fan";
 
 export interface BaseDevice {
   id: number;
+  pin: number;
   state: boolean;
   voltage: number;
   amperes: number;

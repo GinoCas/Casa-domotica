@@ -2,8 +2,7 @@
 #include <ArxContainer.h>
 #include <ArduinoJson.h>
 
-SoftwareSerial btSerial(7,8);
-StaticJsonDocument<200> content;
+SoftwareSerial btSerial(10,11);
 
 struct Device {
   int pin;
@@ -11,28 +10,23 @@ struct Device {
   bool state;
 };
 
-void handleLed(Device& device, JsonDocument& content) {
+void handleLed(Device& device, String& prop) {
   if(!device.state){
     analogWrite(device.pin, 0);
     return;
   }
-  int brightness = content["brightness"];
-  analogWrite(device.pin, brightness / 4);
+  int brightness = prop.toInt();
+  analogWrite(device.pin, brightness);
 }
 
-void handleFan(Device& device, JsonDocument& content) {
-  int speed = content["speed"];
+void handleFan(Device& device, String& prop) {
+  int speed = prop.toInt();
   analogWrite(device.pin, speed);
 }
 
-std::map<String, void(*)(Device&, JsonDocument&)> deviceHandlers {
-  {"Led", handleLed}, 
-  {"Fan", handleFan}
-};
-
 void setup() {
-  Serial.begin(9600);
-  btSerial.begin(9600);
+  Serial.begin(38400);
+  btSerial.begin(38400);
 }
 
 void loop() {
@@ -40,20 +34,37 @@ void loop() {
     String command = btSerial.readStringUntil('\n');
     parseData(command);
   }
+  if (Serial.available()) {
+    btSerial.write(Serial.read());
+  }
 }
 
 void parseData(String jsonCommand) {
-  DeserializationError error = deserializeJson(content, jsonCommand);
-  if (deserializeJson(content, jsonCommand)) {
-    btSerial.println("JSON Couldn't be parsed");
-    return;
-  };
-  const String deviceType = content["deviceType"];
+  jsonCommand = jsonCommand.substring(1, jsonCommand.length() - 1);
+  String elements[4];
+  int startIndex = 0, commaIndex;
+  for (int i = 0; i < 4; i++) {
+    commaIndex = jsonCommand.indexOf(",", startIndex);
+    if (commaIndex == -1) commaIndex = jsonCommand.length();
+
+    elements[i] = jsonCommand.substring(startIndex, commaIndex);
+    startIndex = commaIndex + 1;
+  }
+  for (int i = 0; i < 4; i++) {
+    elements[i].trim();
+    elements[i].replace("\"", "");
+  }
   Device device = {
-    content["pin"],
-    content["mode"],
-    content["state"]
+    elements[1].toInt(),
+    OUTPUT,
+    (elements[2] == "true"),
   };
   pinMode(device.pin, device.mode);
-  deviceHandlers[deviceType](device, content);
+  String type = elements[0];
+  if(type == "Led"){
+    handleLed(device, elements[3]);
+    btSerial.println("OK");
+  }else{
+    btSerial.println("ERROR");
+  }
 }

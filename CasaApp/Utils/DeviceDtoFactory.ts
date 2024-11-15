@@ -3,7 +3,7 @@ import Device from "@/types/Device";
 export function createDeviceDto(device: Device) {
   const dto = [
     device.deviceType,
-    device.baseProperties.id,
+    device.baseProperties.pin,
     device.baseProperties.state,
   ];
   const dtoFactory: { [key: string]: (device: Device) => void } = {
@@ -15,6 +15,5 @@ export function createDeviceDto(device: Device) {
     },
   };
   dtoFactory[device.deviceType]?.(device);
-
   return dto;
 }

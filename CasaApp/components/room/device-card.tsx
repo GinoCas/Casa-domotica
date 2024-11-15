@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
 import GlobalStyles from "@/Utils/globalStyles";
@@ -7,20 +7,21 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { UpdateDevice } from "@/lib/deviceController";
 
-export function DeviceCard({ device }: { device: Device }) {
+export function DeviceCard({
+  device,
+  onPressAction,
+  handleToogleEnabled,
+}: {
+  device: Device;
+  onPressAction?: () => void;
+  handleToogleEnabled: (device: Device, newState: boolean) => void;
+}) {
   const [isEnabled, setIsEnabled] = useState(device.baseProperties.state);
 
   const toggleEnabled = async () => {
     setIsEnabled(!isEnabled);
-    await UpdateDevice({
-      ...device,
-      baseProperties: {
-        ...device.baseProperties,
-        state: !isEnabled,
-      },
-    });
+    handleToogleEnabled(device, isEnabled);
   };
 
   const renderIcon = (deviceType: DeviceType) => {
@@ -50,7 +51,8 @@ export function DeviceCard({ device }: { device: Device }) {
           alignItems: "center",
         }}
       >
-        <View
+        <TouchableOpacity
+          onPress={onPressAction}
           style={{
             backgroundColor: "#fff",
             width: 45,
@@ -61,7 +63,7 @@ export function DeviceCard({ device }: { device: Device }) {
           }}
         >
           {renderIcon(device.deviceType)}
-        </View>
+        </TouchableOpacity>
         <View
           style={{ justifyContent: "center", alignItems: "center", gap: 8 }}
         >

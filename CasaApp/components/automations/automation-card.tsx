@@ -1,8 +1,9 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import GlobalStyles from "@/Utils/globalStyles";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
+import { Link } from "expo-router";
 
 export default function AutomationCard({ automation }: { automation?: any }) {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -15,7 +16,7 @@ export default function AutomationCard({ automation }: { automation?: any }) {
       ]}
     >
       <View>
-        <Text style={styles.title}>{automation.name}</Text>
+        <Text style={styles.title}>{automation.title}</Text>
         <Text style={styles.subtitle}>{automation.description}</Text>
       </View>
       <View style={styles.actionsContainer}>
@@ -23,15 +24,21 @@ export default function AutomationCard({ automation }: { automation?: any }) {
           toggleEnabled={() => setIsEnabled(!isEnabled)}
           isEnabled={isEnabled}
         />
-        <TouchableOpacity>
+        <Link
+          style={{
+            backgroundColor: GlobalStyles.enabledColor,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 5,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          href={`/automation/${automation.id}`}
+        >
           <Text>
-            <FontAwesome5
-              name="chevron-right"
-              size={20}
-              color={GlobalStyles.enabledColor}
-            />
+            <FontAwesome5 name="chevron-right" size={20} color="#fff" />
           </Text>
-        </TouchableOpacity>
+        </Link>
       </View>
     </View>
   );
@@ -59,6 +66,6 @@ const styles = StyleSheet.create({
   actionsContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 24,
   },
 });

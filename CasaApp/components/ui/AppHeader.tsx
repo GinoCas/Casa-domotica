@@ -3,15 +3,28 @@ import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect } from "react";
 import { GetRoomsList } from "@/lib/roomController";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
+import { Feather } from "@expo/vector-icons";
+import GlobalStyles from "@/Utils/globalStyles";
+import useModeSotre from "@/stores/useModeStore";
+import { UpdateAllLeds } from "@/lib/deviceController";
 
 export default function AppHeader() {
+  const {
+    saveEnergyMode,
+    activityMode,
+    changeSaveEnergyMode,
+    changeActivityMode,
+  } = useModeSotre();
   const rooms: string[] = GetRoomsList();
-
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
+  const toggleEnergySaveMode = () => {
+    changeSaveEnergyMode(!saveEnergyMode);
+    if (saveEnergyMode) return;
+    UpdateAllLeds();
+  };
 
   useEffect(() => {
     const getAllRoms = async () => {
@@ -50,12 +63,25 @@ export default function AppHeader() {
         </Picker>
       )}
       <View style={styles.actionsContainer}>
-        <Pressable style={styles.iconButton}>
-          <FontAwesome5 name="lightbulb" size={22} color="black" />
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => toggleEnergySaveMode()}
+        >
+          <Feather
+            name="battery-charging"
+            size={22}
+            color={saveEnergyMode ? GlobalStyles.enabledColor : "black"}
+          />
         </Pressable>
-
-        <Pressable style={styles.iconButton}>
-          <FontAwesome5 name="user" size={22} color="black" />
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => changeActivityMode(!activityMode)}
+        >
+          <Feather
+            name="activity"
+            size={22}
+            color={activityMode ? GlobalStyles.enabledColor : "black"}
+          />
         </Pressable>
       </View>
     </View>

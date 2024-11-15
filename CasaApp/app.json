@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "CasaApp",
-    "slug": "casa-domotica",
+    "slug": "CasaApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,7 +26,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "@react-native-voice/voice",
+        {
+          "microphonePermission": "Permitir a Casa Domotica acceder al microfono.",
+          "speechRecognitionPermission": "Permitir a Casa Domotica reconocer el habla del usuario."
+        }
+      ]
     ],
     "experiments": {
       "tsconfigPaths": true
@@ -36,9 +43,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "f84bcda1-b223-429d-b78d-0b29777abfc4"
+        "projectId": "f7292e98-c38a-4b2f-8942-0e28ed8b97ef"
       }
     },
-    "owner": "agustingalante"
+    "owner": "ginocas"
   }
 }

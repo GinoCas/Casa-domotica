@@ -4,19 +4,7 @@ import DottedButton from "@/components/ui/dotted-button";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import { Text, View } from "react-native";
-
-const AUTOMATIONS_MOCK = [
-  {
-    id: 1,
-    name: "Movie night 🍿",
-    description: "Turn off living lights",
-  },
-  {
-    id: 2,
-    name: "Study 📚",
-    description: "Bedroom desktop light on",
-  },
-];
+import AutomationsData from "@/stores/automations.json";
 
 export default function Home() {
   return (
@@ -25,7 +13,7 @@ export default function Home() {
         Automations 🤖
       </Text>
       <View style={{ gap: 8 }}>
-        {AUTOMATIONS_MOCK.map((aut, index) => (
+        {AutomationsData.map((aut, index) => (
           <AutomationCard key={index} automation={aut} />
         ))}
       </View>
