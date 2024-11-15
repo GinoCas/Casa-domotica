@@ -21,9 +21,11 @@ export default function AutomationCard({
         { backgroundColor: isEnabled ? "#fff" : "#e1e1e1" },
       ]}
     >
-      <View>
+      <View style={{ maxWidth: 190 }}>
         <Text style={styles.title}>{automation.title}</Text>
-        <Text style={styles.subtitle}>{automation.description}</Text>
+        <Text style={styles.subtitle} numberOfLines={1}>
+          {automation.description}
+        </Text>
       </View>
       <View style={styles.actionsContainer}>
         <Switch
@@ -71,6 +73,8 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: "#a6a6a6",
+    maxWidth: 190,
+    overflow: "hidden",
   },
   actionsContainer: {
     flexDirection: "row",
