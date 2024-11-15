@@ -7,7 +7,7 @@ interface ModeState {
   changeActivityMode: (newState: boolean) => void;
 }
 
-const useModeSotre = create<ModeState>()((set) => ({
+const useModeStore = create<ModeState>()((set) => ({
   saveEnergyMode: false,
   activityMode: false,
   changeActivityMode: (newState) =>
@@ -16,4 +16,4 @@ const useModeSotre = create<ModeState>()((set) => ({
     set((state) => ({ ...state, saveEnergyMode: newState })),
 }));
 
-export default useModeSotre;
+export default useModeStore;

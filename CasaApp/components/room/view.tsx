@@ -11,6 +11,7 @@ import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
 import { GetDeviceById, UpdateDevice } from "@/lib/deviceController";
+import useModeStore from "@/stores/useModeStore";
 
 export function RoomView({
   /*   roomName, */
@@ -21,6 +22,7 @@ export function RoomView({
   devices: Device[];
   isLoadingDevices: boolean;
 }) {
+  const { saveEnergyMode, changeSaveEnergyMode } = useModeStore();
   const [isModalOpen, setisModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const openBrightnessModal = (device: Device) => {
@@ -40,6 +42,7 @@ export function RoomView({
           },
           brightness: value,
         };
+        changeSaveEnergyMode(false);
         UpdateDevice(newLedState);
       }
     }, 300),

@@ -3,12 +3,12 @@ import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
 import { GetRoomsList } from "@/lib/roomController";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 import { Feather } from "@expo/vector-icons";
 import GlobalStyles from "@/Utils/globalStyles";
 import useModeSotre from "@/stores/useModeStore";
+import { UpdateAllLeds } from "@/lib/deviceController";
 
 export default function AppHeader() {
   const {
@@ -20,6 +20,11 @@ export default function AppHeader() {
   const rooms: string[] = GetRoomsList();
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
+  const toggleEnergySaveMode = () => {
+    changeSaveEnergyMode(!saveEnergyMode);
+    if (saveEnergyMode) return;
+    UpdateAllLeds();
+  };
 
   useEffect(() => {
     const getAllRoms = async () => {
@@ -60,7 +65,7 @@ export default function AppHeader() {
       <View style={styles.actionsContainer}>
         <Pressable
           style={styles.iconButton}
-          onPress={() => changeSaveEnergyMode(!saveEnergyMode)}
+          onPress={() => toggleEnergySaveMode()}
         >
           <Feather
             name="battery-charging"
