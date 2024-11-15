@@ -2,6 +2,7 @@ import AutomationsData from "@/stores/automations.json";
 import { Automation } from "@/types/Automation";
 import { GetDeviceById, UpdateDevice } from "./deviceController";
 import Device from "@/types/Device";
+import useModeStore from "@/stores/useModeStore";
 
 export function GetAutomationById(id: number) {
   const autoIndex = AutomationsData.findIndex((auto) => auto.id === id);
@@ -10,7 +11,7 @@ export function GetAutomationById(id: number) {
 
 export function UpdateAutomation(updatedAuto: Automation) {
   const deviceIndex = AutomationsData.findIndex(
-    (auto) => auto.id === updatedAuto.id
+    (auto) => auto.id === updatedAuto.id,
   );
   AutomationsData[deviceIndex] = {
     ...AutomationsData[deviceIndex],
@@ -29,8 +30,12 @@ export function GetAutomationDeviceList(id: number) {
 }
 
 export function checkAutomationsTriggers(time: string) {
+  const { activityMode } = useModeStore.getState();
+  if (activityMode) return;
   const matchingAutomations = AutomationsData.filter(
-    (auto) => auto.initTime.trim() === time || auto.endTime.trim() === time
+    (auto) =>
+      (auto.initTime.trim() === time || auto.endTime.trim() === time) &&
+      auto.state,
   );
   matchingAutomations.forEach((auto: Automation) => {
     triggerAutomation(auto, auto.endTime.trim() === time);

@@ -44,6 +44,16 @@ export async function UpdateAllDevices() {
   return;
 }
 
+export function GetLedList() {
+  const list: Device[] = [];
+  GetDeviceList().forEach((device) => {
+    if (device.deviceType === "Led") {
+      list.push(device);
+    }
+  });
+  return list;
+}
+
 export async function UpdateAllLeds() {
   GetDeviceList().forEach(async (device) => {
     if (device.deviceType === "Led") {

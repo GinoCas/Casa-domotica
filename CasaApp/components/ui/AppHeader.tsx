@@ -9,6 +9,7 @@ import { Feather } from "@expo/vector-icons";
 import GlobalStyles from "@/Utils/globalStyles";
 import useModeSotre from "@/stores/useModeStore";
 import { UpdateAllLeds } from "@/lib/deviceController";
+import { TurnOnLedRandom } from "@/Utils/GeneralCommands";
 
 export default function AppHeader() {
   const {
@@ -39,6 +40,22 @@ export default function AppHeader() {
     };
     getAllRoms();
   }, [changeCurrentRoom, changeLoadingRooms]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (activityMode) {
+      TurnOnLedRandom();
+      interval = setInterval(() => {
+        TurnOnLedRandom();
+      }, 10000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [activityMode]);
 
   return (
     <View style={styles.headerContainer}>

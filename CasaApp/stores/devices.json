@@ -31,5 +31,16 @@
       "amperes": 0.05
     },
     "brightness": 50
+  },
+  {
+    "deviceType": "Led",
+    "baseProperties": {
+      "id": 4,
+      "pin": 3,
+      "state": false,
+      "voltage": 5.0,
+      "amperes": 0.05
+    },
+    "brightness": 50
   }
 ]

@@ -4,9 +4,15 @@ import GlobalStyles from "@/Utils/globalStyles";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
 import { Link } from "expo-router";
+import { Automation } from "@/types/Automation";
+import { UpdateAutomation } from "@/lib/automationController";
 
-export default function AutomationCard({ automation }: { automation?: any }) {
-  const [isEnabled, setIsEnabled] = useState(false);
+export default function AutomationCard({
+  automation,
+}: {
+  automation: Automation;
+}) {
+  const [isEnabled, setIsEnabled] = useState(automation?.state);
 
   return (
     <View
@@ -21,7 +27,10 @@ export default function AutomationCard({ automation }: { automation?: any }) {
       </View>
       <View style={styles.actionsContainer}>
         <Switch
-          toggleEnabled={() => setIsEnabled(!isEnabled)}
+          toggleEnabled={() => {
+            setIsEnabled(!isEnabled);
+            UpdateAutomation(automation);
+          }}
           isEnabled={isEnabled}
         />
         <Link
