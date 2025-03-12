@@ -14,9 +14,12 @@ export default function SpeechToText() {
     isHearing,
     isSpeaking,
     results,
+    voice,
     changeHearing,
     changeSpeaking,
     handleLoadResults,
+    handleLoadVoice,
+    handleLoadCmdVoice,
   } = useSpeechStore();
   const [partialResults, setPartialResults] = useState([]);
   useEffect(() => {
@@ -151,7 +154,6 @@ export default function SpeechToText() {
       if (lowerText.includes("modo cine")) {
         return;
       }
-
       const commandParts = lowerText.split(" y ");
       const actions: {
         verb: string;
@@ -160,7 +162,6 @@ export default function SpeechToText() {
       }[] = [];
       let usingVerb: string = "";
       commandParts.forEach((part, index) => {
-        console.log(part);
         let verb = Object.keys(verbs).find((v) => part.includes(v));
         const locationKey = Object.keys(locations).find((loc) =>
           part.includes(loc)
@@ -172,6 +173,7 @@ export default function SpeechToText() {
         }
         if (verb) {
           console.log("VOICE:" + `${verb} ${device} en ${locationKey}`);
+          handleLoadVoice("VOICE:" + `${verb} ${device} en ${locationKey}`);
           usingVerb = verb;
           let location = "todas";
           if (locationKey) {
@@ -213,6 +215,7 @@ export default function SpeechToText() {
       return;
     }
     console.log("COMMAND:" + `${action} ${device} en ${location}`);
+    handleLoadCmdVoice("COMMAND:" + `${action} ${device} en ${location}`);
     switch (action) {
       case "on":
         if (device === "tv") {

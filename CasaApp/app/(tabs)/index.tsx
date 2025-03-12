@@ -4,7 +4,9 @@ import { Container } from "@/components/ui/container";
 import bluetoothConnection from "@/lib/bluetoothLE";
 import { GetRoomDevices } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
+import useSpeechStore from "@/stores/useSpeechStore";
 import { useEffect } from "react";
+import { Text } from "react-native";
 
 export default function Home() {
   const {
@@ -14,6 +16,7 @@ export default function Home() {
     handleLoadDevices,
     isLoadingDevices,
   } = useRoomStore();
+  const { results, voice, cmdVoice } = useSpeechStore();
   useEffect(() => {
     const getRoomDevices = async () => {
       if (roomName) {
@@ -34,6 +37,9 @@ export default function Home() {
   return (
     <Container>
       <TimePickerTest />
+      <Text>Resultados: {results}</Text>
+      <Text>{voice}</Text>
+      <Text>{cmdVoice}</Text>
       <RoomView
         roomName={roomName}
         devices={devices}
