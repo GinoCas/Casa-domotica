@@ -152,9 +152,11 @@ export default function AutomationId() {
         </Text>
       </View>
       <View style={{ flexDirection: "row", paddingVertical: 16 }}>
+
         <Text style={{ fontWeight: "600" }}>Devices </Text>
         <Chip text={currentAutomation?.devices.length.toString() || ""} />
       </View>
+
       <FlatList
         data={devicesList}
         keyExtractor={(device) => device.baseProperties.id.toString()}
