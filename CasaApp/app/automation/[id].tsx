@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Container } from "@/components/ui/container";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -23,7 +23,7 @@ import {
   GetAutomationById,
   GetAutomationDeviceList,
   UpdateAutomation,
-} from "@/lib/automationController";
+} from "@/lib/automationTrigger";
 import { Automation } from "@/types/Automation";
 import { parseTimeString } from "@/Utils/parseTimeString";
 

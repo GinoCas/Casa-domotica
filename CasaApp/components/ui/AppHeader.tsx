@@ -7,7 +7,7 @@ import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 import { Feather } from "@expo/vector-icons";
 import GlobalStyles from "@/Utils/globalStyles";
-import useModeSotre from "@/stores/useModeStore";
+import useModeStore from "@/stores/useModeStore";
 import { UpdateAllLeds } from "@/lib/deviceController";
 import { TurnOnLedRandom } from "@/Utils/GeneralCommands";
 
@@ -17,7 +17,7 @@ export default function AppHeader() {
     activityMode,
     changeSaveEnergyMode,
     changeActivityMode,
-  } = useModeSotre();
+  } = useModeStore();
   const rooms: string[] = GetRoomsList();
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
@@ -33,7 +33,7 @@ export default function AppHeader() {
       try {
         changeCurrentRoom(rooms[0]);
       } catch (err) {
-        console.log("errorr loading rooms", err);
+        console.log("error loading rooms", err);
       } finally {
         changeLoadingRooms(false);
       }

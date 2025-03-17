@@ -1,4 +1,3 @@
-import { checkAutomationsTriggers } from "@/lib/automationController";
 import getTimeString from "@/Utils/getTimeString";
 import {
   DateTimePickerAndroid,
@@ -21,7 +20,6 @@ export const TimePickerTest = () => {
       newTime.setMilliseconds(0);
       newTime.setSeconds(0);
       newTime.setMinutes(newTime.getMinutes() + 1);
-      checkAutomationsTriggers(getTimeString(newTime));
       return newTime;
     });
   };

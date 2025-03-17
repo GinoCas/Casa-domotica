@@ -5,7 +5,7 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
 import { Link } from "expo-router";
 import { Automation } from "@/types/Automation";
-import { UpdateAutomation } from "@/lib/automationController";
+import { UpdateAutomation } from "@/lib/automationTrigger";
 
 export default function AutomationCard({
   automation,

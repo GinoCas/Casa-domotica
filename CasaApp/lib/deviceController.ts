@@ -10,7 +10,7 @@ export function GetDeviceList(): Device[] {
 
 export function GetDeviceById(id: number): Device {
   const deviceIndex = DevicesData.findIndex(
-    (device) => device.baseProperties.id === id
+    (device) => device.baseProperties.id === id,
   );
   return DevicesData[deviceIndex] as Device;
 }
@@ -18,7 +18,7 @@ export function GetDeviceById(id: number): Device {
 export async function UpdateDevice(updatedDevice: Device) {
   const { saveEnergyMode } = useModeStore.getState();
   const deviceIndex = DevicesData.findIndex(
-    (device) => device.baseProperties.id === updatedDevice.baseProperties.id
+    (device) => device.baseProperties.id === updatedDevice.baseProperties.id,
   );
   DevicesData[deviceIndex] = {
     ...DevicesData[deviceIndex],

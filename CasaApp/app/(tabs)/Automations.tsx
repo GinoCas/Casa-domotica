@@ -5,15 +5,22 @@ import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 import AutomationsData from "@/stores/automations.json";
+import useAutomationStore from "@/stores/useAutomationStore";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { automations, handleLoadAutomations } = useAutomationStore();
+
+  useEffect(() => {
+    handleLoadAutomations(AutomationsData);
+  }, []);
   return (
     <Container>
       <Text style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
         Automations 🤖
       </Text>
       <View style={{ gap: 8 }}>
-        {AutomationsData.map((aut, index) => (
+        {automations.map((aut, index) => (
           <AutomationCard key={index} automation={aut} />
         ))}
       </View>

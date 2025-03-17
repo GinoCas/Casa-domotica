@@ -45,7 +45,7 @@ export function RoomView({
         UpdateDevice(newLedState);
       }
     }, 300),
-    [selectedDevice]
+    [selectedDevice],
   );
 
   const handleToggleEnabled = async (device: Device, newState: boolean) => {

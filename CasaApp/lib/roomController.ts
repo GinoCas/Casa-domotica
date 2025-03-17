@@ -9,7 +9,7 @@ export function GetRoomsList(): string[] {
 
 export function GetRoomByName(roomName: string): Room {
   const roomIndex = RoomData.findIndex(
-    (room) => room.Name.toLowerCase() === roomName.toLowerCase()
+    (room) => room.Name.toLowerCase() === roomName.toLowerCase(),
   );
   return RoomData[roomIndex] as Room;
 }
@@ -17,7 +17,7 @@ export function GetRoomByName(roomName: string): Room {
 export function GetRoomDevices(roomName: string): Device[] {
   const room = GetRoomByName(roomName);
   const roomDevices = GetDeviceList().filter((device) =>
-    room.DevicesId.includes(device.baseProperties.id)
+    room.DevicesId.includes(device.baseProperties.id),
   ) as Device[];
   console.log(roomDevices);
   return roomDevices;
