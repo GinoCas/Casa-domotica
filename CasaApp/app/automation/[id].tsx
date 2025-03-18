@@ -48,7 +48,7 @@ export default function AutomationId() {
       const automation = getAutomationById(Number(id));
       if (automation) {
         setCurrentAutomation(automation);
-        setOriginalAutomation(originalAutomation);
+        setOriginalAutomation(automation);
       }
     };
     getAutomation();
@@ -57,7 +57,7 @@ export default function AutomationId() {
   const onChange = (
     value: "initTime" | "endTime",
     event: DateTimePickerEvent,
-    selectedDate?: Date,
+    selectedDate?: Date
   ) => {
     if (!currentAutomation) return;
     const newAutomationState = {
