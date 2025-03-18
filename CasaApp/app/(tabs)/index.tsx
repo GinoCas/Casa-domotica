@@ -23,11 +23,11 @@ export default function Home() {
         try {
           changeLoadingDevices(true);
           await bluetoothConnection.connectToDevice();
+          const devices = GetRoomDevices(roomName);
+          handleLoadDevices(devices);
         } catch (err) {
           console.log("Error on load devices", err);
         } finally {
-          const devices = GetRoomDevices(roomName);
-          handleLoadDevices(devices);
           changeLoadingDevices(false);
         }
       }
