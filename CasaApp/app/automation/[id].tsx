@@ -52,15 +52,13 @@ export default function AutomationId() {
       }
     };
     getAutomation();
-  }, [getAutomationById, id]);
+  }, [id]);
 
   const onChange = (
     value: "initTime" | "endTime",
     event: DateTimePickerEvent,
     selectedDate?: Date,
   ) => {
-    //! Revisar si puede ser undefined selectedDate
-    console.log(selectedDate);
     if (!currentAutomation) return;
     const newAutomationState = {
       ...currentAutomation,
@@ -119,7 +117,7 @@ export default function AutomationId() {
           <View style={styles.editContainer}>
             <TextInput
               style={styles.titleInput}
-              value={currentAutomation?.title}
+              value={currentAutomation.title}
               onChangeText={(text) =>
                 setCurrentAutomation({
                   ...currentAutomation,
