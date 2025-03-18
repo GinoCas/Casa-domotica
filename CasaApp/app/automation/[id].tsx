@@ -19,32 +19,24 @@ import {
 } from "@react-native-community/datetimepicker";
 import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
-import {
-  GetAutomationById,
-  GetAutomationDeviceList,
-  UpdateAutomation,
-} from "@/lib/automationTrigger";
 import { Automation } from "@/types/Automation";
 import { parseTimeString } from "@/Utils/parseTimeString";
+import useAutomationStore from "@/stores/useAutomationStore";
+import { getAutomationById } from "@/lib/automationController";
+import { getDeviceById } from "@/lib/deviceController";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams();
+  const { updateAutomation } = useAutomationStore();
 
   const [currentAutomation, setCurrentAutomation] = useState(() => {
-    return GetAutomationById(Number(id));
+    return getAutomationById(Number(id));
   });
 
   const [editMode, setEditMode] = useState(false);
   const [editedAutomation, setEditedAutomation] = useState({
     title: currentAutomation.title,
     description: currentAutomation.description,
-  });
-
-  const [devicesList, setDevicesList] = useState(() => {
-    if (!currentAutomation) {
-      return [];
-    }
-    return GetAutomationDeviceList(currentAutomation.id);
   });
 
   const [date, setDate] = useState({
@@ -55,7 +47,7 @@ export default function AutomationId() {
   const onChange = (
     value: "initTime" | "endTime",
     event: DateTimePickerEvent,
-    selectedDate?: Date,
+    selectedDate?: Date
   ) => {
     if (!currentAutomation) return;
     const currentDate = selectedDate || date[value];
@@ -64,7 +56,7 @@ export default function AutomationId() {
       ...currentAutomation,
       [value]: getTimeString(currentDate),
     };
-    UpdateAutomation(updatedAuto);
+    updateAutomation(updatedAuto);
   };
 
   const showTimepicker = (value: "initTime" | "endTime") => {
@@ -88,7 +80,7 @@ export default function AutomationId() {
       }),
     };
     setCurrentAutomation(updatedAuto);
-    UpdateAutomation(updatedAuto);
+    updateAutomation(updatedAuto);
   };
 
   const handleEdit = () => {
@@ -105,7 +97,7 @@ export default function AutomationId() {
     };
 
     setCurrentAutomation(updatedAuto);
-    UpdateAutomation(updatedAuto);
+    updateAutomation(updatedAuto);
     setEditMode(false);
   };
 
@@ -200,16 +192,16 @@ export default function AutomationId() {
       </View>
 
       <FlatList
-        data={devicesList}
-        keyExtractor={(device) => device.baseProperties.id.toString()}
+        data={currentAutomation.devices}
+        keyExtractor={(device) => device.id.toString()}
         numColumns={2}
         columnWrapperStyle={{
           justifyContent: "space-between",
         }}
         renderItem={({ item }) => (
           <DeviceCard
-            key={item.baseProperties.id}
-            device={item as Device}
+            key={item.id}
+            device={getDeviceById(item.id)}
             handleToogleEnabled={handleToggleEnabled}
           />
         )}

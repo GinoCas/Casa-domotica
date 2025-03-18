@@ -19,7 +19,7 @@ const useAutomationStore = create<AutomationState>()((set) => ({
       //saveToAutomationFile(newAutomation) # Se modifica el json
       return {
         ...state,
-        autiomations: [...automations, newAutomation],
+        automations: [...automations, newAutomation],
       };
     }),
 
@@ -31,7 +31,7 @@ const useAutomationStore = create<AutomationState>()((set) => ({
   updateAutomation: (updatedAuto) =>
     set((state) => {
       const updatedAutomations = state.automations.map((auto) =>
-        auto.id === updatedAuto.id ? { ...auto, ...updatedAuto } : auto,
+        auto.id === updatedAuto.id ? { ...auto, ...updatedAuto } : auto
       );
       return { automations: updatedAutomations };
     }),

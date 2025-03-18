@@ -20,8 +20,8 @@ export default function Home() {
         Automations 🤖
       </Text>
       <View style={{ gap: 8 }}>
-        {automations.map((aut, index) => (
-          <AutomationCard key={index} automation={aut} />
+        {automations.map((aut) => (
+          <AutomationCard key={aut.id} automation={aut} />
         ))}
       </View>
       <DottedButton

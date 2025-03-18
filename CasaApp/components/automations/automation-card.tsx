@@ -5,7 +5,7 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
 import { Link } from "expo-router";
 import { Automation } from "@/types/Automation";
-import { UpdateAutomation } from "@/lib/automationTrigger";
+import useAutomationStore from "@/stores/useAutomationStore";
 
 export default function AutomationCard({
   automation,
@@ -13,7 +13,7 @@ export default function AutomationCard({
   automation: Automation;
 }) {
   const [isEnabled, setIsEnabled] = useState(automation?.state);
-
+  const { updateAutomation } = useAutomationStore();
   return (
     <View
       style={[
@@ -31,7 +31,7 @@ export default function AutomationCard({
         <Switch
           toggleEnabled={() => {
             setIsEnabled(!isEnabled);
-            UpdateAutomation(automation);
+            updateAutomation(automation);
           }}
           isEnabled={isEnabled}
         />

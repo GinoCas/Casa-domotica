@@ -4,18 +4,18 @@ import { createDeviceDto } from "@/Utils/DeviceDtoFactory";
 import bluetoothConnection from "./bluetoothLE";
 import useModeStore from "@/stores/useModeStore";
 
-export function GetDeviceList(): Device[] {
+export function getDeviceList(): Device[] {
   return DevicesData as Device[];
 }
 
-export function GetDeviceById(id: number): Device {
+export function getDeviceById(id: number): Device {
   const deviceIndex = DevicesData.findIndex(
     (device) => device.baseProperties.id === id,
   );
   return DevicesData[deviceIndex] as Device;
 }
 
-export async function UpdateDevice(updatedDevice: Device) {
+export async function updateDevice(updatedDevice: Device) {
   const { saveEnergyMode } = useModeStore.getState();
   const deviceIndex = DevicesData.findIndex(
     (device) => device.baseProperties.id === updatedDevice.baseProperties.id,
@@ -38,15 +38,15 @@ export async function UpdateDevice(updatedDevice: Device) {
 }
 
 export async function UpdateAllDevices() {
-  GetDeviceList().forEach(async (device) => {
-    await UpdateDevice(device);
+  getDeviceList().forEach(async (device) => {
+    await updateDevice(device);
   });
   return;
 }
 
 export function GetLedList() {
   const list: Device[] = [];
-  GetDeviceList().forEach((device) => {
+  getDeviceList().forEach((device) => {
     if (device.deviceType === "Led" || device.deviceType === "Tv") {
       list.push(device);
     }
@@ -55,9 +55,9 @@ export function GetLedList() {
 }
 
 export async function UpdateAllLeds() {
-  GetDeviceList().forEach(async (device) => {
+  getDeviceList().forEach(async (device) => {
     if (device.deviceType === "Led" || device.deviceType === "Tv") {
-      await UpdateDevice(device);
+      await updateDevice(device);
     }
   });
   return;
