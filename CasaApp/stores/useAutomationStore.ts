@@ -1,5 +1,6 @@
 import { Automation } from "@/types/Automation";
 import { create } from "zustand";
+import AutomationsData from "@/stores/automations.json";
 
 interface AutomationState {
   automations: Automation[];
@@ -10,7 +11,7 @@ interface AutomationState {
 }
 
 const useAutomationStore = create<AutomationState>()((set) => ({
-  automations: [],
+  automations: AutomationsData,
   handleLoadAutomations: (newAutomations) =>
     set((state) => ({ ...state, automations: newAutomations })),
 
@@ -31,7 +32,7 @@ const useAutomationStore = create<AutomationState>()((set) => ({
   updateAutomation: (updatedAuto) =>
     set((state) => {
       const updatedAutomations = state.automations.map((auto) =>
-        auto.id === updatedAuto.id ? { ...auto, ...updatedAuto } : auto
+        auto.id === updatedAuto.id ? { ...auto, ...updatedAuto } : auto,
       );
       return { automations: updatedAutomations };
     }),

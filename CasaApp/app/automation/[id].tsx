@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Container } from "@/components/ui/container";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -21,51 +21,65 @@ import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
 import { Automation } from "@/types/Automation";
 import { parseTimeString } from "@/Utils/parseTimeString";
-import useAutomationStore from "@/stores/useAutomationStore";
-import { getAutomationById } from "@/lib/automationController";
+import useAutomation from "@/hooks/useAutomations";
 import { getDeviceById } from "@/lib/deviceController";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams();
-  const { updateAutomation } = useAutomationStore();
+  const { updateAutomation, getAutomationById } = useAutomation();
 
-  const [currentAutomation, setCurrentAutomation] = useState(() => {
-    return getAutomationById(Number(id));
+  const [currentAutomation, setCurrentAutomation] = useState<Automation>({
+    id: 0,
+    title: "",
+    description: "",
+    devices: [],
+    initTime: "",
+    endTime: "",
+    state: false,
   });
+
+  const [originalAutomation, setOriginalAutomation] =
+    useState<Automation | null>(null);
 
   const [editMode, setEditMode] = useState(false);
-  const [editedAutomation, setEditedAutomation] = useState({
-    title: currentAutomation.title,
-    description: currentAutomation.description,
-  });
 
-  const [date, setDate] = useState({
-    initTime: new Date(parseTimeString(currentAutomation.initTime)),
-    endTime: new Date(parseTimeString(currentAutomation.endTime)),
-  });
+  useEffect(() => {
+    const getAutomation = () => {
+      const automation = getAutomationById(Number(id));
+      if (automation) {
+        setCurrentAutomation(automation);
+        setOriginalAutomation(originalAutomation);
+      }
+    };
+    getAutomation();
+  }, [getAutomationById, id]);
 
   const onChange = (
     value: "initTime" | "endTime",
     event: DateTimePickerEvent,
-    selectedDate?: Date
+    selectedDate?: Date,
   ) => {
+    //! Revisar si puede ser undefined selectedDate
+    console.log(selectedDate);
     if (!currentAutomation) return;
-    const currentDate = selectedDate || date[value];
-    setDate({ ...date, [value]: currentDate });
-    const updatedAuto: Automation = {
+    const newAutomationState = {
       ...currentAutomation,
-      [value]: getTimeString(currentDate),
+      [value]: getTimeString(selectedDate as Date),
     };
-    updateAutomation(updatedAuto);
+    setCurrentAutomation(newAutomationState);
+    updateAutomation(newAutomationState);
   };
 
   const showTimepicker = (value: "initTime" | "endTime") => {
-    DateTimePickerAndroid.open({
-      value: date[value],
-      onChange: (e, date) => onChange(value, e, date),
-      mode: "time",
-      is24Hour: true,
-    });
+    if (currentAutomation) {
+      const date = parseTimeString(currentAutomation[value]);
+      DateTimePickerAndroid.open({
+        value: date,
+        onChange: (e, date) => onChange(value, e, date),
+        mode: "time",
+        is24Hour: true,
+      });
+    }
   };
 
   const handleToggleEnabled = (device: Device, newState: boolean) => {
@@ -89,23 +103,12 @@ export default function AutomationId() {
 
   const handleSave = () => {
     if (!currentAutomation) return;
-
-    const updatedAuto: Automation = {
-      ...currentAutomation,
-      title: editedAutomation.title,
-      description: editedAutomation.description,
-    };
-
-    setCurrentAutomation(updatedAuto);
-    updateAutomation(updatedAuto);
+    updateAutomation(currentAutomation);
     setEditMode(false);
   };
 
   const handleCancel = () => {
-    setEditedAutomation({
-      title: currentAutomation.title,
-      description: currentAutomation.description,
-    });
+    setCurrentAutomation(originalAutomation as Automation);
     setEditMode(false);
   };
 
@@ -116,17 +119,23 @@ export default function AutomationId() {
           <View style={styles.editContainer}>
             <TextInput
               style={styles.titleInput}
-              value={editedAutomation.title}
+              value={currentAutomation?.title}
               onChangeText={(text) =>
-                setEditedAutomation({ ...editedAutomation, title: text })
+                setCurrentAutomation({
+                  ...currentAutomation,
+                  title: text,
+                })
               }
               placeholder="Title"
             />
             <TextInput
               style={styles.descriptionInput}
-              value={editedAutomation.description}
+              value={currentAutomation.description}
               onChangeText={(text) =>
-                setEditedAutomation({ ...editedAutomation, description: text })
+                setCurrentAutomation({
+                  ...currentAutomation,
+                  description: text,
+                })
               }
               placeholder="Description"
               multiline
@@ -146,7 +155,7 @@ export default function AutomationId() {
         ) : (
           <View>
             <View style={styles.titleContainer}>
-              <Text style={styles.title}>{currentAutomation.title}</Text>
+              <Text style={styles.title}>{currentAutomation?.title}</Text>
               <TouchableOpacity onPress={handleEdit}>
                 <FontAwesome5
                   name="edit"
@@ -156,7 +165,7 @@ export default function AutomationId() {
               </TouchableOpacity>
             </View>
             <Text style={styles.description}>
-              {currentAutomation.description}
+              {currentAutomation?.description}
             </Text>
           </View>
         )}
@@ -169,7 +178,7 @@ export default function AutomationId() {
             onPress={() => showTimepicker("initTime")}
           >
             <Text style={{ color: "#fff" }}>
-              Inicio: {getTimeString(date.initTime)}
+              Inicio: {currentAutomation?.initTime}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -177,7 +186,7 @@ export default function AutomationId() {
             onPress={() => showTimepicker("endTime")}
           >
             <Text style={{ color: "#fff" }}>
-              Fin: {getTimeString(date.endTime)}
+              Fin: {currentAutomation?.endTime}
             </Text>
           </TouchableOpacity>
         </View>
@@ -188,11 +197,11 @@ export default function AutomationId() {
 
       <View style={styles.devicesHeader}>
         <Text style={{ fontWeight: "600" }}>Devices </Text>
-        <Chip text={currentAutomation.devices.length.toString()} />
+        <Chip text={currentAutomation?.devices.length.toString() || "0"} />
       </View>
 
       <FlatList
-        data={currentAutomation.devices}
+        data={currentAutomation?.devices}
         keyExtractor={(device) => device.id.toString()}
         numColumns={2}
         columnWrapperStyle={{

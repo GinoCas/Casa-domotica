@@ -4,16 +4,11 @@ import DottedButton from "@/components/ui/dotted-button";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import { Text, View } from "react-native";
-import AutomationsData from "@/stores/automations.json";
-import useAutomationStore from "@/stores/useAutomationStore";
-import { useEffect } from "react";
+import useAutomation from "@/hooks/useAutomations";
 
 export default function Home() {
-  const { automations, handleLoadAutomations } = useAutomationStore();
+  const { automations } = useAutomation();
 
-  useEffect(() => {
-    handleLoadAutomations(AutomationsData);
-  }, []);
   return (
     <Container>
       <Text style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
