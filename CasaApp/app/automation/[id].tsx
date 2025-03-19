@@ -25,21 +25,16 @@ import useAutomation from "@/hooks/useAutomations";
 import { getDeviceById } from "@/lib/deviceController";
 
 export default function AutomationId() {
-  const { id } = useLocalSearchParams();
+  const { id, initialAuto } = useLocalSearchParams();
   const { updateAutomation, getAutomationById } = useAutomation();
 
-  const [currentAutomation, setCurrentAutomation] = useState<Automation>({
-    id: 0,
-    title: "",
-    description: "",
-    devices: [],
-    initTime: "",
-    endTime: "",
-    state: false,
-  });
+  const [currentAutomation, setCurrentAutomation] = useState<Automation>(
+    JSON.parse(initialAuto as string),
+  );
 
-  const [originalAutomation, setOriginalAutomation] =
-    useState<Automation | null>(null);
+  const [originalAutomation, setOriginalAutomation] = useState<Automation>(
+    JSON.parse(initialAuto as string),
+  );
 
   const [editMode, setEditMode] = useState(false);
 
@@ -57,7 +52,7 @@ export default function AutomationId() {
   const onChange = (
     value: "initTime" | "endTime",
     event: DateTimePickerEvent,
-    selectedDate?: Date
+    selectedDate?: Date,
   ) => {
     if (!currentAutomation) return;
     const newAutomationState = {

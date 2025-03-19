@@ -1,16 +1,17 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import GlobalStyles from "@/Utils/globalStyles";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
-import { Link } from "expo-router";
 import { Automation } from "@/types/Automation";
 import useAutomationStore from "@/stores/useAutomationStore";
 
 export default function AutomationCard({
   automation,
+  onPress,
 }: {
   automation: Automation;
+  onPress: () => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(automation?.state);
   const { updateAutomation } = useAutomationStore();
@@ -35,7 +36,7 @@ export default function AutomationCard({
           }}
           isEnabled={isEnabled}
         />
-        <Link
+        <TouchableOpacity
           style={{
             backgroundColor: GlobalStyles.enabledColor,
             paddingHorizontal: 16,
@@ -44,12 +45,12 @@ export default function AutomationCard({
             justifyContent: "center",
             alignItems: "center",
           }}
-          href={`/automation/${automation.id}`}
+          onPress={onPress}
         >
           <Text>
             <FontAwesome5 name="chevron-right" size={20} color="#fff" />
           </Text>
-        </Link>
+        </TouchableOpacity>
       </View>
     </View>
   );
