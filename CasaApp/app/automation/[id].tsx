@@ -1,57 +1,45 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
-import { Container } from "@/components/ui/container";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { Chip } from "@/components/ui/chip";
-import { DeviceCard } from "@/components/room/device-card";
-import Device from "@/types/Device";
 import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { useLocalSearchParams } from "expo-router";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { Container } from "@/components/ui/container";
+import { Chip } from "@/components/ui/chip";
+import { DeviceCard } from "@/components/room/device-card";
+import AutomationHeader from "@/components/automations/automation-header";
 import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
-import { Automation } from "@/types/Automation";
 import { parseTimeString } from "@/Utils/parseTimeString";
-import useAutomation from "@/hooks/useAutomations";
 import { getDeviceById } from "@/lib/deviceController";
+import useAutomation from "@/hooks/useAutomations";
+import { Automation } from "@/types/Automation";
+import Device from "@/types/Device";
 
 export default function AutomationId() {
-  const { id, initialAuto } = useLocalSearchParams();
-  const { updateAutomation, getAutomationById } = useAutomation();
+  const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
+  const { updateAutomation } = useAutomation();
 
   const [currentAutomation, setCurrentAutomation] = useState<Automation>(
-    JSON.parse(initialAuto as string),
+    JSON.parse(initialAuto),
   );
 
-  const [originalAutomation, setOriginalAutomation] = useState<Automation>(
-    JSON.parse(initialAuto as string),
+  const originalAutomation: Automation = useMemo(
+    () => JSON.parse(initialAuto),
+    [initialAuto],
   );
 
-  const [editMode, setEditMode] = useState(false);
-
-  useEffect(() => {
-    const getAutomation = () => {
-      const automation = getAutomationById(Number(id));
-      if (automation) {
-        setCurrentAutomation(automation);
-        setOriginalAutomation(automation);
-      }
-    };
-    getAutomation();
-  }, [id]);
-
-  const onChange = (
+  const onChangeDate = (
     value: "initTime" | "endTime",
-    event: DateTimePickerEvent,
+    _: DateTimePickerEvent,
     selectedDate?: Date,
   ) => {
     if (!currentAutomation) return;
@@ -68,101 +56,53 @@ export default function AutomationId() {
       const date = parseTimeString(currentAutomation[value]);
       DateTimePickerAndroid.open({
         value: date,
-        onChange: (e, date) => onChange(value, e, date),
+        onChange: (e, date) => onChangeDate(value, e, date),
         mode: "time",
         is24Hour: true,
       });
     }
   };
 
-  const handleToggleEnabled = (device: Device, newState: boolean) => {
+  const handleToggleEnabled = (selectedDevice: Device, newState: boolean) => {
     if (!currentAutomation) return;
+
+    const updatedDevices = currentAutomation.devices.map((device) => {
+      if (device.id === selectedDevice.baseProperties.id) {
+        return { ...device, state: !newState };
+      }
+      return device;
+    });
+
     const updatedAuto: Automation = {
       ...currentAutomation,
-      devices: currentAutomation.devices.map((d) => {
-        if (d.id === device.baseProperties.id) {
-          return { ...d, state: !newState };
-        }
-        return d;
-      }),
+      devices: updatedDevices,
     };
     setCurrentAutomation(updatedAuto);
     updateAutomation(updatedAuto);
   };
 
-  const handleEdit = () => {
-    setEditMode(true);
-  };
-
   const handleSave = () => {
     if (!currentAutomation) return;
     updateAutomation(currentAutomation);
-    setEditMode(false);
   };
 
-  const handleCancel = () => {
-    setCurrentAutomation(originalAutomation as Automation);
-    setEditMode(false);
+  const handleCancel = () => setCurrentAutomation(originalAutomation);
+
+  const handleChangeText = (key: "title" | "description", value: string) => {
+    setCurrentAutomation({
+      ...currentAutomation,
+      [key]: value,
+    });
   };
 
   return (
     <Container>
-      <View style={styles.headerContainer}>
-        {editMode ? (
-          <View style={styles.editContainer}>
-            <TextInput
-              style={styles.titleInput}
-              value={currentAutomation.title}
-              onChangeText={(text) =>
-                setCurrentAutomation({
-                  ...currentAutomation,
-                  title: text,
-                })
-              }
-              placeholder="Title"
-            />
-            <TextInput
-              style={styles.descriptionInput}
-              value={currentAutomation.description}
-              onChangeText={(text) =>
-                setCurrentAutomation({
-                  ...currentAutomation,
-                  description: text,
-                })
-              }
-              placeholder="Description"
-              multiline
-            />
-            <View style={styles.editButtonsContainer}>
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.buttonText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={handleCancel}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <View>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>{currentAutomation?.title}</Text>
-              <TouchableOpacity onPress={handleEdit}>
-                <FontAwesome5
-                  name="edit"
-                  size={20}
-                  color={GlobalStyles.enabledColor}
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.description}>
-              {currentAutomation?.description}
-            </Text>
-          </View>
-        )}
-      </View>
+      <AutomationHeader
+        handleCancel={handleCancel}
+        handleSave={handleSave}
+        currentAutomation={currentAutomation}
+        handleChangeText={handleChangeText}
+      />
 
       <View style={styles.timeContainer}>
         <View style={styles.timeButtonsContainer}>
@@ -171,7 +111,7 @@ export default function AutomationId() {
             onPress={() => showTimepicker("initTime")}
           >
             <Text style={{ color: "#fff" }}>
-              Inicio: {currentAutomation?.initTime}
+              Inicio: {currentAutomation.initTime}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -179,7 +119,7 @@ export default function AutomationId() {
             onPress={() => showTimepicker("endTime")}
           >
             <Text style={{ color: "#fff" }}>
-              Fin: {currentAutomation?.endTime}
+              Fin: {currentAutomation.endTime}
             </Text>
           </TouchableOpacity>
         </View>
@@ -188,13 +128,13 @@ export default function AutomationId() {
         </Text>
       </View>
 
-      <View style={styles.devicesHeader}>
+      <View style={styles.devicesContainer}>
         <Text style={{ fontWeight: "600" }}>Devices </Text>
-        <Chip text={currentAutomation?.devices.length.toString() || "0"} />
+        <Chip text={currentAutomation.devices.length.toString() || "0"} />
       </View>
 
       <FlatList
-        data={currentAutomation?.devices}
+        data={currentAutomation.devices}
         keyExtractor={(device) => device.id.toString()}
         numColumns={2}
         columnWrapperStyle={{
@@ -213,63 +153,6 @@ export default function AutomationId() {
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    marginBottom: 12,
-  },
-  titleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-  },
-  description: {
-    color: "#a6a6a6",
-    marginVertical: 4,
-  },
-  editContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  titleInput: {
-    fontSize: 20,
-    fontWeight: "600",
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-  },
-  descriptionInput: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    minHeight: 60,
-  },
-  editButtonsContainer: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  saveButton: {
-    backgroundColor: GlobalStyles.enabledColor,
-    padding: 8,
-    borderRadius: 8,
-    alignItems: "center",
-    flex: 1,
-  },
-  cancelButton: {
-    backgroundColor: GlobalStyles.disabledColor,
-    padding: 8,
-    borderRadius: 8,
-    alignItems: "center",
-    flex: 1,
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
-  },
   timeContainer: {
     flexDirection: "row",
     gap: 4,
@@ -287,8 +170,8 @@ const styles = StyleSheet.create({
     backgroundColor: GlobalStyles.enabledColor,
     borderRadius: 10,
   },
-  devicesHeader: {
+  devicesContainer: {
     flexDirection: "row",
-    paddingVertical: 16,
+    paddingVertical: 8,
   },
 });
