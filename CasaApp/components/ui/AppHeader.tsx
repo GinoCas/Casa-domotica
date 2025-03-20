@@ -39,7 +39,7 @@ export default function AppHeader() {
       }
     };
     getAllRoms();
-  }, [changeCurrentRoom, changeLoadingRooms, rooms]);
+  }, [changeCurrentRoom, changeLoadingRooms]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
