@@ -77,6 +77,7 @@ export default function AutomationId() {
       ...currentAutomation,
       devices: updatedDevices,
     };
+
     setCurrentAutomation(updatedAuto);
     updateAutomation(updatedAuto);
   };
@@ -127,7 +128,6 @@ export default function AutomationId() {
           <FontAwesome5 name="clock" size={16} color="black" />
         </Text>
       </View>
-
       <View style={styles.devicesContainer}>
         <Text style={{ fontWeight: "600" }}>Devices </Text>
         <Chip text={currentAutomation.devices.length.toString() || "0"} />
@@ -140,13 +140,22 @@ export default function AutomationId() {
         columnWrapperStyle={{
           justifyContent: "space-between",
         }}
-        renderItem={({ item }) => (
-          <DeviceCard
-            key={item.id}
-            device={getDeviceById(item.id)}
-            handleToogleEnabled={handleToggleEnabled}
-          />
-        )}
+        renderItem={({ item }) => {
+          const currentDevice = getDeviceById(item.id);
+          return (
+            <DeviceCard
+              key={item.id}
+              device={{
+                ...currentDevice,
+                baseProperties: {
+                  ...currentDevice.baseProperties,
+                  state: item.state,
+                },
+              }}
+              handleToogleEnabled={handleToggleEnabled}
+            />
+          );
+        }}
       />
     </Container>
   );
