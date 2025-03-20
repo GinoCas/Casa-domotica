@@ -1,4 +1,4 @@
-import { BleManager, Characteristic, Device } from "react-native-ble-plx";
+import { BleManager, Device } from "react-native-ble-plx";
 import { PermissionsAndroid } from "react-native";
 import { UpdateAllDevices } from "./deviceController";
 

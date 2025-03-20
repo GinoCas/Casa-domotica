@@ -18,7 +18,7 @@ export default function TabsLayout() {
     if (!isHearing && isModalOpen) {
       setisModalOpen(false);
     }
-  }, [isHearing]);
+  }, [isHearing, isModalOpen]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

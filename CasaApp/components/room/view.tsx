@@ -6,15 +6,14 @@ import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import DottedButton from "../ui/dotted-button";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
-import { GetDeviceById, UpdateDevice } from "@/lib/deviceController";
+import { getDeviceById, updateDevice } from "@/lib/deviceController";
 import useModeStore from "@/stores/useModeStore";
 
 export function RoomView({
-  /*   roomName, */
   devices,
   isLoadingDevices,
 }: {
@@ -22,36 +21,37 @@ export function RoomView({
   devices: Device[];
   isLoadingDevices: boolean;
 }) {
-  const { saveEnergyMode, changeSaveEnergyMode } = useModeStore();
+  const { changeSaveEnergyMode } = useModeStore();
   const [isModalOpen, setisModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const openBrightnessModal = (device: Device) => {
     if (device.deviceType === "Led") {
-      setSelectedDevice(GetDeviceById(device.baseProperties.id));
+      setSelectedDevice(getDeviceById(device.baseProperties.id));
       setisModalOpen(true);
     }
   };
   const handleBrightnessChange = useCallback(
-    debounce((value) => {
-      if (selectedDevice) {
-        const newLedState = {
-          ...selectedDevice,
-          baseProperties: {
-            ...selectedDevice.baseProperties,
-          },
-          brightness: value,
-        };
-        changeSaveEnergyMode(false);
-        UpdateDevice(newLedState);
-      }
-    }, 300),
-    [selectedDevice],
+    (value: number) =>
+      debounce((value) => {
+        if (selectedDevice) {
+          const newLedState = {
+            ...selectedDevice,
+            baseProperties: {
+              ...selectedDevice.baseProperties,
+            },
+            brightness: value,
+          };
+          changeSaveEnergyMode(false);
+          updateDevice(newLedState);
+        }
+      }, 300),
+    [selectedDevice, changeSaveEnergyMode],
   );
 
   const handleToggleEnabled = async (device: Device, newState: boolean) => {
-    const getDevice = GetDeviceById(device.baseProperties.id);
+    const getDevice = getDeviceById(device.baseProperties.id);
     getDevice.baseProperties.state = !newState;
-    await UpdateDevice(getDevice);
+    await updateDevice(getDevice);
   };
 
   return (

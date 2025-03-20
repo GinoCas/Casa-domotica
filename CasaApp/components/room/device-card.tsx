@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Switch } from "../ui/switch";
 import GlobalStyles from "@/Utils/globalStyles";
 import Device, { DeviceType } from "@/types/Device";

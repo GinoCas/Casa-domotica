@@ -2,7 +2,7 @@ import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
 import bluetoothConnection from "@/lib/bluetoothLE";
-import { GetRoomDevices } from "@/lib/roomController";
+import { getRoomDevices } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
 import useSpeechStore from "@/stores/useSpeechStore";
 import { useEffect } from "react";
@@ -18,12 +18,12 @@ export default function Home() {
   } = useRoomStore();
   const { results, voice, cmdVoice } = useSpeechStore();
   useEffect(() => {
-    const getRoomDevices = async () => {
+    const getDevicesOfRoom = async () => {
       if (roomName) {
         try {
           changeLoadingDevices(true);
           await bluetoothConnection.connectToDevice();
-          const devices = GetRoomDevices(roomName);
+          const devices = getRoomDevices(roomName);
           handleLoadDevices(devices);
         } catch (err) {
           console.log("Error on load devices", err);
@@ -32,7 +32,7 @@ export default function Home() {
         }
       }
     };
-    getRoomDevices();
+    getDevicesOfRoom();
   }, [changeLoadingDevices, roomName, handleLoadDevices]);
   return (
     <Container>

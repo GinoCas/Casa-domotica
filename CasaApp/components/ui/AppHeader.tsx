@@ -2,14 +2,14 @@ import { Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect } from "react";
-import { GetRoomsList } from "@/lib/roomController";
+import { getRoomsList } from "@/lib/roomController";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 import { Feather } from "@expo/vector-icons";
 import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
 import { UpdateAllLeds } from "@/lib/deviceController";
-import { TurnOnLedRandom } from "@/Utils/GeneralCommands";
+import { turnOnLedRandom } from "@/Utils/GeneralCommands";
 
 export default function AppHeader() {
   const {
@@ -18,7 +18,7 @@ export default function AppHeader() {
     changeSaveEnergyMode,
     changeActivityMode,
   } = useModeStore();
-  const rooms: string[] = GetRoomsList();
+  const rooms: string[] = getRoomsList();
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
   const toggleEnergySaveMode = () => {
@@ -39,14 +39,14 @@ export default function AppHeader() {
       }
     };
     getAllRoms();
-  }, [changeCurrentRoom, changeLoadingRooms]);
+  }, [changeCurrentRoom, changeLoadingRooms, rooms]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (activityMode) {
-      TurnOnLedRandom();
+      turnOnLedRandom();
       interval = setInterval(() => {
-        TurnOnLedRandom();
+        turnOnLedRandom();
       }, 10000);
     }
 

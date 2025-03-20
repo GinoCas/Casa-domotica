@@ -2,19 +2,17 @@ import { Text, View } from "react-native";
 import Voice from "@react-native-voice/voice";
 import { useEffect, useState } from "react";
 import {
-  ToggleTv,
-  TurnOffAllLedsOfRoom,
-  TurnOnAllLedsOfRoom,
+  toggleTv,
+  turnOffAllLedsOfRoom,
+  turnOnAllLedsOfRoom,
 } from "@/Utils/GeneralCommands";
 import useSpeechStore from "@/stores/useSpeechStore";
-import { GetDeviceById } from "@/lib/deviceController";
 
 export default function SpeechToText() {
   const {
     isHearing,
     isSpeaking,
     results,
-    voice,
     changeHearing,
     changeSpeaking,
     handleLoadResults,
@@ -30,7 +28,7 @@ export default function SpeechToText() {
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
-  }, []);
+  });
 
   const startHearing = async () => {
     await Voice.start("es-ES");
@@ -219,17 +217,17 @@ export default function SpeechToText() {
     switch (action) {
       case "on":
         if (device === "tv") {
-          ToggleTv(true);
+          toggleTv(true);
           return;
         }
-        TurnOnAllLedsOfRoom(location);
+        turnOnAllLedsOfRoom(location);
         break;
       case "off":
         if (device === "tv") {
-          ToggleTv(false);
+          toggleTv(false);
           return;
         }
-        TurnOffAllLedsOfRoom(location);
+        turnOffAllLedsOfRoom(location);
         break;
       default:
         console.log("Acción no reconocida");
