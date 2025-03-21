@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/container";
 import DottedButton from "@/components/ui/dotted-button";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
-import { Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import useAutomation from "@/hooks/useAutomations";
 import { useRouter } from "expo-router";
 
@@ -23,14 +23,19 @@ export default function Home() {
       <Text style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
         Automations 🤖
       </Text>
-      <View style={{ gap: 8 }}>
-        {automations.map((aut) => (
-          <AutomationCard
-            key={aut.id}
-            automation={aut}
-            onPress={() => handleAutomationPress(aut.id)}
-          />
-        ))}
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={automations}
+          keyExtractor={(automation) => automation.id.toString()}
+          renderItem={({ item }) => (
+            <AutomationCard
+              onPress={() => handleAutomationPress(item.id)}
+              key={item.id}
+              automation={item}
+            />
+          )}
+          contentContainerStyle={{ gap: 8 }}
+        />
       </View>
       <DottedButton
         label="Add Automation"
