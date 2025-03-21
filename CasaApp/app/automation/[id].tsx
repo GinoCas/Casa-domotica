@@ -10,7 +10,7 @@ import {
   DateTimePickerAndroid,
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Container } from "@/components/ui/container";
 import { Chip } from "@/components/ui/chip";
@@ -26,7 +26,7 @@ import Device from "@/types/Device";
 
 export default function AutomationId() {
   const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
-  const { updateAutomation } = useAutomation();
+  const { updateAutomation, deleteAutomation } = useAutomation();
 
   const [currentAutomation, setCurrentAutomation] = useState<Automation>(
     JSON.parse(initialAuto),
@@ -89,6 +89,12 @@ export default function AutomationId() {
 
   const handleCancel = () => setCurrentAutomation(originalAutomation);
 
+  const handleDelete = () => {
+    if (!currentAutomation) return;
+    deleteAutomation(currentAutomation.id);
+    router.back();
+  };
+
   const handleChangeText = (key: "title" | "description", value: string) => {
     setCurrentAutomation({
       ...currentAutomation,
@@ -101,6 +107,7 @@ export default function AutomationId() {
       <AutomationHeader
         handleCancel={handleCancel}
         handleSave={handleSave}
+        handleDelete={handleDelete}
         currentAutomation={currentAutomation}
         handleChangeText={handleChangeText}
       />

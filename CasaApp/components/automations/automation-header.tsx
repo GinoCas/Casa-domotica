@@ -4,6 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -14,6 +15,7 @@ interface Props {
   currentAutomation: Automation;
   handleSave: () => void;
   handleCancel: () => void;
+  handleDelete: () => void;
   handleChangeText: (key: "title" | "description", value: string) => void;
 }
 
@@ -21,12 +23,31 @@ const AutomationHeader = ({
   currentAutomation,
   handleCancel,
   handleSave,
+  handleDelete,
   handleChangeText,
 }: Props) => {
   const [editMode, setEditMode] = useState(false);
 
   const handleEdit = () => {
     setEditMode(true);
+  };
+
+  const handleDeleteHeader = () => {
+    Alert.alert(
+      "Eliminar automatización",
+      `¿Estás seguro que deseas eliminar "${currentAutomation.title}"?`,
+      [
+        {
+          text: "Cancelar",
+        },
+        {
+          text: "Eliminar",
+          onPress: () => {
+            handleDelete();
+          },
+        },
+      ],
+    );
   };
 
   const handleSaveHeader = () => {
@@ -81,13 +102,22 @@ const AutomationHeader = ({
         <View>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{currentAutomation.title}</Text>
-            <TouchableOpacity onPress={handleEdit}>
-              <FontAwesome5
-                name="edit"
-                size={20}
-                color={GlobalStyles.enabledColor}
-              />
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={handleEdit}>
+                <FontAwesome5
+                  name="edit"
+                  size={20}
+                  color={GlobalStyles.enabledColor}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDeleteHeader}>
+                <FontAwesome5
+                  name="trash"
+                  size={20}
+                  color={GlobalStyles.enabledColor}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
           <Text style={styles.description}>
             {currentAutomation.description}
@@ -137,6 +167,10 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontWeight: "600",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 20,
   },
   editContainer: {
     gap: 8,
