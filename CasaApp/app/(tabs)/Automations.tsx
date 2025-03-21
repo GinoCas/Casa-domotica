@@ -8,11 +8,14 @@ import useAutomation from "@/hooks/useAutomations";
 import { useRouter } from "expo-router";
 
 export default function Home() {
-  const { automations, getAutomationById } = useAutomation();
+  const { automations, getAutomationById, createAutomation } = useAutomation();
   const router = useRouter();
 
   const handleAutomationPress = (automationId: number) => {
-    const automation = getAutomationById(automationId);
+    const automation =
+      automationId === -1
+        ? createAutomation()
+        : getAutomationById(automationId);
     router.push({
       pathname: `/automation/${automationId}`,
       params: { initialAuto: JSON.stringify(automation) },
@@ -42,6 +45,7 @@ export default function Home() {
         icon={
           <Feather name="plus" size={24} color={GlobalStyles.enabledColor} />
         }
+        onPress={() => handleAutomationPress(-1)}
       />
     </Container>
   );

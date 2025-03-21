@@ -16,7 +16,7 @@ function triggerAutomation(auto: Automation, end: boolean) {
 
 export default function useAutomation() {
   const {
-    addAutomation,
+    createAutomation,
     automations,
     deleteAutomation,
     handleLoadAutomations,
@@ -43,7 +43,7 @@ export default function useAutomation() {
   };
 
   return {
-    addAutomation,
+    createAutomation,
     automations,
     deleteAutomation,
     updateAutomation,
