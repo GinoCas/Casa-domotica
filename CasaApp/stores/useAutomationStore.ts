@@ -14,12 +14,12 @@ interface AutomationState {
 
 const useAutomationStore = create<AutomationState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       automations: AutomationsData,
       handleLoadAutomations: (newAutomations) =>
         set((state) => ({ ...state, automations: newAutomations })),
       createAutomation: () => {
-        const { automations } = useAutomationStore.getState();
+        const automations = get().automations;
         const autoId = Math.max(0, ...automations.map((auto) => auto.id)) + 1;
         const template: Automation = {
           id: autoId + 1,
