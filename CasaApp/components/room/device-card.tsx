@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
 import GlobalStyles from "@/Utils/globalStyles";
-import Device, { DeviceType } from "@/types/Device";
+import { DeviceType, Device } from "@/types/Device";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -17,7 +17,7 @@ export function DeviceCard({
   onPressAction?: () => void;
   handleToogleEnabled: (device: Device, newState: boolean) => void;
 }) {
-  const [isEnabled, setIsEnabled] = useState(device.baseProperties.state);
+  const [isEnabled, setIsEnabled] = useState(device.state);
   const toggleEnabled = async () => {
     setIsEnabled(!isEnabled);
     handleToogleEnabled(device, isEnabled);
@@ -66,7 +66,7 @@ export function DeviceCard({
             borderRadius: 100,
           }}
         >
-          {renderIcon(device.deviceType)}
+          {renderIcon(device.type)}
         </TouchableOpacity>
         <View
           style={{ justifyContent: "center", alignItems: "center", gap: 8 }}
@@ -93,7 +93,7 @@ export function DeviceCard({
                   : GlobalStyles.disabledColor,
               }}
             >
-              {device.baseProperties.voltage}
+              {device.voltage}
             </Text>
             <FontAwesome6
               name="bolt-lightning"
@@ -107,7 +107,7 @@ export function DeviceCard({
           </View>
         </View>
       </View>
-      <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.deviceType}</Text>
+      <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.type}</Text>
       <View
         style={{
           flexDirection: "row",

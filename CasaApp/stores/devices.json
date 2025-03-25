@@ -1,112 +1,92 @@
 [
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 2,
-      "pin": 2,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 2,
+    "pin": 2,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 3,
-      "pin": 3,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 3,
+    "pin": 3,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 4,
-      "pin": 4,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 4,
+    "pin": 4,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 5,
-      "pin": 5,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 5,
+    "pin": 5,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Tv",
-    "baseProperties": {
-      "id": 6,
-      "pin": 6,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Tv",
+    "id": 6,
+    "pin": 6,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 7,
-      "pin": 7,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 7,
+    "pin": 7,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 8,
-      "pin": 8,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 8,
+    "pin": 8,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 9,
-      "pin": 9,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 9,
+    "pin": 9,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 12,
-      "pin": 12,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 12,
+    "pin": 12,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   },
   {
-    "deviceType": "Led",
-    "baseProperties": {
-      "id": 13,
-      "pin": 13,
-      "state": false,
-      "voltage": 3.3,
-      "amperes": 0.02
-    },
+    "type": "Led",
+    "id": 13,
+    "pin": 13,
+    "state": false,
+    "voltage": 3.3,
+    "amperes": 0.02,
     "brightness": 255
   }
 ]

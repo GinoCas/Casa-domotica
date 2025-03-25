@@ -1,15 +1,16 @@
-import { getDeviceById, updateDevice } from "@/lib/deviceController";
 import useAutomationStore from "@/stores/useAutomationStore";
+import useDeviceStore from "@/stores/useDeviceStore";
 import useModeStore from "@/stores/useModeStore";
 import { Automation } from "@/types/Automation";
 
 function triggerAutomation(auto: Automation, end: boolean) {
+  const { getDeviceById, updateDevice } = useDeviceStore.getState();
   auto.devices.forEach((newDevice) => {
-    let device = getDeviceById(newDevice.id);
-    if (end && device.baseProperties.state === false) {
+    const device = getDeviceById(newDevice.id);
+    if (!device || (end && device.state === false)) {
       return;
     }
-    device.baseProperties.state = end ? !newDevice.state : newDevice.state;
+    device.state = end ? !newDevice.state : newDevice.state;
     updateDevice(device);
   });
 }

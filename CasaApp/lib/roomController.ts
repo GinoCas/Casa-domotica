@@ -1,5 +1,5 @@
 import Room from "@/types/Room";
-import Device from "@/types/Device";
+import { Device } from "@/types/Device";
 import RoomData from "@/stores/rooms.json";
 import { getDeviceList } from "./deviceController";
 
@@ -17,7 +17,7 @@ export function getRoomByName(roomName: string): Room {
 export function getRoomDevices(roomName: string): Device[] {
   const room = getRoomByName(roomName);
   const roomDevices = getDeviceList().filter((device) =>
-    room.DevicesId.includes(device.baseProperties.id),
+    room.DevicesId.includes(device.id),
   );
   console.log(roomDevices);
   return roomDevices;

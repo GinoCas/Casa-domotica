@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
-import Device from "@/types/Device";
+import { Device } from "@/types/Device";
 import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
@@ -10,8 +10,8 @@ import { useCallback, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
-import { getDeviceById, updateDevice } from "@/lib/deviceController";
 import useModeStore from "@/stores/useModeStore";
+import useDeviceStore from "@/stores/useDeviceStore";
 
 export function RoomView({
   devices,
@@ -21,36 +21,37 @@ export function RoomView({
   devices: Device[];
   isLoadingDevices: boolean;
 }) {
+  const { getDeviceById, updateDevice } = useDeviceStore();
+  const [selectedDevice, setSelectedDevice] = useState<Device>();
   const { changeSaveEnergyMode } = useModeStore();
   const [isModalOpen, setisModalOpen] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+
   const openBrightnessModal = (device: Device) => {
-    if (device.deviceType === "Led") {
-      setSelectedDevice(getDeviceById(device.baseProperties.id));
+    if (device.type === "Led") {
+      setSelectedDevice(getDeviceById(device.id));
       setisModalOpen(true);
     }
   };
+
   const handleBrightnessChange = useCallback(
     (value: number) =>
       debounce((value) => {
         if (selectedDevice) {
           const newLedState = {
             ...selectedDevice,
-            baseProperties: {
-              ...selectedDevice.baseProperties,
-            },
             brightness: value,
           };
           changeSaveEnergyMode(false);
           updateDevice(newLedState);
         }
       }, 300),
-    [selectedDevice, changeSaveEnergyMode],
+    [selectedDevice, changeSaveEnergyMode, updateDevice],
   );
 
   const handleToggleEnabled = async (device: Device, newState: boolean) => {
-    const getDevice = getDeviceById(device.baseProperties.id);
-    getDevice.baseProperties.state = !newState;
+    const getDevice = getDeviceById(device.id);
+    if (!getDevice) return;
+    getDevice.state = !newState;
     await updateDevice(getDevice);
   };
 
@@ -74,7 +75,7 @@ export function RoomView({
           </View>
           <FlatList
             data={devices}
-            keyExtractor={(device) => device.baseProperties.id.toString()}
+            keyExtractor={(device) => device.id.toString()}
             numColumns={2}
             columnWrapperStyle={{
               justifyContent: "space-between",
@@ -82,7 +83,7 @@ export function RoomView({
             renderItem={({ item, index }) => (
               <DeviceCard
                 handleToogleEnabled={handleToggleEnabled}
-                key={item.baseProperties.id}
+                key={item.id}
                 device={item}
                 onPressAction={() => openBrightnessModal(item)}
               />

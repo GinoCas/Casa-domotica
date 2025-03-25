@@ -19,12 +19,13 @@ import AutomationHeader from "@/components/automations/automation-header";
 import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
 import { parseTimeString } from "@/Utils/parseTimeString";
-import { getDeviceById } from "@/lib/deviceController";
 import useAutomation from "@/hooks/useAutomations";
 import { Automation } from "@/types/Automation";
-import Device from "@/types/Device";
+import { Device } from "@/types/Device";
+import useDeviceStore from "@/stores/useDeviceStore";
 
 export default function AutomationId() {
+  const { getDeviceById } = useDeviceStore();
   const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
   const { updateAutomation, deleteAutomation } = useAutomation();
 
@@ -65,7 +66,6 @@ export default function AutomationId() {
 
   const handleToggleEnabled = (selectedDevice: Device, newState: boolean) => {
     if (!currentAutomation) return;
-
     const updatedDevices = currentAutomation.devices.map((device) => {
       if (device.id === selectedDevice.baseProperties.id) {
         return { ...device, state: !newState };
@@ -152,13 +152,7 @@ export default function AutomationId() {
           return (
             <DeviceCard
               key={item.id}
-              device={{
-                ...currentDevice,
-                baseProperties: {
-                  ...currentDevice.baseProperties,
-                  state: item.state,
-                },
-              }}
+              device={currentDevice!}
               handleToogleEnabled={handleToggleEnabled}
             />
           );

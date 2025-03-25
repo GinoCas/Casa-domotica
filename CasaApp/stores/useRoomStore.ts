@@ -1,4 +1,4 @@
-import Device from "@/types/Device";
+import { Device } from "@/types/Device";
 import { create } from "zustand";
 
 interface RoomState {

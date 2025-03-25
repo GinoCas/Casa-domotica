@@ -4,12 +4,22 @@ export interface BaseDevice {
   id: number;
   pin: number;
   state: boolean;
+}
+
+export interface PowerConsumable {
   voltage: number;
   amperes: number;
 }
 
-export default interface Device {
-  deviceType: DeviceType;
-  baseProperties: BaseDevice;
+export interface Illuminable {
+  brightness: number;
+}
+
+export interface Rotatable {
+  speed: number;
+}
+
+export interface Device extends BaseDevice, PowerConsumable {
+  type: DeviceType;
   [key: string]: any;
 }
