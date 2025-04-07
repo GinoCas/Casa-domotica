@@ -1,30 +1,29 @@
-﻿using CasaAPI.Casa.API.DTOs;
-using CasaAPI.Casa.Core.Interfaces;
-using CasaAPI.Casa.Core.Models;
+﻿using CasaBackend.Casa.Core.Interfaces;
+using CasaBackend.Casa.Core.Models;
 
 namespace CasaBackend.Casa.Core.Services
 {
-    public class DeviceService : IService<Device, DeviceDto>
+    public class DeviceService : IService<Device, CoreResult<Device>>
 	{
-		public Task<List<Device>> GetAll()
+		public Task<CoreResult<Device>> GetAll()
 		{
-			return Task.FromResult(new List<Device>());
+			return Task.FromResult(new CoreResult<Device>());
 		}
-		public Task<DeviceDto?> GetByIdAsync(int id)
+		public Task<CoreResult<Device>> GetByIdAsync(int id)
 		{
-			return Task.FromResult(new DeviceDto());
+			return Task.FromResult(new CoreResult<Device>();
 		}
-		public Task<bool> AddAsync(Device device)
+		public Task<CoreResult<Device>> AddAsync(Device device)
 		{
-			return Task.FromResult(false);
+			return Task.FromResult(new CoreResult<Device>();
 		}
-		public Task<bool> UpdateAsync(Device device)
+		public Task<CoreResult<Device>> UpdateAsync(Device device)
 		{
-			return Task.FromResult(false);
+			return Task.FromResult(new CoreResult<Device>();
 		}
-		public Task<bool> DeleteAsync(int id)
+		public Task<CoreResult<Device>> DeleteAsync(int id)
 		{
-			return Task.FromResult(false);
+			return Task.FromResult(new CoreResult<Device>();
 		}
 	}
 }
