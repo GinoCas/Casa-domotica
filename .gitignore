@@ -3,3 +3,5 @@
 /CasaAPI/bin
 /CasaAPI/obj
 /CasaApp/%ProgramData%
+/CasaBackend/.vs
+/CasaBackend/obj
