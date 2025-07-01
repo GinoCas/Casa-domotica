@@ -1,16 +1,22 @@
-﻿namespace CasaBackend.Casa.Core.Models
+﻿using CasaBackend.Casa.Core.Models.ValueObjects;
+
+namespace CasaBackend.Casa.Core.Models
 {
-    public class Device
+    public abstract class Device
     {
         public int Id { get; set; }
         public int Pin { get; set; }
         public bool State { get; set; }
-
-        public void TurnOn()
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public abstract DeviceType DeviceType { get; }
+        
+        public virtual void TurnOn()
         {
             State = true;
         }
-        public void TurnOff()
+
+        public virtual void TurnOff()
         {
             State = false;
         }
