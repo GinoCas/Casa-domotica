@@ -4,8 +4,8 @@
     {
         Task<CoreResult<T>> GetByIdAsync(int id);
         Task<CoreResult<IEnumerable<T>>> GetAllAsync();
-        Task<CoreResult<T>> CreateAsync(T room);
-        Task<CoreResult<T>> UpdateAsync(T room);
+        Task<CoreResult<T>> CreateAsync(T model);
+        Task<CoreResult<T>> UpdateAsync(T model);
         Task<CoreResult<bool>> DeleteAsync(int id);
     }
 }
