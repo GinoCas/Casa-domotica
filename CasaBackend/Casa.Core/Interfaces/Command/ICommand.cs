@@ -4,6 +4,5 @@
     {
         string CommandName { get; }
         void Execute();
-        bool CanExecute();
     }
 }
