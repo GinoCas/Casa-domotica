@@ -1,15 +1,16 @@
-using CasaBackend.Casa.Core.Models.ValueObjects;
+using CasaBackend.Casa.Core.Entities.ValueObjects;
+using CasaBackend.Casa.InterfaceAdapter.Models;
 
-namespace CasaBackend.Casa.Core.Models
+namespace CasaBackend.Casa.Core.Entities
 {
-    public class FanDevice : Device
+    public class FanEntity(DeviceModel model) : DeviceEntity(model)
     {
         public override DeviceType DeviceType => DeviceType.Fan;
         public int Speed { get; private set; } = 0;
         public bool HasReverse { get; set; } = false;
         public bool IsReversed { get; private set; } = false;
         
-        public override void TurnOn()
+        /*public override void TurnOn()
         {
             base.TurnOn();
             Speed = 1;
@@ -19,7 +20,7 @@ namespace CasaBackend.Casa.Core.Models
         {
             base.TurnOff();
             Speed = 0;
-        }
+        }*/
         
         public void SetSpeed(int speed)
         {

@@ -1,4 +1,4 @@
-﻿namespace CasaBackend.Casa.Core.Models.ValueObjects
+﻿namespace CasaBackend.Casa.Core.Entities.ValueObjects
 {
     public enum DeviceType
     {
