@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Application.Interfaces.Services;
+using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -11,11 +12,9 @@ namespace CasaBackend.Casa.API.Controllers
 {
 	[ApiController]
 	[AllowAnonymous]
-	public class DeviceController(IRepository<DeviceEntity> repository, ICommandService commandService, IMapper mapper) : ControllerBase
+	public class DeviceController(DoDeviceCommandUseCase<CommandDto> doDeviceCommandUseCase, IMapper mapper) : ControllerBase
 	{
-		private readonly IRepository<DeviceEntity> _repository = repository;
-		private readonly ICommandService _commandService = commandService;
-		private readonly IMapper _mapper = mapper;
+		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase = doDeviceCommandUseCase;
 
         [HttpGet("/device/list")]
 		public IActionResult GetDeviceList()
@@ -25,15 +24,25 @@ namespace CasaBackend.Casa.API.Controllers
 		[HttpGet("/device/{id}")]
 		public async Task<IActionResult> GetDeviceById(int id)
 		{
-			var result = await _repository.GetByIdAsync(id);
-            return Ok(JsonConvert.SerializeObject(result));
+			//var result = await _repository.GetByIdAsync(id);
+			return Ok();//JsonConvert.SerializeObject(result));
 		}
         [HttpPost("/device/execute")]
         public async Task<IActionResult> ExecuteDeviceCommand(CommandDto command)
         {
-			var cmdEntity = _mapper.Map<CommandEntity>(command);
-			var result = await _commandService.ExecuteAsync(cmdEntity);
-            return Ok(result);
+			var response = new ApiResponse<bool>();
+			try
+			{
+				response.Data = [await _doDeviceCommandUseCase.ExecuteAsync(command)];
+				response.Success = true;
+				response.Message = "OK";
+			}
+			catch(Exception ex)
+			{
+				response.Success = false;
+				response.Message = "ERROR:" + ex.Message;
+			}
+            return Ok(response.ToJson());
         }
         [HttpPost("/device/create")]
 		public IActionResult CreateDevice([FromBody] dynamic request)

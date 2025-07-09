@@ -2,13 +2,13 @@ using CasaBackend.Casa.Application.Commands;
 using CasaBackend.Casa.Application.Factories;
 using CasaBackend.Casa.Application.Interfaces.Command;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
-using CasaBackend.Casa.Application.Interfaces.Services;
-using CasaBackend.Casa.Application.Services;
+using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Infrastructure;
 using CasaBackend.Casa.Infrastructure.Factories;
 using CasaBackend.Casa.Infrastructure.Repositories;
+using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Mapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,8 +31,8 @@ builder.Services.AddScoped<ICommandHandler, BrightnessCommand>();
 builder.Services.AddScoped<CommandFactory>();
 builder.Services.AddScoped<CapabilityFactory>();
 
-//Servicios
-builder.Services.AddScoped<ICommandService, CommandService>();
+//Casos de uso
+builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 
 
 builder.Services.AddAutoMapper(cfg =>
