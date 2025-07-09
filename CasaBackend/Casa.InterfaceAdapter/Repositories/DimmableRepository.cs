@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Core.Interfaces.Repositories;
-using CasaBackend.Casa.InterfaceAdapter;
-using CasaBackend.Casa.InterfaceAdapter.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CasaBackend.Casa.Infrastructure.Repositories
+namespace CasaBackend.Casa.InterfaceAdapter.Repositories
 {
     public class DimmableRepository : ICapabilityRepository<DimmableEntity>
     {

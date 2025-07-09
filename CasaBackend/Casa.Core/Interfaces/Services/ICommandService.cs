@@ -1,4 +1,4 @@
-﻿using CasaBackend.Casa.API.DTOs;
+﻿using CasaBackend.Casa.InterfaceAdapter.DTOs;
 
 namespace CasaBackend.Casa.Core.Interfaces.Services
 {

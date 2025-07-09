@@ -1,14 +1,9 @@
 ﻿using AutoMapper;
-using Casa.Core.Interfaces.Repositories;
-using CasaBackend.Casa.API.DTOs;
-using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Interfaces.Repositories;
 using CasaBackend.Casa.Infrastructure.Factories;
-using CasaBackend.Casa.InterfaceAdapter;
-using CasaBackend.Casa.InterfaceAdapter.Models;
 
-namespace CasaBackend.Casa.Infrastructure.Repositories
+namespace CasaBackend.Casa.InterfaceAdapter.Repositories
 {
     public class DeviceRepository : IRepository<DeviceEntity>
     {

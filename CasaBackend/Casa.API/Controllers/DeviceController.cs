@@ -1,7 +1,7 @@
-﻿using CasaBackend.Casa.API.DTOs;
-using CasaBackend.Casa.Core.Entities;
+﻿using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Interfaces.Repositories;
 using CasaBackend.Casa.Core.Interfaces.Services;
+using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;

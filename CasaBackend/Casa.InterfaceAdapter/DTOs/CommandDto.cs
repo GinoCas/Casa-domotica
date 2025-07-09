@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace CasaBackend.Casa.API.DTOs
+namespace CasaBackend.Casa.InterfaceAdapter.DTOs
 {
     public class CommandDto
     {

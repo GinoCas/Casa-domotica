@@ -1,4 +1,4 @@
-﻿namespace CasaBackend.Casa.API.DTOs
+﻿namespace CasaBackend.Casa.InterfaceAdapter.DTOs
 {
 	public class DeviceDto
 	{

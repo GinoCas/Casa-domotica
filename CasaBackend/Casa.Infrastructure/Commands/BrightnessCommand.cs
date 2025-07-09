@@ -2,7 +2,6 @@
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Core.Interfaces.Command;
 using CasaBackend.Casa.Core.Interfaces.Repositories;
-using CasaBackend.Casa.Infrastructure.Repositories;
 
 namespace CasaBackend.Casa.Infrastructure.Commands
 {

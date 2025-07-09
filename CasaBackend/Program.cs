@@ -1,4 +1,3 @@
-using Casa.Core.Interfaces.Repositories;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Core.Interfaces.Command;
@@ -6,9 +5,10 @@ using CasaBackend.Casa.Core.Interfaces.Repositories;
 using CasaBackend.Casa.Core.Interfaces.Services;
 using CasaBackend.Casa.Infrastructure.Commands;
 using CasaBackend.Casa.Infrastructure.Factories;
-using CasaBackend.Casa.Infrastructure.Mapper;
-using CasaBackend.Casa.Infrastructure.Repositories;
 using CasaBackend.Casa.InterfaceAdapter;
+using CasaBackend.Casa.InterfaceAdapter.Mapper;
+using CasaBackend.Casa.InterfaceAdapter.Repositories;
+using CasaBackend.Casa.InterfaceAdapter.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

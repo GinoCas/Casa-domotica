@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using CasaBackend.Casa.API.DTOs;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Interfaces.Repositories;
 using CasaBackend.Casa.Core.Interfaces.Services;
 using CasaBackend.Casa.Infrastructure.Factories;
+using CasaBackend.Casa.InterfaceAdapter.DTOs;
 
-namespace CasaBackend.Casa.Infrastructure.Repositories
+namespace CasaBackend.Casa.InterfaceAdapter.Services
 {
     public class CommandService : ICommandService
     {

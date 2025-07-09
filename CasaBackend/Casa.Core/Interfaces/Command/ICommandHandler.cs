@@ -1,5 +1,4 @@
-﻿using CasaBackend.Casa.API.DTOs;
-using CasaBackend.Casa.Core.Entities;
+﻿using CasaBackend.Casa.Core.Entities;
 
 namespace CasaBackend.Casa.Core.Interfaces.Command
 {
