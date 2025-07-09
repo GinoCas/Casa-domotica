@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
@@ -7,7 +8,7 @@ using CasaBackend.Casa.InterfaceAdapter.Models;
 
 namespace CasaBackend.Casa.Infrastructure.Factories
 {
-    public class CapabilityFactory
+    public class CapabilityFactory : IDeviceFactory<DeviceEntity, DeviceModel>
     {
         private readonly ICapabilityRepository<DimmableEntity> _dimmableRepo;
         private readonly IMapper _mapper;
@@ -17,16 +18,23 @@ namespace CasaBackend.Casa.Infrastructure.Factories
             _dimmableRepo = dimmableRepo;
             _mapper = mapper;
         }
-
-        public async Task<DeviceEntity> CreateAsync(DeviceModel model)
+        private static DeviceEntity MapModelToEntity(DeviceModel model, DeviceEntity entity)
+        {
+            entity.Id = model.Id;
+            entity.Name = model.Name;
+            entity.Description = model.Description;
+            entity.State = model.State;
+            return entity;
+        }
+        public async Task<DeviceEntity> FabricDeviceAsync(DeviceModel model)
         {
             var type = Enum.Parse<DeviceType>(model.DeviceType);
             switch (type)
             {
                 case DeviceType.Led:
                     var dimm = await _dimmableRepo.GetByDeviceIdAsync(model.Id);
-                    var device = new LedEntity(_mapper.Map<DimmableEntity>(dimm));
-                    return _mapper.Map<DeviceEntity>(device);
+                    var led = new LedEntity(_mapper.Map<DimmableEntity>(dimm));
+                    return _mapper.Map<DeviceEntity>(MapModelToEntity(model, led));
                 default:
                     throw new NotSupportedException($"Device type {model.DeviceType} not supported.");
             }
