@@ -1,28 +1,31 @@
-﻿using CasaBackend.Casa.Core.Interfaces.Command;
-using CasaBackend.Casa.Core.Interfaces.Device;
-using CasaBackend.Casa.Core.Models;
+﻿using CasaBackend.Casa.Core.Entities;
+using CasaBackend.Casa.Core.Entities.Capabilities;
+using CasaBackend.Casa.Core.Interfaces.Command;
+using CasaBackend.Casa.Core.Interfaces.Repositories;
+using CasaBackend.Casa.Infrastructure.Repositories;
 
 namespace CasaBackend.Casa.Infrastructure.Commands
 {
-    public class BrightnessCommand : ICommand
+    public class BrightnessCommand : ICommandHandler
     {
+        private readonly ICapabilityRepository<DimmableEntity> _repository;
         public string CommandName => "SetBrightness";
-        private readonly IDimmable _dimmable;
-        private readonly int _brightness;
-        public BrightnessCommand(IDimmable dimmable, int brightness)
+        public BrightnessCommand(ICapabilityRepository<DimmableEntity> repository)
         {
-            _dimmable = dimmable;
-            _brightness = brightness;
+            _repository = repository;
         }
-        public void Execute()
+        public async Task HandleAsync(CommandEntity entity)
         {
-            if (_brightness < _dimmable.Limits[0] || _brightness > _dimmable.Limits[1])
+            var dev = await _repository.GetByDeviceIdAsync(entity.Device.Id);
+            var brightness = entity.Parameters["brightness"].GetInt32();
+            if (brightness < dev.Limits[0] || brightness > dev.Limits[1])
             {
-                throw new ArgumentOutOfRangeException(nameof(_brightness), 
-                    $"El valor debe estar en el rango permitido ({_dimmable.Limits[0]}-{_dimmable.Limits[1]})."
+                throw new ArgumentOutOfRangeException(nameof(brightness), 
+                    $"El valor debe estar en el rango permitido ({dev.Limits[0]}-{dev.Limits[1]})."
                 );
             }
-            _dimmable.Brightness = _brightness;
+            dev.Brightness = brightness;
+            await _repository.UpdateAsync(dev);
         }
     }
 }
