@@ -3,7 +3,7 @@ using CasaBackend.Casa.InterfaceAdapter.Models;
 
 namespace CasaBackend.Casa.Core.Entities
 {
-    public class FanEntity(DeviceModel model) : DeviceEntity(model)
+    public class FanEntity : DeviceEntity
     {
         public override DeviceType DeviceType => DeviceType.Fan;
         public int Speed { get; private set; } = 0;

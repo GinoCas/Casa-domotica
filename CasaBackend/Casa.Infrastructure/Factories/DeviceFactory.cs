@@ -26,7 +26,8 @@ namespace CasaBackend.Casa.Infrastructure.Factories
             {
                 case DeviceType.Led:
                     var dimm = await _dimmableRepo.GetByDeviceIdAsync(model.Id);
-                    return new LedEntity(model, _mapper.Map<DimmableEntity>(dimm));
+                    var device = new LedEntity(_mapper.Map<DimmableEntity>(dimm));
+                    return _mapper.Map<DeviceEntity>(device);
                 default:
                     throw new NotSupportedException($"Device type {type} not supported.");
             }

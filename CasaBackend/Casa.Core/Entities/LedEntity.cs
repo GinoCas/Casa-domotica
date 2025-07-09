@@ -4,7 +4,7 @@ using CasaBackend.Casa.InterfaceAdapter.Models;
 
 namespace CasaBackend.Casa.Core.Entities
 {
-    public class LedEntity(DeviceModel model, DimmableEntity dimmable) :  DeviceEntity(model)
+    public class LedEntity(DimmableEntity dimmable) :  DeviceEntity
     {
         public override DeviceType DeviceType => DeviceType.Led;
         public DimmableEntity Dimmable { get; set; } = dimmable;
