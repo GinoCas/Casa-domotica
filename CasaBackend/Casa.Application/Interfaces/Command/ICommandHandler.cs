@@ -1,6 +1,6 @@
 ﻿using CasaBackend.Casa.Core.Entities;
 
-namespace CasaBackend.Casa.Core.Interfaces.Command
+namespace CasaBackend.Casa.Application.Interfaces.Command
 {
     public interface ICommandHandler
     {

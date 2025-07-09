@@ -10,8 +10,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
         public MappingProfile()
         {
             CreateMap<DeviceEntity, DeviceDto>();
-            CreateMap<CommandDto, CommandEntity>()
-                .ForMember(dest => dest.Device, opt => opt.Ignore());
+            CreateMap<CommandDto, CommandEntity>();
             CreateMap<DimmableModel, DimmableEntity>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Brightness, opt => opt.MapFrom(src => src.Brightness))

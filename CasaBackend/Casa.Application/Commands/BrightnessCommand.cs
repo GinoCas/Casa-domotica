@@ -1,9 +1,9 @@
-﻿using CasaBackend.Casa.Core.Entities;
+﻿using CasaBackend.Casa.Application.Interfaces.Command;
+using CasaBackend.Casa.Application.Interfaces.Repositories;
+using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
-using CasaBackend.Casa.Core.Interfaces.Command;
-using CasaBackend.Casa.Core.Interfaces.Repositories;
 
-namespace CasaBackend.Casa.Infrastructure.Commands
+namespace CasaBackend.Casa.Application.Commands
 {
     public class BrightnessCommand : ICommandHandler
     {
@@ -15,7 +15,7 @@ namespace CasaBackend.Casa.Infrastructure.Commands
         }
         public async Task HandleAsync(CommandEntity entity)
         {
-            var dev = await _repository.GetByDeviceIdAsync(entity.Device.Id);
+            var dev = await _repository.GetByDeviceIdAsync(entity.DeviceId);
             var brightness = entity.Parameters["brightness"].GetInt32();
             if (brightness < dev.Limits[0] || brightness > dev.Limits[1])
             {

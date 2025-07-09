@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
-using CasaBackend.Casa.Core.Interfaces.Repositories;
-using CasaBackend.Casa.Core.Interfaces.Services;
-using CasaBackend.Casa.Infrastructure.Factories;
-using CasaBackend.Casa.InterfaceAdapter.DTOs;
+using CasaBackend.Casa.Application.Interfaces.Repositories;
+using CasaBackend.Casa.Application.Interfaces.Services;
+using CasaBackend.Casa.Application.Factories;
 
-namespace CasaBackend.Casa.InterfaceAdapter.Services
+namespace CasaBackend.Casa.Application.Services
 {
     public class CommandService : ICommandService
     {
@@ -21,13 +20,10 @@ namespace CasaBackend.Casa.InterfaceAdapter.Services
             _deviceRepository = deviceRepository;
         }
 
-        public async Task<CoreResult<bool>> ExecuteAsync(CommandDto dto)
+        public async Task<CoreResult<bool>> ExecuteAsync(CommandEntity entity)
         {
-            var command = _mapper.Map<CommandEntity>(dto);
-            var deviceModel = await _deviceRepository.GetByIdAsync(dto.DeviceId);
-            command.Device = _mapper.Map<DeviceEntity>(deviceModel);
-            var handler = _commandFactory.GetCommand(command.CommandName);
-            await handler.HandleAsync(command);
+            var handler = _commandFactory.GetCommand(entity.CommandName);
+            await handler.HandleAsync(entity);
             return new CoreResult<bool>();
         }
     }

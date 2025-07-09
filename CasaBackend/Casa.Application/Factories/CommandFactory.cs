@@ -1,6 +1,6 @@
-﻿using CasaBackend.Casa.Core.Interfaces.Command;
+﻿using CasaBackend.Casa.Application.Interfaces.Command;
 
-namespace CasaBackend.Casa.Infrastructure.Factories
+namespace CasaBackend.Casa.Application.Factories
 {
     public class CommandFactory
     {

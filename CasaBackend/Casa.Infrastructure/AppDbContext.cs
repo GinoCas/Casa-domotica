@@ -1,7 +1,7 @@
 ﻿using CasaBackend.Casa.InterfaceAdapter.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CasaBackend.Casa.InterfaceAdapter
+namespace CasaBackend.Casa.Infrastructure
 {
     public class AppDbContext : DbContext
     {

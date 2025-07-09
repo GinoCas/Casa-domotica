@@ -1,4 +1,4 @@
-﻿namespace CasaBackend.Casa.Core.Interfaces.Repositories
+﻿namespace CasaBackend.Casa.Application.Interfaces.Repositories
 {
     public interface ICapabilityRepository<T> : IRepository<T>
     {
