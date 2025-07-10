@@ -1,6 +1,8 @@
 using CasaBackend.Casa.Application.Commands;
 using CasaBackend.Casa.Application.Factories;
 using CasaBackend.Casa.Application.Interfaces.Command;
+using CasaBackend.Casa.Application.Interfaces.Factory;
+using CasaBackend.Casa.Application.Interfaces.Presenter;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core.Entities;
@@ -10,6 +12,8 @@ using CasaBackend.Casa.Infrastructure.Factories;
 using CasaBackend.Casa.Infrastructure.Repositories;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Mapper;
+using CasaBackend.Casa.InterfaceAdapter.Models;
+using CasaBackend.Casa.InterfaceAdapter.Presenters;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,15 +28,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, DimmableRepository>();
 
+//Presentadores
+builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();
+
 //Handlers
 builder.Services.AddScoped<ICommandHandler, BrightnessCommand>();
 
 //Fabricas
 builder.Services.AddScoped<CommandFactory>();
-builder.Services.AddScoped<CapabilityFactory>();
+builder.Services.AddScoped<IDeviceFactory<DeviceEntity, DeviceModel>, CapabilityFactory>();
 
 //Casos de uso
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
+builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
 
 
 builder.Services.AddAutoMapper(cfg =>
