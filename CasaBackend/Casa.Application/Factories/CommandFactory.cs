@@ -1,4 +1,5 @@
 ﻿using CasaBackend.Casa.Application.Interfaces.Command;
+using CasaBackend.Casa.Application.Interfaces.Factory;
 
 namespace CasaBackend.Casa.Application.Factories
 {
@@ -9,7 +10,7 @@ namespace CasaBackend.Casa.Application.Factories
         {
             _commands = commands;
         }
-        public ICommandHandler GetCommand(string commandName)
+        public ICommandHandler Fabric(string commandName)
         {
             var cmd = _commands.FirstOrDefault(h => h.CommandName == commandName);
             return cmd ?? throw new NotSupportedException($"Comando '{commandName}' no soportado.");

@@ -21,7 +21,7 @@ namespace CasaBackend.Casa.Application.UseCases
             {
                 throw new Exception($"El comando que se quiere ejecutar es nulo/esta vacio.");
             }
-            var handler = _commandFactory.GetCommand(entity.CommandName);
+            var handler = _commandFactory.Fabric(entity.CommandName);
             await handler.HandleAsync(entity);
             return true;
         }
