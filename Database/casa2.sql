@@ -62,11 +62,19 @@ VALUES
 (13, 0, 'Led', 'Luz LED 13', 'Dispositivo LED en pin 13');
 
 
+UPDATE device
+SET devi_name = 'Ventilador', devi_description = 'Dispositivo FAN en pin 6'
+WHERE devi_id = 6;
+
 INSERT INTO dimmable(dimm_deviceId, dimm_brightness)
 VALUES
 (2, 100),
-(6, 100),
+(4, 100),
 (10, 100);
+
+INSERT INTO velocity(velo_deviceId, velo_speed)
+VALUES
+(6, 5);
 
 
 CREATE PROCEDURE sp_get_dimmable_devices_from_type
@@ -76,5 +84,7 @@ AS BEGIN
 	JOIN dimmable ON devi_id = dimm_deviceId
 	WHERE devi_type = @devi_type
 END;
+
+SELECT * FROM velocity;
 
 EXEC sp_get_dimmable_devices_from_type 'LED';

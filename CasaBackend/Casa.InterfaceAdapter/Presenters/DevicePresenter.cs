@@ -12,6 +12,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters
             return entity switch
             {
                 LedEntity led => _mapper.Map<LedViewModel>(led),
+                FanEntity fan => _mapper.Map<FanViewModel>(fan),
                 _ => _mapper.Map<DeviceViewModel>(entity)
             };
         }

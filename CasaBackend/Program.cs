@@ -27,6 +27,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 //Repositorios
 builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, DimmableRepository>();
+builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, VelocityRepository>();
 
 //Presentadores
 builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();

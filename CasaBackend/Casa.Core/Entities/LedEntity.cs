@@ -1,6 +1,5 @@
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Core.Entities.ValueObjects;
-using CasaBackend.Casa.InterfaceAdapter.Models;
 
 namespace CasaBackend.Casa.Core.Entities
 {

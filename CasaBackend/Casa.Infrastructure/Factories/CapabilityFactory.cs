@@ -11,11 +11,16 @@ namespace CasaBackend.Casa.Infrastructure.Factories
     public class CapabilityFactory : IDeviceFactory<DeviceEntity, DeviceModel>
     {
         private readonly ICapabilityRepository<DimmableEntity> _dimmableRepo;
+        private readonly ICapabilityRepository<VelocityEntity> _velocityRepo;
         private readonly IMapper _mapper;
 
-        public CapabilityFactory(ICapabilityRepository<DimmableEntity> dimmableRepo, IMapper mapper)
+        public CapabilityFactory(
+            ICapabilityRepository<DimmableEntity> dimmableRepo,
+            ICapabilityRepository<VelocityEntity> velocityRepo,
+            IMapper mapper)
         {
             _dimmableRepo = dimmableRepo;
+            _velocityRepo = velocityRepo;
             _mapper = mapper;
         }
         private static DeviceEntity MapModelToEntity(DeviceModel model, DeviceEntity entity)
@@ -35,6 +40,10 @@ namespace CasaBackend.Casa.Infrastructure.Factories
                     var dimm = await _dimmableRepo.GetByDeviceIdAsync(model.Id);
                     var led = new LedEntity(_mapper.Map<DimmableEntity>(dimm));
                     return _mapper.Map<DeviceEntity>(MapModelToEntity(model, led));
+                case DeviceType.Fan:
+                    var vel = await _velocityRepo.GetByDeviceIdAsync(model.Id);
+                    var fan = new FanEntity(_mapper.Map<VelocityEntity>(vel));
+                    return _mapper.Map<DeviceEntity>(MapModelToEntity(model, fan));
                 default:
                     throw new NotSupportedException($"Device type {model.DeviceType} not supported.");
             }

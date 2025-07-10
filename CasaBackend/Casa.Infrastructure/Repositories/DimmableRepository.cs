@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core.Entities.Capabilities;
-using CasaBackend.Casa.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace CasaBackend.Casa.Infrastructure.Repositories
