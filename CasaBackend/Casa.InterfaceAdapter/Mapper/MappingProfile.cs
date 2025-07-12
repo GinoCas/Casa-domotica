@@ -2,7 +2,7 @@
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
-using CasaBackend.Casa.InterfaceAdapter.Models;
+using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
 namespace CasaBackend.Casa.InterfaceAdapter.Mapper
 {
