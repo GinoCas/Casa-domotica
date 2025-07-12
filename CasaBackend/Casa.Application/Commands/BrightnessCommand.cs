@@ -24,7 +24,7 @@ namespace CasaBackend.Casa.Application.Commands
                 );
             }
             dev.Brightness = brightness;
-            await _repository.UpdateAsync(dev);
+            await _repository.SaveEntityAsync(dev, dev.Id);
         }
     }
 }

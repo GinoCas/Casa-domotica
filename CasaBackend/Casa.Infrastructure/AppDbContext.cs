@@ -1,4 +1,5 @@
 ﻿using CasaBackend.Casa.InterfaceAdapter.Models;
+using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CasaBackend.Casa.Infrastructure
