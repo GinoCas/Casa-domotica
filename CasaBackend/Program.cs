@@ -3,16 +3,19 @@ using CasaBackend.Casa.Application.Factories;
 using CasaBackend.Casa.Application.Interfaces.Command;
 using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Presenter;
+using CasaBackend.Casa.Application.Interfaces.Providers;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Infrastructure;
 using CasaBackend.Casa.Infrastructure.Factories;
+using CasaBackend.Casa.Infrastructure.Providers;
 using CasaBackend.Casa.Infrastructure.Repositories;
+using CasaBackend.Casa.Infrastructure.Services;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Mapper;
-using CasaBackend.Casa.InterfaceAdapter.Models;
+using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,8 +29,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 //Repositorios
 builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
-builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, DimmableRepository>();
-builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, VelocityRepository>();
+builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, CapabilityRepository<DimmableEntity, DimmableModel>>();
+builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepository<VelocityEntity, VelocityModel>>();
+
+builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<DimmableModel>>();
+builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<VelocityModel>>();
+builder.Services.AddScoped<CapabilityService>();
 
 //Presentadores
 builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();
@@ -36,7 +43,6 @@ builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePres
 builder.Services.AddScoped<ICommandHandler, BrightnessCommand>();
 
 //Fabricas
-builder.Services.AddScoped<CommandFactory>();
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
 builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, CapabilityFactory>();
 
