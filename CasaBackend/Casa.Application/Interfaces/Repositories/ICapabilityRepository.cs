@@ -1,7 +1,8 @@
 ﻿namespace CasaBackend.Casa.Application.Interfaces.Repositories
 {
-    public interface ICapabilityRepository<T> : IRepository<T>
+    public interface ICapabilityRepository<TEntity>
     {
-        Task<T> GetByDeviceIdAsync(int deviceId);
+        Task<TEntity> GetByDeviceIdAsync(int deviceId);
+        Task<TEntity> SaveEntityAsync(TEntity entity, int entityId);
     }
 }
