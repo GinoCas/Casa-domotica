@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using CasaBackend.Casa.Application.Factories;
+using CasaBackend.Casa.Application.Interfaces.Command;
+using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Core.Entities;
 
 namespace CasaBackend.Casa.Application.UseCases
 {
-    public class DoDeviceCommandUseCase<TDTO>(IMapper mapper, CommandFactory commandFactory)
+    public class DoDeviceCommandUseCase<TDTO>(IMapper mapper, IFactory<ICommandHandler, string> commandFactory)
     {
-        private readonly CommandFactory _commandFactory = commandFactory;
+        private readonly IFactory<ICommandHandler, string> _commandFactory = commandFactory;
         private readonly IMapper _mapper = mapper;
 
         public async Task<bool> ExecuteAsync(TDTO dto)

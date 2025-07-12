@@ -3,13 +3,9 @@ using CasaBackend.Casa.Application.Interfaces.Factory;
 
 namespace CasaBackend.Casa.Application.Factories
 {
-    public class CommandFactory
+    public class CommandFactory(IEnumerable<ICommandHandler> commands) : IFactory<ICommandHandler, string>
     {
-        private readonly IEnumerable<ICommandHandler> _commands;
-        public CommandFactory(IEnumerable<ICommandHandler> commands)
-        {
-            _commands = commands;
-        }
+        private readonly IEnumerable<ICommandHandler> _commands = commands
         public ICommandHandler Fabric(string commandName)
         {
             var cmd = _commands.FirstOrDefault(h => h.CommandName == commandName);

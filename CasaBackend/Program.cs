@@ -37,7 +37,8 @@ builder.Services.AddScoped<ICommandHandler, BrightnessCommand>();
 
 //Fabricas
 builder.Services.AddScoped<CommandFactory>();
-builder.Services.AddScoped<IDeviceFactory<DeviceEntity, DeviceModel>, CapabilityFactory>();
+builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
+builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, CapabilityFactory>();
 
 //Casos de uso
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
