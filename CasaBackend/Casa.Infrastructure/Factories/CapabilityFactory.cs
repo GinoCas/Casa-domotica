@@ -1,28 +1,18 @@
 ﻿using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Factory;
-using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Core.Entities.ValueObjects;
+using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Models;
+using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 
 namespace CasaBackend.Casa.Infrastructure.Factories
 {
-    public class CapabilityFactory : IDeviceFactory<DeviceEntity, DeviceModel>
+    public class CapabilityFactory(IMapper mapper) : IFactory<DeviceEntity, DeviceContextDto>
     {
-        private readonly ICapabilityRepository<DimmableEntity> _dimmableRepo;
-        private readonly ICapabilityRepository<VelocityEntity> _velocityRepo;
-        private readonly IMapper _mapper;
+        private readonly IMapper _mapper = mapper;
 
-        public CapabilityFactory(
-            ICapabilityRepository<DimmableEntity> dimmableRepo,
-            ICapabilityRepository<VelocityEntity> velocityRepo,
-            IMapper mapper)
-        {
-            _dimmableRepo = dimmableRepo;
-            _velocityRepo = velocityRepo;
-            _mapper = mapper;
-        }
         private static DeviceEntity MapModelToEntity(DeviceModel model, DeviceEntity entity)
         {
             entity.Id = model.Id;
@@ -31,21 +21,21 @@ namespace CasaBackend.Casa.Infrastructure.Factories
             entity.State = model.State;
             return entity;
         }
-        public async Task<DeviceEntity> FabricDeviceAsync(DeviceModel model)
+        public DeviceEntity Fabric(DeviceContextDto dto)
         {
-            var type = Enum.Parse<DeviceType>(model.DeviceType);
+            var type = Enum.Parse<DeviceType>(dto.DeviceModel.DeviceType);
             switch (type)
             {
                 case DeviceType.Led:
-                    var dimm = await _dimmableRepo.GetByDeviceIdAsync(model.Id);
+                    var dimm = dto.Capabilities.OfType<DimmableModel>().FirstOrDefault();
                     var led = new LedEntity(_mapper.Map<DimmableEntity>(dimm));
-                    return _mapper.Map<DeviceEntity>(MapModelToEntity(model, led));
+                    return _mapper.Map<DeviceEntity>(MapModelToEntity(dto.DeviceModel, led));
                 case DeviceType.Fan:
-                    var vel = await _velocityRepo.GetByDeviceIdAsync(model.Id);
+                    var vel = dto.Capabilities.OfType<VelocityModel>().FirstOrDefault();
                     var fan = new FanEntity(_mapper.Map<VelocityEntity>(vel));
-                    return _mapper.Map<DeviceEntity>(MapModelToEntity(model, fan));
+                    return _mapper.Map<DeviceEntity>(MapModelToEntity(dto.DeviceModel, fan));
                 default:
-                    throw new NotSupportedException($"Device type {model.DeviceType} not supported.");
+                    throw new NotSupportedException($"Device type {dto.DeviceModel.DeviceType} not supported.");
             }
         }
     }
