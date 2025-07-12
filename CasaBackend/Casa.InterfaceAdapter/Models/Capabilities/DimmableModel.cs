@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CasaBackend.Casa.InterfaceAdapter.Models
+namespace CasaBackend.Casa.InterfaceAdapter.Models.Capabilities
 {
-    public class DimmableModel
+    public class DimmableModel : ICapabilityModel
     {
         [Column("dimm_id")]
         public int Id { get; set; }
