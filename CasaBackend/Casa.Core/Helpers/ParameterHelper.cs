@@ -4,26 +4,29 @@ namespace CasaBackend.Casa.Core.Helpers
 {
     public static class ParameterHelper
     {
-        public static CoreResult<T> GetRequiredParameter<T>(Dictionary<string, JsonElement> parameters, string parameterName)
+        public static CoreResult<IEnumerable<string>> HasRequiredParameters(
+            IEnumerable<string> actualParameters,
+            IEnumerable<string> requiredParameters)
         {
-            if (!parameters.TryGetValue(parameterName, out JsonElement value))
-            {
-                return CoreResult<T>.Failure([$"El comando no contiene el parámetro necesario: {parameterName}"]);
-            }
+            var requiredSet = new HashSet<string>(requiredParameters, StringComparer.OrdinalIgnoreCase);
+            List<string> errors = [.. actualParameters
+                .Where(key => !requiredSet.Contains(key))
+                .Select(key => $"Llave de parámetro invalido: '{key}'")];
 
-            return TryConvertValue<T>(value, parameterName);
+            return errors.Count != 0
+                ? CoreResult<IEnumerable<string>>.Failure(errors)
+                : CoreResult<IEnumerable<string>>.Success(Enumerable.Empty<string>());
         }
-        public static CoreResult<Dictionary<string, T>> GetMultipleParameters<T>(Dictionary<string, JsonElement> parameters, Dictionary<string, Type> requiredParameters)
+        public static CoreResult<Dictionary<string, T>> ConvertMultipleParameters<T>(Dictionary<string, JsonElement> parameters)
         {
-            var results = new Dictionary<string, T>();
             var errors = new List<string>();
-
-            foreach (var paramName in requiredParameters.Keys)
+            var results = new Dictionary<string, T>();
+            foreach (var param in parameters)
             {
-                var result = GetRequiredParameter<T>(parameters, paramName);
+                var result = TryConvert<T>(param);
                 if (result.IsSuccess)
                 {
-                    results[paramName] = result.Data;
+                    results[param.Key] = result.Data;
                 }
                 else
                 {
@@ -35,10 +38,11 @@ namespace CasaBackend.Casa.Core.Helpers
                 ? CoreResult<Dictionary<string, T>>.Failure(errors)
                 : CoreResult<Dictionary<string, T>>.Success(results);
         }
-        private static CoreResult<T> TryConvertValue<T>(JsonElement value, string parameterName)
+        private static CoreResult<T> TryConvert<T>(KeyValuePair<string, JsonElement> parameter)
         {
             try
             {
+                var value = parameter.Value;
                 object? convertedValue = value.ValueKind switch
                 {
                     JsonValueKind.String => value.GetString(),
@@ -56,7 +60,7 @@ namespace CasaBackend.Casa.Core.Helpers
             }
             catch
             {
-                return CoreResult<T>.Failure([$"El parámetro '{parameterName}' debe ser de tipo {typeof(T).Name}."]);
+                return CoreResult<T>.Failure([$"El parámetro '{parameter.Key}' debe ser de tipo {typeof(T).Name}."]);
             }
         }
     }
