@@ -1,30 +1,41 @@
 ﻿using CasaBackend.Casa.Application.Interfaces.Command;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
+using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
+using CasaBackend.Casa.Core.Helpers;
 
 namespace CasaBackend.Casa.Application.Commands
 {
     public class BrightnessCommand : ICommandHandler
     {
         private readonly ICapabilityRepository<DimmableEntity> _repository;
+        public Dictionary<string, Type> RequiredParameters => new()
+        {
+                { "brightness", typeof(int) }
+        };
         public string CommandName => "SetBrightness";
         public BrightnessCommand(ICapabilityRepository<DimmableEntity> repository)
         {
             _repository = repository;
         }
-        public async Task HandleAsync(CommandEntity entity)
+        public async Task<CoreResult<bool>> HandleAsync(CommandEntity entity)
         {
-            var dev = await _repository.GetByDeviceIdAsync(entity.DeviceId);
-            var brightness = entity.Parameters["brightness"].GetInt32();
-            if (brightness < dev.Limits[0] || brightness > dev.Limits[1])
-            {
-                throw new ArgumentOutOfRangeException(nameof(brightness), 
-                    $"El valor debe estar en el rango permitido ({dev.Limits[0]}-{dev.Limits[1]})."
-                );
-            }
-            dev.Brightness = brightness;
-            await _repository.SaveEntityAsync(dev, dev.Id);
+            var getResult = await _repository.GetByDeviceIdAsync(entity.DeviceId);
+            if (!getResult.IsSuccess) return CoreResult<bool>.Failure(getResult.Errors);
+            var device = getResult.Data;
+
+            var parameterResult = ParameterHelper.GetMultipleParameters<int>(entity.Parameters, RequiredParameters);
+            if (!parameterResult.IsSuccess) return CoreResult<bool>.Failure(parameterResult.Errors);
+
+            var brightness = parameterResult.Data["brightness"];
+            var setResult = device.SetBrightness(brightness);
+            if (!setResult.IsSuccess) return CoreResult<bool>.Failure(setResult.Errors);
+
+            var saveResult = await _repository.SaveEntityAsync(device, device.Id);
+            return saveResult.IsSuccess
+                ? CoreResult<bool>.Success(true)
+                : CoreResult<bool>.Failure(saveResult.Errors);
         }
     }
 }
