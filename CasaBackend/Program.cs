@@ -48,7 +48,15 @@ builder.Services.AddValidatorsFromAssemblyContaining<CommandValidator>();
 builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();
 
 //Handlers
-builder.Services.AddScoped<ICommandHandler, BrightnessCommand>();
+builder.Services.AddScoped<ICommandHandler, CapabilityCommand<DimmableEntity>>(provider =>
+    new CapabilityCommand<DimmableEntity>(
+        provider.GetRequiredService<ICapabilityRepository<DimmableEntity>>(),
+        "SetBrightness", new Dictionary<string, Type> { { "brightness", typeof(int) } }));
+
+builder.Services.AddScoped<ICommandHandler, CapabilityCommand<VelocityEntity>>(provider =>
+    new CapabilityCommand<VelocityEntity>(
+        provider.GetRequiredService<ICapabilityRepository<VelocityEntity>>(),
+        "SetSpeed", new Dictionary<string, Type> { { "speed", typeof(int) } }));
 
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
