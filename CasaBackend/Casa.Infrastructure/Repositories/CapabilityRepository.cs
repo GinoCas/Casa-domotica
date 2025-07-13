@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;
+using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CasaBackend.Casa.Infrastructure.Repositories
 {
     public class CapabilityRepository<TEntity, TModel> : ICapabilityRepository<TEntity>
-        where TEntity : class
+        where TEntity : class, ICapabilityEntity<TEntity>
         where TModel : class, ICapabilityModel
     {
         private readonly AppDbContext _dbContext;
