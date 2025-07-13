@@ -1,3 +1,5 @@
+using CasaBackend.Casa.API.Middleware;
+using CasaBackend.Casa.API.Validators;
 using CasaBackend.Casa.Application.Commands;
 using CasaBackend.Casa.Application.Factories;
 using CasaBackend.Casa.Application.Interfaces.Command;
@@ -17,6 +19,7 @@ using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Mapper;
 using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,9 +35,14 @@ builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, CapabilityRepository<DimmableEntity, DimmableModel>>();
 builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepository<VelocityEntity, VelocityModel>>();
 
+//Providers
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<DimmableModel>>();
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<VelocityModel>>();
 builder.Services.AddScoped<CapabilityService>();
+
+//Validadores
+builder.Services.AddValidatorsFromAssemblyContaining<DeviceValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CommandValidator>();
 
 //Presentadores
 builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();
@@ -60,6 +68,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
