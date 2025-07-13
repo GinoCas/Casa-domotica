@@ -44,7 +44,7 @@ namespace CasaBackend.Casa.Application.Commands
                 return CoreResult<bool>.Failure(validateParametersResult.Errors);
             }
 
-            var parameterResult = ParameterHelper.ConvertMultipleParameters<object>(entity.Parameters);
+            var parameterResult = ParameterHelper.ConvertMultipleJsonElementToExactTypes(RequiredParameters, entity.Parameters.Values);
             if (!parameterResult.IsSuccess) return CoreResult<bool>.Failure(parameterResult.Errors);
             
             var mappingResult = MapParametersToEntity(sourceEntity, parameterResult.Data);
