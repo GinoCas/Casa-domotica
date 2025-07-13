@@ -17,13 +17,20 @@ namespace CasaBackend.Casa.Core.Helpers
                 ? CoreResult<IEnumerable<string>>.Failure(errors)
                 : CoreResult<IEnumerable<string>>.Success(Enumerable.Empty<string>());
         }
-        public static CoreResult<Dictionary<string, T>> ConvertMultipleParameters<T>(Dictionary<string, JsonElement> parameters)
+        public static CoreResult<Dictionary<string, object>> ConvertMultipleJsonElementToExactTypes(IReadOnlyDictionary<string, Type> requiredParameters, IEnumerable<JsonElement> actualValues)
         {
             var errors = new List<string>();
-            var results = new Dictionary<string, T>();
-            foreach (var param in parameters)
+            var results = new Dictionary<string, object>();
+            var actualValuesEnumerator = actualValues.GetEnumerator();
+            foreach (var param in requiredParameters)
             {
-                var result = TryConvert<T>(param);
+                if (!actualValuesEnumerator.MoveNext())
+                {
+                    errors.Add($"No se encontraron suficientes valores para el parámetro: {param.Key}");
+                    continue;
+                }
+                KeyValuePair<string, JsonElement> actualParam = new(param.Key, actualValuesEnumerator.Current);
+                var result = TryConvertToExpectedType(actualParam, param.Value);
                 if (result.IsSuccess)
                 {
                     results[param.Key] = result.Data;
@@ -35,32 +42,31 @@ namespace CasaBackend.Casa.Core.Helpers
             }
 
             return errors.Count != 0
-                ? CoreResult<Dictionary<string, T>>.Failure(errors)
-                : CoreResult<Dictionary<string, T>>.Success(results);
+                ? CoreResult<Dictionary<string, object>>.Failure(errors)
+                : CoreResult<Dictionary<string, object>>.Success(results);
         }
-        private static CoreResult<T> TryConvert<T>(KeyValuePair<string, JsonElement> parameter)
+        private static CoreResult<object> TryConvertToExpectedType(KeyValuePair<string, JsonElement> parameter, Type expectedType)
         {
+            var value = parameter.Value;
+            var paramName = parameter.Key;
             try
             {
-                var value = parameter.Value;
-                object? convertedValue = value.ValueKind switch
+                object? convertedValue = expectedType switch
                 {
-                    JsonValueKind.String => value.GetString(),
-                    JsonValueKind.Number => typeof(T) == typeof(int) ? value.GetInt32() :
-                                            typeof(T) == typeof(long) ? value.GetInt64() :
-                                            typeof(T) == typeof(double) ? value.GetDouble() :
-                                            value.GetDecimal(),
-                    JsonValueKind.True => value.GetBoolean(),
-                    JsonValueKind.False => value.GetBoolean(),
-                    JsonValueKind.Object => JsonSerializer.Deserialize(value.GetRawText(), typeof(T)),
-                    JsonValueKind.Array => JsonSerializer.Deserialize(value.GetRawText(), typeof(T)),
-                    _ => throw new InvalidOperationException($"Tipo JSON no soportado: {value.ValueKind}")
+                    Type t when t == typeof(int) => value.GetInt32(),
+                    Type t when t == typeof(bool) => value.GetBoolean(),
+                    Type t when t == typeof(string) => value.GetString() ?? string.Empty,
+                    Type t when t == typeof(double) => value.GetDouble(),
+                    Type t when t == typeof(decimal) => value.GetDecimal(),
+                    Type t when t == typeof(long) => value.GetInt64(),
+                    Type t when t == typeof(float) => value.GetSingle(),
+                    _ => JsonSerializer.Deserialize(value.GetRawText(), expectedType) ?? throw new InvalidOperationException()
                 };
-                return convertedValue == null ? throw new InvalidOperationException() : CoreResult<T>.Success((T)convertedValue);
+                return CoreResult<object>.Success(convertedValue);
             }
-            catch
+            catch (Exception ex)
             {
-                return CoreResult<T>.Failure([$"El parámetro '{parameter.Key}' debe ser de tipo {typeof(T).Name}."]);
+                return CoreResult<object>.Failure([$"Error al convertir el parámetro '{paramName}' a tipo {expectedType.Name}: {ex.Message}"]);
             }
         }
     }
