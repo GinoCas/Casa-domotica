@@ -1,10 +1,12 @@
-﻿using CasaBackend.Casa.Core.Entities;
+﻿using CasaBackend.Casa.Core;
+using CasaBackend.Casa.Core.Entities;
 
 namespace CasaBackend.Casa.Application.Interfaces.Command
 {
     public interface ICommandHandler
     {
         string CommandName { get; }
-        Task HandleAsync(CommandEntity entity);
+        Dictionary<string, Type> RequiredParameters { get; }
+        Task<CoreResult<bool>> HandleAsync(CommandEntity entity);
     }
 }

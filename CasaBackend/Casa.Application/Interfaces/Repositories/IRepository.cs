@@ -1,11 +1,13 @@
-﻿namespace CasaBackend.Casa.Application.Interfaces.Repositories
+﻿using CasaBackend.Casa.Core;
+
+namespace CasaBackend.Casa.Application.Interfaces.Repositories
 {
     public interface IRepository<T>
     {
-        Task<T> GetByIdAsync(int id);
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<T> CreateAsync(T entity);
-        Task<T> UpdateAsync(T entity);
-        Task<bool> DeleteAsync(int id);
+        Task<CoreResult<T>> GetByIdAsync(int id);
+        Task<CoreResult<IEnumerable<T>>> GetAllAsync();
+        Task<CoreResult<T>> CreateAsync(T entity);
+        Task<CoreResult<T>> UpdateAsync(T entity);
+        Task<CoreResult<bool>> DeleteAsync(int id);
     }
 }
