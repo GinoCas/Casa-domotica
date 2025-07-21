@@ -1,60 +1,47 @@
-import { Device, Illuminable } from "@/types/Device";
-import DevicesData from "@/stores/devices.json";
-import { createDeviceDto } from "@/Utils/DeviceDtoFactory";
-import bluetoothConnection from "./bluetoothLE";
-import useModeStore from "@/stores/useModeStore";
+import { Device, IDimmable } from "@/types/Device";
+import { GetHandler, PostHandler } from "@/Utils/apiHandlers";
+import { CommandDto, createBrightnessCommand, createSpeedCommand, createStateCommand } from "@/Utils/CommandDtoFactory";
 
-export function getDeviceList(): Device[] {
-  return DevicesData as Device[];
+export async function getDeviceList(): Promise<Result<Device[]>> {
+  return await GetHandler<Device[]>("device/list");
 }
 
-export function getDeviceById(id: number): Device {
-  const deviceIndex = DevicesData.findIndex((device) => device.id === id);
-  return DevicesData[deviceIndex] as Device;
+export async function getDeviceById(id: number): Promise<Result<Device>> {
+  return await GetHandler<Device>("device/" + id);
 }
 
-export async function updateDevice(updatedDevice: Device) {
-  const { saveEnergyMode } = useModeStore.getState();
-  const deviceIndex = DevicesData.findIndex(
-    (device) => device.id === updatedDevice.id,
-  );
-  DevicesData[deviceIndex] = {
-    ...DevicesData[deviceIndex],
-    ...updatedDevice,
-  };
-
-  let device: Device = DevicesData[deviceIndex] as Device;
-  if (device.type === "led" && saveEnergyMode) {
-    (device as Illuminable).brightness = 75;
-  }
-
-  const dto = createDeviceDto(DevicesData[deviceIndex] as Device);
-  await bluetoothConnection.sendData(dto);
-  return;
+async function executeDeviceCommand(cmdDto: CommandDto): Promise<Result<CommandDto>> {
+  return await PostHandler<CommandDto>("device/execute", cmdDto);
 }
 
-export async function UpdateAllDevices() {
-  getDeviceList().forEach(async (device) => {
-    await updateDevice(device);
-  });
-  return;
+export async function setDeviceState(deviceId: number, state: boolean): Promise<Result<CommandDto>> {
+  return executeDeviceCommand(createStateCommand(deviceId, state));
 }
 
-export function GetLedList() {
-  const list: Device[] = [];
-  getDeviceList().forEach((device) => {
+export async function setBrightness(deviceId: number, brightness: number): Promise<Result<CommandDto>> {
+  return executeDeviceCommand(createBrightnessCommand(deviceId, brightness));
+}
+
+export async function setSpeed(deviceId: number, speed: number): Promise<Result<any>> {
+  return executeDeviceCommand(createSpeedCommand(deviceId, speed));
+}
+
+export async function GetLedList() {
+  const result: Device[] = [];
+  const list: Device[] = (await getDeviceList()).data;
+  list.forEach((device: Device) => {
     if (device.deviceType === "Led" || device.deviceType === "Tv") {
-      list.push(device);
+      result.push(device);
     }
   });
   return list;
 }
 
 export async function UpdateAllLeds() {
-  getDeviceList().forEach(async (device) => {
+  /*getDeviceList().forEach(async (device) => {
     if (device.deviceType === "Led" || device.deviceType === "Tv") {
       await updateDevice(device);
     }
-  });
+  });*/
   return;
 }
