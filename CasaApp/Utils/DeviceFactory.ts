@@ -1,10 +1,9 @@
-import { Device, DeviceType, Illuminable, Rotatable } from "@/types/Device";
+import { Device, DeviceType, IDimmable, IVelocity } from "@/types/Device";
 
 export function createDevice(deviceType: DeviceType) {
   const baseDevice: Device = {
     type: deviceType,
     id: 0,
-    pin: 0,
     state: false,
     voltage: 0,
     amperes: 0,
@@ -14,12 +13,12 @@ export function createDevice(deviceType: DeviceType) {
       return {
         ...baseDevice,
         type: "Led",
-      } as Device & Illuminable;
+      } as Device & IDimmable;
     case "Fan":
       return {
         ...baseDevice,
         type: "Fan",
-      } as Device & Rotatable;
+      } as Device & IVelocity;
   }
   return baseDevice;
 }
