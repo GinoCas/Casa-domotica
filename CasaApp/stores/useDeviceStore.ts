@@ -1,6 +1,6 @@
-import { setBrightness, setDeviceState } from "@/lib/deviceController";
 import { Device } from "@/types/Device";
 import { Result } from "@/types/Response";
+import { deviceService } from "@/services/deviceService";
 import { create } from "zustand";
 
 interface PendingChange {
@@ -40,10 +40,9 @@ const useDeviceStore = create<DeviceState>()((set, get) => ({
           : device
       );
       const change: PendingChange = { 
-        function: setDeviceState(deviceId, newState),
+        function: deviceService.setDeviceState(deviceId, newState),
         timestamp: Date.now() 
       };
-      
       return { 
         devices: updatedDevices,
         pendingChanges: [...state.pendingChanges, change]
@@ -58,7 +57,7 @@ const useDeviceStore = create<DeviceState>()((set, get) => ({
           : device
       );
       const change: PendingChange = { 
-        function: setBrightness(deviceId, brightness),
+        function: deviceService.setBrightness(deviceId, brightness),
         timestamp: Date.now() 
       };
       return {
