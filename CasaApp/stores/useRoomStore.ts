@@ -3,26 +3,26 @@ import { create } from "zustand";
 
 interface RoomState {
   roomName: string;
-  devices: Device[];
-  handleLoadDevices: (newDevices: Device[]) => void;
+  roomDevices: Device[];
+  handleLoadRoomDevices: (newDevices: Device[]) => void;
   changeCurrentRoom: (newRoom: string) => void;
   isLoadingRooms: boolean;
-  isLoadingDevices: boolean;
+  isLoadingRoomDevices: boolean;
   changeLoadingRooms: (newState: boolean) => void;
-  changeLoadingDevices: (newState: boolean) => void;
+  changeLoadingRoomDevices: (newState: boolean) => void;
 }
 
 const useRoomStore = create<RoomState>()((set) => ({
-  devices: [],
+  roomDevices: [],
   roomName: "",
-  handleLoadDevices: (newDevices) =>
-    set((state) => ({ ...state, devices: newDevices })),
+  handleLoadRoomDevices: (newDevices) =>
+    set((state) => ({ ...state, roomDevices: newDevices })),
   changeCurrentRoom: (newRoom) =>
     set((state) => ({ ...state, roomName: newRoom })),
-  isLoadingDevices: false,
+  isLoadingRoomDevices: false,
   isLoadingRooms: false,
-  changeLoadingDevices: (newState) =>
-    set((state) => ({ ...state, isLoadingDevices: newState })),
+  changeLoadingRoomDevices: (newState) =>
+    set((state) => ({ ...state, isLoadingRoomDevices: newState })),
   changeLoadingRooms: (newState) =>
     set((state) => ({ ...state, isLoadingRooms: newState })),
 }));
