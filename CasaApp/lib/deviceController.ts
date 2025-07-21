@@ -1,4 +1,5 @@
 import { Device, IDimmable } from "@/types/Device";
+import { Result } from "@/types/Response";
 import { GetHandler, PostHandler } from "@/Utils/apiHandlers";
 import { CommandDto, createBrightnessCommand, createSpeedCommand, createStateCommand } from "@/Utils/CommandDtoFactory";
 
@@ -24,24 +25,4 @@ export async function setBrightness(deviceId: number, brightness: number): Promi
 
 export async function setSpeed(deviceId: number, speed: number): Promise<Result<any>> {
   return executeDeviceCommand(createSpeedCommand(deviceId, speed));
-}
-
-export async function GetLedList() {
-  const result: Device[] = [];
-  const list: Device[] = (await getDeviceList()).data;
-  list.forEach((device: Device) => {
-    if (device.deviceType === "Led" || device.deviceType === "Tv") {
-      result.push(device);
-    }
-  });
-  return list;
-}
-
-export async function UpdateAllLeds() {
-  /*getDeviceList().forEach(async (device) => {
-    if (device.deviceType === "Led" || device.deviceType === "Tv") {
-      await updateDevice(device);
-    }
-  });*/
-  return;
 }

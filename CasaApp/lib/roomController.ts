@@ -1,6 +1,7 @@
 import Room from "@/types/Room";
 import { Device } from "@/types/Device";
 import { GetHandler } from "@/Utils/apiHandlers";
+import { Result } from "@/types/Response";
 
 export async function getRoomsList(): Promise<Result<string[]>> {
   return await GetHandler<string[]>("room/list");

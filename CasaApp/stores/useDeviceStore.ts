@@ -1,5 +1,6 @@
 import { setBrightness, setDeviceState } from "@/lib/deviceController";
 import { Device } from "@/types/Device";
+import { Result } from "@/types/Response";
 import { create } from "zustand";
 
 interface PendingChange {

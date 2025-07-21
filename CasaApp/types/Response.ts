@@ -4,7 +4,7 @@ interface IResult<T> {
   errors: string[];
 }
 
-class Result<T> implements IResult<T> {
+export class Result<T> implements IResult<T> {
     constructor(
         public data: T,
         public isSuccess: boolean,

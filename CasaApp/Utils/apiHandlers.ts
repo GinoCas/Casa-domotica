@@ -1,3 +1,5 @@
+import { Result } from "@/types/Response";
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const handleResponseError = (err: any): Result<any> =>

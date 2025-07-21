@@ -36,7 +36,7 @@ export default function Home() {
       }
     }
     loadDevices();
-  }, [handleLoadDevices, devices, getDeviceList]);
+  }, [handleLoadDevices]);
 
   useEffect(() => {
     const syncInterval = setInterval(() => {
