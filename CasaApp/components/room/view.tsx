@@ -21,14 +21,14 @@ export function RoomView({
   devices: Device[];
   isLoadingDevices: boolean;
 }) {
-  const { getDeviceById, updateDevice } = useDeviceStore();
+  const { getDeviceById, setDeviceBrightness, toggleDeviceState } = useDeviceStore();
   const [selectedDevice, setSelectedDevice] = useState<Device>();
   const { changeSaveEnergyMode } = useModeStore();
   const [isModalOpen, setisModalOpen] = useState(false);
 
   const openBrightnessModal = (device: Device) => {
     if (device.type === "Led") {
-      setSelectedDevice(getDeviceById(device.id));
+      setSelectedDevice(getDeviceById(device.id).data);
       setisModalOpen(true);
     }
   };
@@ -37,22 +37,15 @@ export function RoomView({
     (value: number) =>
       debounce((value) => {
         if (selectedDevice) {
-          const newLedState = {
-            ...selectedDevice,
-            brightness: value,
-          };
           changeSaveEnergyMode(false);
-          updateDevice(newLedState);
+          setDeviceBrightness(selectedDevice.id, value);
         }
       }, 300),
-    [selectedDevice, changeSaveEnergyMode, updateDevice],
+    [selectedDevice, changeSaveEnergyMode],
   );
 
-  const handleToggleEnabled = async (device: Device, newState: boolean) => {
-    const getDevice = getDeviceById(device.id);
-    if (!getDevice) return;
-    getDevice.state = !newState;
-    await updateDevice(getDevice);
+   const handleToggleEnabled = (device: Device, newState: boolean) => {
+    toggleDeviceState(device.id, !newState);
   };
 
   return (

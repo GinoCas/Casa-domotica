@@ -18,9 +18,12 @@ export default function AppHeader() {
     changeSaveEnergyMode,
     changeActivityMode,
   } = useModeStore();
-  const rooms: string[] = getRoomsList();
+
+  let rooms: string[] = [];
+
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
+    
   const toggleEnergySaveMode = () => {
     changeSaveEnergyMode(!saveEnergyMode);
     if (saveEnergyMode) return;
@@ -28,9 +31,10 @@ export default function AppHeader() {
   };
 
   useEffect(() => {
-    const getAllRoms = async () => {
+    const getAllRooms = async () => {
       changeLoadingRooms(true);
       try {
+        rooms = (await getRoomsList()).data;
         changeCurrentRoom(rooms[0]);
       } catch (err) {
         console.log("error loading rooms", err);
@@ -38,7 +42,7 @@ export default function AppHeader() {
         changeLoadingRooms(false);
       }
     };
-    getAllRoms();
+    getAllRooms();
   }, [changeCurrentRoom, changeLoadingRooms]);
 
   useEffect(() => {
