@@ -2,7 +2,6 @@ export type DeviceType = "Led" | "Fan" | "Tv";
 
 export interface BaseDevice {
   id: number;
-  pin: number;
   state: boolean;
 }
 
@@ -11,11 +10,11 @@ export interface PowerConsumable {
   amperes: number;
 }
 
-export interface Illuminable {
+export interface IDimmable {
   brightness: number;
 }
 
-export interface Rotatable {
+export interface IVelocity {
   speed: number;
 }
 
