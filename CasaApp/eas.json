@@ -6,7 +6,7 @@
         "distribution": "internal",
         "buildType": "apk",
         "env": {
-          "EXPO_PUBLIC_API_URL": "https://dd7kc9c5-5155.brs.devtunnels.ms"
+          "EXPO_PUBLIC_API_URL": "https://33n9824d-5155.brs.devtunnels.ms/"
         }
       }
     },
@@ -16,7 +16,7 @@
         "distribution": "internal",
         "buildType": "apk",
         "env": {
-          "EXPO_PUBLIC_API_URL": "https://dd7kc9c5-5155.brs.devtunnels.ms"
+          "EXPO_PUBLIC_API_URL": "https://33n9824d-5155.brs.devtunnels.ms/"
         }
       }
     }

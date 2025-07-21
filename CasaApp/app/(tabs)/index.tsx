@@ -19,7 +19,6 @@ export default function Home() {
   } = useRoomStore();
 
   const {
-    devices,
     handleLoadDevices,
     syncChanges,
   } = useDeviceStore();
