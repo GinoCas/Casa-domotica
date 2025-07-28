@@ -32,6 +32,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 //Repositorios
 builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
+builder.Services.AddScoped<IRoomRepository<RoomEntity>, RoomRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, CapabilityRepository<DimmableEntity, DimmableModel>>();
 builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepository<VelocityEntity, VelocityModel>>();
 
@@ -65,6 +66,7 @@ builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, CapabilityF
 //Casos de uso
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
+builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
 
 
 builder.Services.AddAutoMapper(cfg =>
