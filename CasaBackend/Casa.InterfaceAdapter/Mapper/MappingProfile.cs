@@ -2,6 +2,7 @@
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
+using CasaBackend.Casa.InterfaceAdapter.Models;
 using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
 namespace CasaBackend.Casa.InterfaceAdapter.Mapper
@@ -23,6 +24,12 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Speed))
                 .ReverseMap();
+            //Rooms
+            CreateMap<RoomModel, RoomEntity>()
+                .ForMember(dest => dest.DevicesId, opt => opt.MapFrom(src => 
+                    src.RoomDevices.Select(rd => rd.DeviceId).ToList()));
+            CreateMap<RoomEntity, RoomModel>()
+                 .ForMember(dest => dest.RoomDevices, opt => opt.Ignore());
 
             //Presentation
             CreateMap<DeviceViewModel, DeviceEntity>();
