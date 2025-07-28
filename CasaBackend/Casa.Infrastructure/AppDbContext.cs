@@ -10,11 +10,19 @@ namespace CasaBackend.Casa.Infrastructure
         public DbSet<DeviceModel> Devices { get; set; }
         public DbSet<DimmableModel> Dimmables { get; set; }
         public DbSet<VelocityModel> Velocities { get; set; }
+        public DbSet<RoomModel> Rooms { get; set; }
+        public DbSet<RoomDeviceModel> RoomDevices { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DeviceModel>().ToTable("device");
             modelBuilder.Entity<DimmableModel>().ToTable("dimmable");
             modelBuilder.Entity<VelocityModel>().ToTable("velocity");
+            modelBuilder.Entity<RoomModel>()
+                .ToTable("room")
+                .HasMany(r => r.RoomDevices)
+                .WithOne()
+                .HasForeignKey(rd => rd.RoomId);
+            modelBuilder.Entity<RoomDeviceModel>().ToTable("room_device");
         }
     }
 }
