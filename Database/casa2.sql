@@ -12,6 +12,21 @@ CREATE TABLE device(
 	PRIMARY KEY(devi_id)
 );
 
+CREATE TABLE room(
+	room_id INT NOT NULL IDENTITY(1,1),
+	room_name VARCHAR(100), 
+	PRIMARY KEY(room_id)
+);
+
+CREATE TABLE room_device(
+	rode_id INT NOT NULL IDENTITY(1,1),
+	rode_roomId INT NOT NULL,
+	rode_deviceId INT NOT NULL,
+	FOREIGN KEY(rode_roomId) REFERENCES room(room_id),
+	FOREIGN KEY(rode_deviceId) REFERENCES device(devi_id),
+	PRIMARY KEY(rode_id)
+);
+
 CREATE TABLE automation(
 	auto_id INT NOT NULL IDENTITY(1,1),
 	auto_state BIT DEFAULT(0) NOT NULL,
@@ -88,3 +103,60 @@ END;
 SELECT * FROM velocity;
 
 EXEC sp_get_dimmable_devices_from_type 'LED';
+
+INSERT INTO room (room_name) VALUES
+('Todas'),
+('Sala'),
+('Habitacion Azul'),
+('Habitacion Marron'),
+('Patio'),
+('Garage'),
+('Baño'),
+('Cocina'),
+('Comedor');
+
+-- Relacionar habitaciones con dispositivos
+-- Habitación 1 (Todas) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 6),
+(1, 7),
+(1, 8),
+(1, 12),
+(1, 13);
+
+-- Habitación 2 (Sala) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(2, 6),
+(2, 8);
+
+-- Habitación 3 (Habitacion Azul) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(3, 2);
+
+-- Habitación 4 (Habitacion Marron) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(4, 5);
+
+-- Habitación 5 (Patio) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(5, 7);
+
+-- Habitación 6 (Garage) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(6, 12);
+
+-- Habitación 7 (Baño) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(7, 13);
+
+-- Habitación 8 (Cocina) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(8, 3);
+
+-- Habitación 9 (Comedor) con sus dispositivos
+INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
+(9, 4);
