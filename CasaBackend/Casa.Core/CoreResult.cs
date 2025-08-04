@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace CasaBackend.Casa.Core
 {
@@ -10,7 +11,11 @@ namespace CasaBackend.Casa.Core
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this);
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            return JsonConvert.SerializeObject(this, settings);
         }
         public static CoreResult<T> Success(T data) => new(data, true, []);
         public static CoreResult<T> Failure(ICollection<string> errors) => new(default, false, errors);
