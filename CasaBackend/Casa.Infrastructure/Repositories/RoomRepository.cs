@@ -18,6 +18,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
         public async Task<CoreResult<RoomEntity>> GetByRoomNameAsync(string name)
         {
             var model = await _dbContext.Rooms
+                .Include(r => r.RoomDevices)
                 .FirstOrDefaultAsync((room) => room.Name == name);
             if (model == null) return CoreResult<RoomEntity>.Failure([$"La habitación con nombre {name} no fue encontrada."]);
             var entity = _mapper.Map<RoomEntity>(model);
