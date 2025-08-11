@@ -1,8 +1,8 @@
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
-import { getDeviceList } from "@/lib/deviceController";
-import { getRoomDevices } from "@/lib/roomController";
+import { deviceService } from "@/services/deviceService";
+import { roomService } from "@/services/roomService";
 import useDeviceStore from "@/stores/useDeviceStore";
 import useRoomStore from "@/stores/useRoomStore";
 import useSpeechStore from "@/stores/useSpeechStore";
@@ -19,6 +19,7 @@ export default function Home() {
   } = useRoomStore();
 
   const {
+    devices,
     handleLoadDevices,
     syncChanges,
   } = useDeviceStore();
@@ -27,15 +28,39 @@ export default function Home() {
 
   useEffect(() => {
     const loadDevices = async () => {
-      try {
-        const devices = await getDeviceList();
-        handleLoadDevices(devices.data);
-      } catch (err) {
-        console.log("Error on loading devices", err);
+      const dev = (await deviceService.getDeviceList());
+      if (!dev.isSuccess)
+      {
+        console.log("Error on loading devices", dev.errors);
+        return
       }
+      handleLoadDevices(dev.data);
     }
     loadDevices();
   }, [handleLoadDevices]);
+
+  useEffect(() => {
+    const getDevicesOfRoom = async () => {
+      changeLoadingRoomDevices(true);
+      if (!roomName) {
+        changeLoadingRoomDevices(false);
+        return;
+      }
+      if(roomName == "Todas"){
+        handleLoadRoomDevices(devices);
+        changeLoadingRoomDevices(false);
+        return;
+      }
+      let dev = await roomService.getRoomDevices(roomName);
+      if(!dev.isSuccess){
+        changeLoadingRoomDevices(false);
+        return;
+      }
+      handleLoadRoomDevices(dev.data);
+      changeLoadingRoomDevices(false);
+    };
+    getDevicesOfRoom();
+  }, [changeLoadingRoomDevices, roomName, handleLoadRoomDevices]);
 
   useEffect(() => {
     const syncInterval = setInterval(() => {
@@ -45,22 +70,6 @@ export default function Home() {
     return () => clearInterval(syncInterval);
   }, [syncChanges]);
 
-  useEffect(() => {
-    const getDevicesOfRoom = async () => {
-      if (roomName) {
-        try {
-          changeLoadingRoomDevices(true);
-          const devices = await getRoomDevices(roomName);
-          handleLoadRoomDevices(devices.data);
-        } catch (err) {
-          console.log("Error on loading room devices", err);
-        } finally {
-          changeLoadingRoomDevices(false);
-        }
-      }
-    };
-    getDevicesOfRoom();
-  }, [changeLoadingRoomDevices, roomName, handleLoadRoomDevices]);
   return (
     <Container>
       <TimePickerTest />

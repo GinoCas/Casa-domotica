@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect } from "react";
-import { getRoomsList } from "@/lib/roomController";
+import { useEffect, useState } from "react";
+import { roomService } from "@/services/roomService";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 import { Feather } from "@expo/vector-icons";
 import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
-import { UpdateAllLeds } from "@/lib/deviceController";
+//import { UpdateAllLeds } from "@/lib/deviceController";
 import { turnOnLedRandom } from "@/Utils/GeneralCommands";
 
 export default function AppHeader() {
@@ -19,7 +19,7 @@ export default function AppHeader() {
     changeActivityMode,
   } = useModeStore();
 
-  let rooms: string[] = [];
+  const [rooms, setRooms] = useState(["test"])
 
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
@@ -27,20 +27,21 @@ export default function AppHeader() {
   const toggleEnergySaveMode = () => {
     changeSaveEnergyMode(!saveEnergyMode);
     if (saveEnergyMode) return;
-    UpdateAllLeds();
+    //UpdateAllLeds();
   };
 
   useEffect(() => {
     const getAllRooms = async () => {
       changeLoadingRooms(true);
-      try {
-        rooms = (await getRoomsList()).data;
-        changeCurrentRoom(rooms[0]);
-      } catch (err) {
-        console.log("error loading rooms", err);
-      } finally {
+      let roomList = await roomService.getRoomsList();
+      if(!roomList.isSuccess){
+        console.log("error loading rooms", roomList.errors);
         changeLoadingRooms(false);
+        return;
       }
+      changeCurrentRoom(roomList.data[0]);
+      setRooms(roomList.data);
+      changeLoadingRooms(false);
     };
     getAllRooms();
   }, [changeCurrentRoom, changeLoadingRooms]);

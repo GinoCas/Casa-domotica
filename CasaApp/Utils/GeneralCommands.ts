@@ -2,7 +2,7 @@ import { getRoomDevices } from "@/lib/roomController";
 import useDeviceStore from "@/stores/useDeviceStore";
 import { Device } from "@/types/Device";
 
-const { devices, toggleDeviceState } = useDeviceStore();
+//const { devices, toggleDeviceState } = useDeviceStore();
 
 function getRandomDevices(arr: Device[], n: number): Device[] {
   if (n > arr.length)
@@ -14,7 +14,7 @@ function getRandomDevices(arr: Device[], n: number): Device[] {
 }
 
 export async function turnOnLedRandom() {
-  try {
+  /*try {
     const devicesList = devices;
     const randomDevices = getRandomDevices(devices, 3);
     devicesList.forEach((device) => {
@@ -24,21 +24,21 @@ export async function turnOnLedRandom() {
   } catch {
     console.log("Error al activar el modo actividad");
     return;
-  }
+  }*/
 }
 
 export async function turnOnAllLedsOfRoom(roomName: string) {
-  (await getRoomDevices(roomName)).data.forEach((device) => {
+  /*(await getRoomDevices(roomName)).data.forEach((device) => {
     toggleDeviceState(device.id, true);
-  });
+  });*/
 }
 
 export async function turnOffAllLedsOfRoom(roomName: string) {
-  (await getRoomDevices(roomName)).data.forEach((device) => {
+  /*(await getRoomDevices(roomName)).data.forEach((device) => {
     toggleDeviceState(device.id, false);
-  });
+  });*/
 }
 
 export function toggleTv(state: boolean) {
-  toggleDeviceState(6, state);
+  //toggleDeviceState(6, state);
 }

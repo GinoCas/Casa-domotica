@@ -22,10 +22,9 @@ import { parseTimeString } from "@/Utils/parseTimeString";
 import useAutomation from "@/hooks/useAutomations";
 import { Automation } from "@/types/Automation";
 import { Device } from "@/types/Device";
-import useDeviceStore from "@/stores/useDeviceStore";
+import { deviceService } from "@/services/deviceService";
 
 export default function AutomationId() {
-  const { getDeviceById } = useDeviceStore();
   const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
   const { updateAutomation, deleteAutomation } = useAutomation();
 
@@ -148,7 +147,7 @@ export default function AutomationId() {
           justifyContent: "space-between",
         }}
         renderItem={({ item }) => {
-          const currentDevice = getDeviceById(item.id);
+          const currentDevice = deviceService.getDeviceById(item.id);
           return (
             <DeviceCard
               key={item.id}
