@@ -17,13 +17,12 @@ namespace CasaBackend.Casa.API.Validators
                 .Must(HaveValidParameterStructure)
                 .WithMessage("Los parámetros deben tener valores válidos.");
         }
-        private static bool HaveValidParameterStructure(Dictionary<string, JsonElement>? parameters)
+        private static bool HaveValidParameterStructure(Dictionary<string, object>? parameters)
         {
             if (parameters == null) return false;
             foreach (var param in parameters)
             {
-                if (param.Value.ValueKind == JsonValueKind.Undefined ||
-                    param.Value.ValueKind == JsonValueKind.Null)
+                if (param.Value == null)
                 {
                     return false;
                 }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 
 namespace CasaBackend.Casa.Core.Helpers
 {
@@ -17,57 +18,32 @@ namespace CasaBackend.Casa.Core.Helpers
                 ? CoreResult<IEnumerable<string>>.Failure(errors)
                 : CoreResult<IEnumerable<string>>.Success(Enumerable.Empty<string>());
         }
-        public static CoreResult<Dictionary<string, object>> ConvertMultipleJsonElementToExactTypes(IReadOnlyDictionary<string, Type> requiredParameters, IEnumerable<JsonElement> actualValues)
+        public static CoreResult<bool> MapParametersToEntity<TEntity>(TEntity entity, Dictionary<string, object> parameters)
         {
             var errors = new List<string>();
-            var results = new Dictionary<string, object>();
-            var actualValuesEnumerator = actualValues.GetEnumerator();
-            foreach (var param in requiredParameters)
+            var entityType = typeof(TEntity);
+            foreach (var param in parameters)
             {
-                if (!actualValuesEnumerator.MoveNext())
+                var property = entityType.GetProperty(param.Key, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                if (property == null || !property.CanWrite)
                 {
-                    errors.Add($"No se encontraron suficientes valores para el parámetro: {param.Key}");
+                    errors.Add($"Propiedad '{param.Key}' no encontrada o no es escribible");
                     continue;
                 }
-                KeyValuePair<string, JsonElement> actualParam = new(param.Key, actualValuesEnumerator.Current);
-                var result = TryConvertToExpectedType(actualParam, param.Value);
-                if (result.IsSuccess)
+                try
                 {
-                    results[param.Key] = result.Data;
+                    var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                    var convertedValue = Convert.ChangeType(param.Value, targetType);
+                    property.SetValue(entity, convertedValue);
                 }
-                else
+                catch (Exception ex)
                 {
-                    errors.AddRange(result.Errors);
+                    errors.Add($"Error al convertir el parámetro '{param.Key}' a tipo {property.PropertyType.Name}: {ex.Message}");
                 }
             }
-
-            return errors.Count != 0
-                ? CoreResult<Dictionary<string, object>>.Failure(errors)
-                : CoreResult<Dictionary<string, object>>.Success(results);
-        }
-        private static CoreResult<object> TryConvertToExpectedType(KeyValuePair<string, JsonElement> parameter, Type expectedType)
-        {
-            var value = parameter.Value;
-            var paramName = parameter.Key;
-            try
-            {
-                object? convertedValue = expectedType switch
-                {
-                    Type t when t == typeof(int) => value.GetInt32(),
-                    Type t when t == typeof(bool) => value.GetBoolean(),
-                    Type t when t == typeof(string) => value.GetString() ?? string.Empty,
-                    Type t when t == typeof(double) => value.GetDouble(),
-                    Type t when t == typeof(decimal) => value.GetDecimal(),
-                    Type t when t == typeof(long) => value.GetInt64(),
-                    Type t when t == typeof(float) => value.GetSingle(),
-                    _ => JsonSerializer.Deserialize(value.GetRawText(), expectedType) ?? throw new InvalidOperationException()
-                };
-                return CoreResult<object>.Success(convertedValue);
-            }
-            catch (Exception ex)
-            {
-                return CoreResult<object>.Failure([$"Error al convertir el parámetro '{paramName}' a tipo {expectedType.Name}: {ex.Message}"]);
-            }
+            return errors.Count > 0
+                ? CoreResult<bool>.Failure(errors)
+                : CoreResult<bool>.Success(true);
         }
     }
 }

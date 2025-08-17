@@ -43,11 +43,7 @@ namespace CasaBackend.Casa.Application.Commands
                 validateParametersResult.Errors.Add("Parametros necesarios: " + string.Join(", ", RequiredParameters.Keys));
                 return CoreResult<bool>.Failure(validateParametersResult.Errors);
             }
-
-            var parameterResult = ParameterHelper.ConvertMultipleJsonElementToExactTypes(RequiredParameters, entity.Parameters.Values);
-            if (!parameterResult.IsSuccess) return CoreResult<bool>.Failure(parameterResult.Errors);
-            
-            var mappingResult = MapParametersToEntity(sourceEntity, parameterResult.Data);
+            var mappingResult = ParameterHelper.MapParametersToEntity(sourceEntity, entity.Parameters);
             if (!mappingResult.IsSuccess) return CoreResult<bool>.Failure(mappingResult.Errors);
 
             var updateResult = capability.UpdateFrom(sourceEntity);
@@ -57,33 +53,6 @@ namespace CasaBackend.Casa.Application.Commands
             return saveResult.IsSuccess
                 ? CoreResult<bool>.Success(true)
                 : CoreResult<bool>.Failure(saveResult.Errors);
-        }
-        private static CoreResult<bool> MapParametersToEntity(TEntity entity, Dictionary<string, object> parameters)
-        {
-            var errors = new List<string>();
-            var entityType = typeof(TEntity);
-            foreach(var param in parameters)
-            {
-                var property = entityType.GetProperty(param.Key, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                if (property == null || !property.CanWrite) 
-                {
-                    errors.Add($"Propiedad '{param.Key}' no encontrada o no es escribible");
-                    continue;
-                }
-                try
-                {
-                    var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-                    var convertedValue = Convert.ChangeType(param.Value, targetType);
-                    property.SetValue(entity, convertedValue);
-                }
-                catch (Exception ex)
-                {
-                    errors.Add($"Error al convertir el parámetro '{param.Key}' a tipo {property.PropertyType.Name}: {ex.Message}");
-                }
-            }
-            return errors.Count > 0
-                ? CoreResult<bool>.Failure(errors)
-                : CoreResult<bool>.Success(true);
         }
     }
 
