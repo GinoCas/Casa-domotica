@@ -15,6 +15,11 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<DeviceEntity, DeviceDto>();
             CreateMap<CommandDto, CommandEntity>();
 
+            CreateMap<DeviceEntity, DeviceModel>()
+                .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.DeviceType.ToString()))
+                .ReverseMap()
+                .ForMember(dest => dest.DeviceType, opt => opt.Ignore());
+
             //Capabilities
             CreateMap<DimmableModel, DimmableEntity>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
