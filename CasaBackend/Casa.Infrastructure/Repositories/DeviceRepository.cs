@@ -1,4 +1,5 @@
-﻿using CasaBackend.Casa.Application.Interfaces.Factory;
+﻿using AutoMapper;
+using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
@@ -13,11 +14,13 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
         private readonly AppDbContext _dbContext;
         private readonly IFactory<DeviceEntity, DeviceContextDto> _deviceFactory;
         private readonly CapabilityService _capabilityService;
-        public DeviceRepository(AppDbContext dbContext, IFactory<DeviceEntity, DeviceContextDto> factory, CapabilityService capabilityService)
+        private readonly IMapper _mapper;
+        public DeviceRepository(AppDbContext dbContext, IFactory<DeviceEntity, DeviceContextDto> factory, CapabilityService capabilityService, IMapper mapper)
         {
             _dbContext = dbContext;
             _deviceFactory = factory;
             _capabilityService = capabilityService;
+            _mapper = mapper;
         }
         public async Task<CoreResult<DeviceEntity>> GetByIdAsync(int id)
         {
@@ -46,7 +49,20 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             }
             return CoreResult<IEnumerable<DeviceEntity>>.Success(entities);
         }
-        public async Task<CoreResult<DeviceEntity>> UpdateAsync(DeviceEntity device) { throw new NotImplementedException(); }
+        public async Task<CoreResult<DeviceEntity>> UpdateAsync(DeviceEntity device)
+        {
+            var existingModel = await _dbContext.Devices.FindAsync(device.Id);
+            if (existingModel is null) return CoreResult<DeviceEntity>.Failure([$"El dispositivo con id {device.Id} no se encontró."]);
+            _mapper.Map(device, existingModel);
+            await _dbContext.SaveChangesAsync();
+
+            var capabilities = await _capabilityService.GetCapabilitiesForDeviceAsync(device.Id);
+            var dto = new DeviceContextDto { DeviceModel = existingModel, Capabilities = capabilities };
+            var result = _deviceFactory.Fabric(dto);
+            return result.IsSuccess
+                ? CoreResult<DeviceEntity>.Success(result.Data)
+                : CoreResult<DeviceEntity>.Failure(result.Errors);
+        }
         public async Task<CoreResult<DeviceEntity>> CreateAsync(DeviceEntity device) {  throw new NotImplementedException(); }
         public async Task<CoreResult<bool>> DeleteAsync(int id) { throw new NotImplementedException(); }
     }
