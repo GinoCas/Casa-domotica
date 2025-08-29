@@ -11,6 +11,8 @@ export async function getRoomByName(roomName: string): Promise<Result<Room>> {
   return await GetHandler<Room>("room/" + roomName);
 }
 
-export async function getRoomDevicesId(roomName: string): Promise<Result<number[]>> {
+export async function getRoomDevicesId(
+  roomName: string,
+): Promise<Result<number[]>> {
   return await GetHandler<number[]>("room/" + roomName + "/devices");
 }

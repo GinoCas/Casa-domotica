@@ -1,7 +1,11 @@
 import { Device } from "@/types/Device";
 import Room from "@/types/Room";
 import { Result } from "@/types/Response";
-import { getRoomByName, getRoomDevicesId, getRoomNamesList } from "@/lib/roomController";
+import {
+  getRoomByName,
+  getRoomDevicesId,
+  getRoomNamesList,
+} from "@/lib/roomController";
 import useDeviceStore from "@/stores/useDeviceStore";
 
 export const roomService = {
@@ -14,11 +18,11 @@ export const roomService = {
   },
   
   getRoomDevices: async (roomName: string): Promise<Result<Device[]>> => {
-    const ids = (await getRoomDevicesId(roomName));
-    if(!ids.isSuccess){
+    const ids = await getRoomDevicesId(roomName);
+    if (!ids.isSuccess) {
       return Result.failure(ids.errors);
     }
     const dev = useDeviceStore.getState().devices;
-    return Result.success(dev.filter(d => ids.data.includes(d.id)));
-  }
+    return Result.success(dev.filter((d) => ids.data.includes(d.id)));
+  },
 };

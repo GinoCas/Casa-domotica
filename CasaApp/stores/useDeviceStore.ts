@@ -39,13 +39,9 @@ const useDeviceStore = create<DeviceState>()((set, get) => ({
       const updatedDevices = state.devices.map((device) =>
         device.id === deviceId ? { ...device, state: newState } : device,
       );
-      const change: PendingChange = {
-        function: deviceService.setDeviceState(deviceId, newState),
-        timestamp: Date.now(),
-      };
+      deviceService.setDeviceState(deviceId, newState);
       return {
         devices: updatedDevices,
-        pendingChanges: [...state.pendingChanges, change],
       };
     });
   },

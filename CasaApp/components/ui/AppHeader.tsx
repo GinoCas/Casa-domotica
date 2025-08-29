@@ -19,11 +19,11 @@ export default function AppHeader() {
     changeActivityMode,
   } = useModeStore();
 
-  const [rooms, setRooms] = useState(["test"])
+  const [rooms, setRooms] = useState(["Empty"]);
 
   const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
     useRoomStore();
-    
+
   const toggleEnergySaveMode = () => {
     changeSaveEnergyMode(!saveEnergyMode);
     if (saveEnergyMode) return;
@@ -34,7 +34,7 @@ export default function AppHeader() {
     const getAllRooms = async () => {
       changeLoadingRooms(true);
       let roomList = await roomService.getRoomsList();
-      if(!roomList.isSuccess){
+      if (!roomList.isSuccess) {
         console.log("error loading rooms", roomList.errors);
         changeLoadingRooms(false);
         return;

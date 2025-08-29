@@ -19,6 +19,6 @@ export interface IVelocity {
 }
 
 export interface Device extends BaseDevice, PowerConsumable {
-  type: DeviceType;
+  deviceType: DeviceType;
   [key: string]: any;
 }

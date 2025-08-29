@@ -18,24 +18,19 @@ export default function Home() {
     isLoadingRoomDevices,
   } = useRoomStore();
 
-  const {
-    devices,
-    handleLoadDevices,
-    syncChanges,
-  } = useDeviceStore();
+  const { devices, handleLoadDevices, syncChanges } = useDeviceStore();
 
   const { results, voice, cmdVoice } = useSpeechStore();
 
   useEffect(() => {
     const loadDevices = async () => {
-      const dev = (await deviceService.getDeviceList());
-      if (!dev.isSuccess)
-      {
+      const dev = await deviceService.getDeviceList();
+      if (!dev.isSuccess) {
         console.log("Error on loading devices", dev.errors);
-        return
+        return;
       }
       handleLoadDevices(dev.data);
-    }
+    };
     loadDevices();
   }, [handleLoadDevices]);
 
@@ -46,13 +41,13 @@ export default function Home() {
         changeLoadingRoomDevices(false);
         return;
       }
-      if(roomName == "Todas"){
+      if (roomName === "Todas") {
         handleLoadRoomDevices(devices);
         changeLoadingRoomDevices(false);
         return;
       }
       let dev = await roomService.getRoomDevices(roomName);
-      if(!dev.isSuccess){
+      if (!dev.isSuccess) {
         changeLoadingRoomDevices(false);
         return;
       }
