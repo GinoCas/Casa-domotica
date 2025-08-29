@@ -5,11 +5,11 @@ interface IResult<T> {
 }
 
 export class Result<T> implements IResult<T> {
-    constructor(
-        public data: T,
-        public isSuccess: boolean,
-        public errors: string[],
-    ) {}
+  constructor(
+    public data: T,
+    public isSuccess: boolean,
+    public errors: string[],
+  ) {}
   static success<T>(data: T): Result<T> {
     return new Result(data, true, []);
   }

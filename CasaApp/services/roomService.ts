@@ -12,11 +12,11 @@ export const roomService = {
   getRoomsList: async (): Promise<Result<string[]>> => {
     return await getRoomNamesList();
   },
-  
+
   getRoomByName: async (roomName: string): Promise<Result<Room>> => {
     return await getRoomByName(roomName);
   },
-  
+
   getRoomDevices: async (roomName: string): Promise<Result<Device[]>> => {
     const ids = await getRoomDevicesId(roomName);
     if (!ids.isSuccess) {
