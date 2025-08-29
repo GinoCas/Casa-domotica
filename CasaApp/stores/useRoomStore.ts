@@ -24,7 +24,7 @@ const useRoomStore = create<RoomState>()((set) => ({
   changeLoadingRoomDevices: (newState) =>
     set((state) => ({ ...state, isLoadingRoomDevices: newState })),
   changeLoadingRooms: (newState) =>
-    set((state) => ({ ...state, isLoadingRooms: newState }))
+    set((state) => ({ ...state, isLoadingRooms: newState })),
 }));
 
 export default useRoomStore;

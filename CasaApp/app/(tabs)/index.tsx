@@ -1,8 +1,8 @@
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
-import { deviceService } from "@/services/deviceService";
-import { roomService } from "@/services/roomService";
+import { deviceService } from "@/src/services/DeviceService";
+import { roomService } from "@/src/services/RoomService";
 import useDeviceStore from "@/stores/useDeviceStore";
 import useRoomStore from "@/stores/useRoomStore";
 import useSpeechStore from "@/stores/useSpeechStore";
@@ -21,15 +21,14 @@ export default function Home() {
   const { devices, handleLoadDevices, syncChanges } = useDeviceStore();
 
   const { results, voice, cmdVoice } = useSpeechStore();
-
   useEffect(() => {
     const loadDevices = async () => {
-      const dev = await deviceService.getDeviceList();
-      if (!dev.isSuccess) {
-        console.log("Error on loading devices", dev.errors);
+      const devicesResult = await deviceService.getDeviceList();
+      if (!devicesResult.isSuccess) {
+        console.log("Error on loading devices", devicesResult.errors);
         return;
       }
-      handleLoadDevices(dev.data);
+      handleLoadDevices(devicesResult.data);
     };
     loadDevices();
   }, [handleLoadDevices]);
@@ -46,22 +45,24 @@ export default function Home() {
         changeLoadingRoomDevices(false);
         return;
       }
-      let dev = await roomService.getRoomDevices(roomName);
-      if (!dev.isSuccess) {
+      const devIds = await roomService.getDevicesByRoomName(roomName);
+      if (!devIds.isSuccess) {
+        handleLoadRoomDevices([]);
         changeLoadingRoomDevices(false);
         return;
       }
-      handleLoadRoomDevices(dev.data);
+      const currentDevices = devices.filter((d) => devIds.data.includes(d.id));
+      handleLoadRoomDevices(currentDevices);
       changeLoadingRoomDevices(false);
     };
     getDevicesOfRoom();
-  }, [changeLoadingRoomDevices, roomName, handleLoadRoomDevices]);
+  }, [changeLoadingRoomDevices, roomName, handleLoadRoomDevices, devices]);
 
   useEffect(() => {
     const syncInterval = setInterval(() => {
       syncChanges();
     }, 10000);
-    
+
     return () => clearInterval(syncInterval);
   }, [syncChanges]);
 

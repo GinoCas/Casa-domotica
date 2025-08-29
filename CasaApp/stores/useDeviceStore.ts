@@ -1,60 +1,77 @@
-import { Device } from "@/types/Device";
-import { Result } from "@/types/Response";
-import { deviceService } from "@/services/deviceService";
+import { deviceService } from "@/src/services/DeviceService";
 import { create } from "zustand";
+import { Result } from "@/src/shared/Result";
+import { Device } from "@/src/core/entities/Device";
 
 interface PendingChange {
   function: Promise<Result<any>>;
   timestamp: number;
 }
-
-interface DeviceState {
+interface DeviceStoreState {
   devices: Device[];
   pendingChanges: PendingChange[];
   handleLoadDevices: (newDevices: Device[]) => void;
   getDeviceById: (deviceId: number) => Result<Device>;
-  toggleDeviceState: (deviceId: number, newState: boolean) => void;
+  toggleDeviceState: (deviceId: number, newState: boolean) => Promise<void>;
   setDeviceBrightness: (deviceId: number, brightness: number) => void;
   syncChanges: () => Promise<Result<boolean>>;
 }
 
-const useDeviceStore = create<DeviceState>()((set, get) => ({
+const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
   devices: [],
   pendingChanges: [],
-  isLoadingDevices: false,
-  handleLoadDevices: (newDevices) => {
+  handleLoadDevices: (newDevices: Device[]) => {
     set((state) => ({ ...state, devices: newDevices }));
   },
-  getDeviceById: (deviceId) => {
-    const device = get().devices.find((device) => device.id === deviceId);
-    if (device === undefined) {
+  getDeviceById: (deviceId: number) => {
+    const deviceWithState = get().devices.find(
+      (item) => item.device.id === deviceId,
+    );
+    if (deviceWithState === undefined) {
       return Result.failure([
-        "El dispositivo con ID: " + deviceId + "no fue encontrado",
+        "El dispositivo con ID: " + deviceId + " no fue encontrado",
       ]);
     }
-    return Result.success(device);
+    return Result.success(deviceWithState);
   },
   toggleDeviceState: async (deviceId: number, newState: boolean) => {
-    set((state) => {
-      const updatedDevices = state.devices.map((device) =>
-        device.id === deviceId ? { ...device, state: newState } : device,
-      );
-      deviceService.setDeviceState(deviceId, newState);
-      return {
-        devices: updatedDevices,
-      };
-    });
+    // Primero intentamos ejecutar el comando
+    const result = await deviceService.setDeviceState(deviceId, newState);
+
+    if (result.isSuccess) {
+      // Solo actualizamos el estado local si el comando fue exitoso
+      set((state) => {
+        const updatedDevices = state.devices.map((deviceWithState) =>
+          deviceWithState.device.id === deviceId
+            ? {
+                ...deviceWithState,
+                state: newState,
+              }
+            : deviceWithState,
+        );
+        return {
+          ...state,
+          devices: updatedDevices,
+        };
+      });
+    } else {
+      // Podrías manejar el error aquí, por ejemplo, mostrando una notificación
+      console.error("Error toggling device state:", result.errors);
+    }
   },
   setDeviceBrightness: async (deviceId: number, brightness: number) => {
     set((state) => {
-      const updatedDevices = state.devices.map((device) =>
-        device.id === deviceId ? { ...device, brightness } : device,
+      const updatedDevices = state.devices.map((deviceWithState) =>
+        deviceWithState.device.id === deviceId
+          ? { ...deviceWithState, brightness }
+          : deviceWithState,
       );
       const change: PendingChange = {
         function: deviceService.setBrightness(deviceId, brightness),
         timestamp: Date.now(),
       };
       return {
+        ...state,
         devices: updatedDevices,
         pendingChanges: [...state.pendingChanges, change],
       };
@@ -73,7 +90,7 @@ const useDeviceStore = create<DeviceState>()((set, get) => ({
       changesToProcess.map((change) => change.function),
     );
 
-    results.forEach((result) => {
+    results.forEach((result: Result<any>) => {
       if (!result.isSuccess) {
         errors = errors.concat(result.errors);
       }

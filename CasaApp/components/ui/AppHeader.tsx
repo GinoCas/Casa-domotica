@@ -2,14 +2,13 @@ import { Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
-import { roomService } from "@/services/roomService";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 import { Feather } from "@expo/vector-icons";
 import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
-//import { UpdateAllLeds } from "@/lib/deviceController";
 import { turnOnLedRandom } from "@/Utils/GeneralCommands";
+import { roomService } from "@/src/services/RoomService";
 
 export default function AppHeader() {
   const {
@@ -33,7 +32,7 @@ export default function AppHeader() {
   useEffect(() => {
     const getAllRooms = async () => {
       changeLoadingRooms(true);
-      let roomList = await roomService.getRoomsList();
+      let roomList = await roomService.getRoomNames();
       if (!roomList.isSuccess) {
         console.log("error loading rooms", roomList.errors);
         changeLoadingRooms(false);

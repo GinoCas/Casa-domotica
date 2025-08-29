@@ -66,7 +66,7 @@ export function DeviceCard({
             borderRadius: 100,
           }}
         >
-          {renderIcon(device.type)}
+          {renderIcon(device.deviceType)}
         </TouchableOpacity>
         <View
           style={{ justifyContent: "center", alignItems: "center", gap: 8 }}
@@ -93,7 +93,7 @@ export function DeviceCard({
                   : GlobalStyles.disabledColor,
               }}
             >
-              {device.voltage}
+              {(device as any).voltage || "220V"}
             </Text>
             <FontAwesome6
               name="bolt-lightning"
@@ -107,7 +107,7 @@ export function DeviceCard({
           </View>
         </View>
       </View>
-      <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.type}</Text>
+      <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.deviceType}</Text>
       <View
         style={{
           flexDirection: "row",

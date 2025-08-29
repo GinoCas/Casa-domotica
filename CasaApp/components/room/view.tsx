@@ -21,15 +21,20 @@ export function RoomView({
   devices: Device[];
   isLoadingDevices: boolean;
 }) {
-  const { getDeviceById, setDeviceBrightness, toggleDeviceState } = useDeviceStore();
+  const { getDeviceById, setDeviceBrightness, toggleDeviceState } =
+    useDeviceStore();
   const [selectedDevice, setSelectedDevice] = useState<Device>();
   const { changeSaveEnergyMode } = useModeStore();
   const [isModalOpen, setisModalOpen] = useState(false);
 
   const openBrightnessModal = (device: Device) => {
-    if (device.type === "Led") {
-      setSelectedDevice(getDeviceById(device.id).data);
-      setisModalOpen(true);
+    if (device.deviceType === "Led") {
+      // Buscar el device en el store para obtener el estado completo
+      const deviceResult = getDeviceById(device.id);
+      if (deviceResult.isSuccess) {
+        setSelectedDevice(deviceResult.data);
+        setisModalOpen(true);
+      }
     }
   };
 
@@ -41,10 +46,10 @@ export function RoomView({
           setDeviceBrightness(selectedDevice.id, value);
         }
       }, 300),
-    [selectedDevice, changeSaveEnergyMode],
+    [selectedDevice, changeSaveEnergyMode, setDeviceBrightness],
   );
 
-   const handleToggleEnabled = (device: Device, newState: boolean) => {
+  const handleToggleEnabled = (device: Device, newState: boolean) => {
     toggleDeviceState(device.id, !newState);
   };
 
