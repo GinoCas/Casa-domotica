@@ -33,8 +33,7 @@ export class DependencyContainer {
 
   private constructor() {
     // Configuración de la URL base desde las variables de entorno
-    // const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000";
-    const apiUrl = "https://v5jdc5vc-44355.brs.devtunnels.ms";
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5155";
 
     // Inicialización de dependencias
     this.httpClient = new HttpClient(apiUrl);
