@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -22,7 +22,8 @@ import { parseTimeString } from "@/Utils/parseTimeString";
 import useAutomation from "@/hooks/useAutomations";
 import { Automation } from "@/types/Automation";
 import { Device } from "@/types/Device";
-import { deviceService } from "@/services/deviceService";
+import { deviceService } from "@/src/services/DeviceService";
+import useDeviceStore from "@/stores/useDeviceStore";
 
 export default function AutomationId() {
   const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
@@ -101,6 +102,20 @@ export default function AutomationId() {
     });
   };
 
+  const { devices, handleLoadDevices } = useDeviceStore();
+
+  useEffect(() => {
+    const loadDevices = async () => {
+      const devicesResult = await deviceService.getDeviceList();
+      if (!devicesResult.isSuccess) {
+        console.log("Error on loading devices", devicesResult.errors);
+        return;
+      }
+      handleLoadDevices(devicesResult.data);
+    };
+    loadDevices();
+  }, [handleLoadDevices]);
+
   return (
     <Container>
       <AutomationHeader
@@ -147,11 +162,11 @@ export default function AutomationId() {
           justifyContent: "space-between",
         }}
         renderItem={({ item }) => {
-          const currentDevice = deviceService.getDeviceById(item.id);
+          const device = devices[item.id];
           return (
             <DeviceCard
               key={item.id}
-              device={currentDevice!}
+              device={device}
               handleToogleEnabled={handleToggleEnabled}
             />
           );
