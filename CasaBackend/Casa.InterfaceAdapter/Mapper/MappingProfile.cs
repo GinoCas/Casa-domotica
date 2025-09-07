@@ -20,6 +20,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ReverseMap()
                 .ForMember(dest => dest.DeviceType, opt => opt.Ignore());
 
+            CreateMap<AutomationEntity, AutomationModel>().ReverseMap();
+            CreateMap<AutomationDeviceEntity, AutomationDeviceModel>().ReverseMap();
             //Capabilities
             CreateMap<DimmableModel, DimmableEntity>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
