@@ -8,3 +8,4 @@
 /CasaAPI
 /CasaBackend/bin
 CasaBackend/appsettings.json
+CasaBackend/.env

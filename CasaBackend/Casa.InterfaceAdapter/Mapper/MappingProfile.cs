@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Casa.Core.Entities;
+using Casa.InterfaceAdapter.Models;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;

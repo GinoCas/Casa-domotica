@@ -21,9 +21,18 @@ using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+string? port = Environment.GetEnvironmentVariable("API_PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://localhost:{port}");
+}
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
@@ -33,7 +42,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("CasaDB"));
+    options.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONN"));
 });
 //Repositorios
 builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
