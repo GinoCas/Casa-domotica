@@ -30,6 +30,8 @@ CREATE TABLE room_device(
 CREATE TABLE automation(
 	auto_id INT NOT NULL IDENTITY(1,1),
 	auto_state BIT DEFAULT(0) NOT NULL,
+	auto_name VARCHAR(100) DEFAULT('New Automation'),
+	auto_description VARCHAR(100) DEFAULT('Description'),
 	auto_initTime TIME NOT NULL,
 	auto_endTime TIME NOT NULL,
 	PRIMARY KEY(auto_id)
@@ -160,3 +162,10 @@ INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
 -- Habitación 9 (Comedor) con sus dispositivos
 INSERT INTO room_device (rode_roomId, rode_deviceId) VALUES
 (9, 4);
+
+-- Automatizacion 1
+INSERT INTO automation (auto_state, auto_name, auto_description, auto_initTime, auto_endTime)
+VALUES (1, 'Luces Nocturnas', 'Encender luces exteriores', '19:00', '23:59');
+
+INSERT INTO automation_device(aude_state, aude_automationId, aude_deviceId)
+VALUES (1, 1, 5);
