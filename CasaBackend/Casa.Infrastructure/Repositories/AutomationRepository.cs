@@ -1,12 +1,12 @@
 using AutoMapper;
-using Casa.Core.Entities;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;
+using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Infrastructure;
 using CasaBackend.Casa.InterfaceAdapter.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Casa.Infrastructure.Repositories
+namespace CasaBackend.Casa.Infrastructure.Repositories
 {
     public class AutomationRepository : IRepository<AutomationEntity>
     {
@@ -32,7 +32,7 @@ namespace Casa.Infrastructure.Repositories
             var model = await _context.Automations.FindAsync(id);
             if (model == null)
             {
-                return CoreResult<bool>.Failure(["Automatizaci�n no encontrada."]);
+                return CoreResult<bool>.Failure(["Automatizacion no encontrada."]);
             }
             _context.Automations.Remove(model);
             await _context.SaveChangesAsync();
@@ -51,7 +51,7 @@ namespace Casa.Infrastructure.Repositories
             var model = await _context.Automations.Include(a => a.Devices).FirstOrDefaultAsync(a => a.Id == id);
             if (model == null)
             {
-                return CoreResult<AutomationEntity>.Failure(["Automatizaci�n no encontrada."]);
+                return CoreResult<AutomationEntity>.Failure(["Automatizacion no encontrada."]);
             }
             var entity = _mapper.Map<AutomationEntity>(model);
             return CoreResult<AutomationEntity>.Success(entity);

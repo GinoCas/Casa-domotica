@@ -1,6 +1,6 @@
 using CasaBackend.Casa.Core.Entities;
 
-namespace Casa.Core.Entities
+namespace CasaBackend.Casa.Core.Entities
 {
     public class AutomationDeviceEntity
     {
