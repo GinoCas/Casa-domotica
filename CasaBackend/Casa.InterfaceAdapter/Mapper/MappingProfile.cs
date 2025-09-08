@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Casa.Core.Entities;
+using AutoMapper;
 using Casa.InterfaceAdapter.Models;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
@@ -46,6 +45,15 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Brightness, opt => opt.MapFrom(src => src.Dimmable.Brightness));
             CreateMap<FanEntity, FanViewModel>()
                 .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Velocity.Speed));
+
+            //Automations
+            CreateMap<AutomationDto, AutomationEntity>()
+                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => 
+                    src.DeviceIds.Select(id => new AutomationDeviceEntity { DeviceId = id })));
+            CreateMap<AutomationEntity, AutomationDetailViewModel>()
+                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => 
+                    src.Devices.Select(ad => ad.Device)));
+            CreateMap<AutomationEntity, AutomationViewModel>();
         }
     }
 }
