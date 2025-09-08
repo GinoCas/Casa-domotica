@@ -10,6 +10,10 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
 
         [Column("auto_state")]
         public bool State { get; set; }
+        [Column("auto_name")]
+        public string Name { get; set; }
+        [Column("auto_description")]
+        public string Description { get; set; }
 
         [Column("auto_initTime")]
         public TimeSpan InitTime { get; set; }

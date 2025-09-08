@@ -42,7 +42,10 @@ builder.Services.AddControllers()
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONN"));
+    var connectionString = builder.Configuration.GetConnectionString("CasaDB");
+    var dbHost = Environment.GetEnvironmentVariable("DB_CONN");
+    var finalConnectionString = connectionString.Replace("{DB_CONN}", dbHost);
+    options.UseSqlServer(finalConnectionString);
 });
 //Repositorios
 builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
