@@ -46,6 +46,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 //Repositorios
 builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
+builder.Services.AddScoped<IRepository<AutomationEntity>, AutomationRepository>();
 builder.Services.AddScoped<IRoomRepository<RoomEntity>, RoomRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, CapabilityRepository<DimmableEntity, DimmableModel>>();
 builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepository<VelocityEntity, VelocityModel>>();
@@ -61,6 +62,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<CommandValidator>();
 
 //Presentadores
 builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();
+builder.Services.AddScoped<IPresenter<AutomationEntity, AutomationViewModel>, AutomationPresenter>();
+builder.Services.AddScoped<IPresenter<AutomationEntity, AutomationDetailViewModel>, AutomationDetailPresenter>();
 
 //Handlers
 builder.Services.AddScoped<ICommandHandler, SetStateCommand>(provider =>
@@ -86,6 +89,13 @@ builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, CapabilityF
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
 builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
+
+//Casos de uso de automatizaciones
+builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationViewModel>>();
+builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel>>();
+builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationDto>>();
+builder.Services.AddScoped<EditAutomationUseCase<AutomationEntity, AutomationDto>>();
+builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 
 builder.Services.AddAutoMapper(cfg =>
