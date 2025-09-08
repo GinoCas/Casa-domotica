@@ -47,9 +47,11 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Velocity.Speed));
 
             //Automations
+            CreateMap<AutomationEntity, AutomationDto>()
+                .ForMember(dest => dest.DeviceIds, opt => opt.MapFrom(src => src.Devices.Select(ad => ad.DeviceId)))
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<AutomationDto, AutomationEntity>()
-                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => 
-                    src.DeviceIds.Select(id => new AutomationDeviceEntity { DeviceId = id })));
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<AutomationEntity, AutomationDetailViewModel>()
                 .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => 
                     src.Devices.Select(ad => ad.Device)));

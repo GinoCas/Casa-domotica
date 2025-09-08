@@ -5,6 +5,7 @@ using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CasaBackend.Casa.API.Controllers
@@ -13,6 +14,7 @@ namespace CasaBackend.Casa.API.Controllers
     [AllowAnonymous]
     public class AutomationController(
         GetAutomationUseCase<AutomationEntity, AutomationViewModel> getAutomationUseCase,
+        GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> getAutomationDetailUseCase,
         CreateAutomationUseCase<AutomationEntity, AutomationDto> createAutomationUseCase,
         EditAutomationUseCase<AutomationEntity, AutomationDto> editAutomationUseCase,
         EraseAutomationUseCase<AutomationEntity> eraseAutomationUseCase,
@@ -20,8 +22,9 @@ namespace CasaBackend.Casa.API.Controllers
         ILogger<AutomationController> logger) : ControllerBase
     {
         private readonly GetAutomationUseCase<AutomationEntity, AutomationViewModel> _getAutomationUseCase = getAutomationUseCase;
+        private readonly GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> _getAutomationDetailUseCase = getAutomationDetailUseCase;
         private readonly CreateAutomationUseCase<AutomationEntity, AutomationDto> _createAutomationUseCase = createAutomationUseCase;
-        private readonly EditAutomationUseCase<AutomationEntity, AutomationDto> _updateAutomationUseCase = editAutomationUseCase;
+        private readonly EditAutomationUseCase<AutomationEntity, AutomationDto> _editAutomationUseCase = editAutomationUseCase;
         private readonly EraseAutomationUseCase<AutomationEntity> _deleteAutomationUseCase = eraseAutomationUseCase;
         private readonly IValidator<AutomationDto> _automationValidator = automationValidator;
         private readonly ILogger<AutomationController> _logger = logger;
@@ -39,7 +42,7 @@ namespace CasaBackend.Casa.API.Controllers
         public async Task<IActionResult> GetAutomationById(int id)
         {
             _logger.LogInformation("Getting automation with ID: {AutomationId}", id);
-            var result = await _getAutomationUseCase.ExecuteAsync(id);
+            var result = await _getAutomationDetailUseCase.ExecuteAsync(id);
             if (!result.IsSuccess)
             {
                 _logger.LogWarning("Automation {AutomationId} not found: {Errors}",
@@ -72,24 +75,20 @@ namespace CasaBackend.Casa.API.Controllers
             return Ok(result.ToJson());
         }
 
-        [HttpPut("/automation/edit/{id}")]
-        public async Task<IActionResult> EditAutomation(int id, AutomationDto automation)
+        [HttpPatch("/automation/edit/{id}")]
+        public async Task<IActionResult> EditAutomation(int id, [FromBody] AutomationDto dto)
         {
             _logger.LogInformation("Editing automation with ID: {AutomationId}", id);
-            var validationResult = await ValidateDtoAsync(_automationValidator, automation);
-            if (!validationResult.IsSuccess)
-            {
-                _logger.LogWarning("Validation failed for automation: {Errors}",
-                    string.Join(", ", validationResult.Errors));
-                return BadRequest(validationResult.ToJson());
-            }
-            var result = await _updateAutomationUseCase.ExecuteAsync(id, automation);
+
+            var result = await _editAutomationUseCase.ExecuteAsync(id, dto);
+
             if (!result.IsSuccess)
             {
                 _logger.LogWarning("Error editing automation: {Errors}",
                     string.Join(", ", result.Errors));
                 return BadRequest(result.ToJson());
             }
+
             _logger.LogInformation("Automation edited successfully with ID: {AutomationId}", id);
             return Ok(result.ToJson());
         }

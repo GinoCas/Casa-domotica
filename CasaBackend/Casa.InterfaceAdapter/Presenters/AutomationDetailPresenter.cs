@@ -7,7 +7,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters
     {
         public AutomationDetailViewModel Present(AutomationEntity entity)
         {
-            return new AutomationDetailViewModel
+            var a = new AutomationDetailViewModel
             {
                 Id = entity.Id,
                 State = entity.State,
@@ -15,16 +15,17 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters
                 Name = entity.Name,
                 Description = entity.Description,
                 InitTime = "Inicio:" + entity.InitTime.ToString(),
-                EndTime = "Final:" + entity.EndTime.ToString(),
-                Devices = entity.Devices.Select(ad => new DeviceViewModel
-                {
-                    Id = ad.Device.Id,
-                    DeviceType = ad.Device.DeviceType.ToString(),
-                    Name = ad.Device.Name,
-                    Description = ad.Device.Description,
-                    State = ad.Device.State
-                }).ToList()
+                EndTime = "Final:" + entity.EndTime.ToString()
             };
+            var xd = entity.Devices.Select(ad => new DeviceViewModel
+            {
+                Id = ad.Device.Id,
+                DeviceType = ad.Device.DeviceType.ToString(),
+                Name = ad.Device.Name,
+                Description = ad.Device.Description,
+                State = ad.Device.State
+            }).ToList();
+            return a;
         }
     }
 }

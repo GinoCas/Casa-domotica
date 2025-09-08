@@ -17,7 +17,5 @@ namespace Casa.InterfaceAdapter.Models
 
         [Column("aude_deviceId")]
         public int DeviceId { get; set; }
-        
-        public DeviceModel Device { get; set; }
     }
 }
