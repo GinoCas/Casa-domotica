@@ -9,6 +9,6 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters
         public string Description { get; set; }
         public string InitTime { get; set; }
         public string EndTime { get; set; }
-        public ICollection<DeviceViewModel> Devices { get; set; }
+        public ICollection<AutomationDeviceViewModel> Devices { get; set; }
     }
 }

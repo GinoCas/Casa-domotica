@@ -21,6 +21,6 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
         [Column("auto_endTime")]
         public TimeSpan EndTime { get; set; }
 
-        public ICollection<AutomationDeviceModel> Devices = new List<AutomationDeviceModel>();
+        public ICollection<AutomationDeviceModel> Devices { get; set; } = new List<AutomationDeviceModel>();
     }
 }

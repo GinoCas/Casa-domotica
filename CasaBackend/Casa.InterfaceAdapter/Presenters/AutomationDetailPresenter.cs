@@ -15,16 +15,13 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters
                 Name = entity.Name,
                 Description = entity.Description,
                 InitTime = "Inicio:" + entity.InitTime.ToString(),
-                EndTime = "Final:" + entity.EndTime.ToString()
+                EndTime = "Final:" + entity.EndTime.ToString(),
+                Devices = entity.Devices.Select(ad => new AutomationDeviceViewModel
+                {
+                    Id = ad.DeviceId,
+                    AutoState = ad.State,
+                }).ToList()
             };
-            var xd = entity.Devices.Select(ad => new DeviceViewModel
-            {
-                Id = ad.Device.Id,
-                DeviceType = ad.Device.DeviceType.ToString(),
-                Name = ad.Device.Name,
-                Description = ad.Device.Description,
-                State = ad.Device.State
-            }).ToList();
             return a;
         }
     }

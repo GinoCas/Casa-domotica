@@ -48,7 +48,9 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
 
         public async Task<CoreResult<AutomationEntity>> GetByIdAsync(int id)
         {
-            var model = await _context.Automations.Include(a => a.Devices).FirstOrDefaultAsync(a => a.Id == id);
+            var model = await _context.Automations
+                .Include(a => a.Devices)
+                .FirstOrDefaultAsync(a => a.Id == id);
             if (model == null)
             {
                 return CoreResult<AutomationEntity>.Failure(["Automatizacion no encontrada."]);

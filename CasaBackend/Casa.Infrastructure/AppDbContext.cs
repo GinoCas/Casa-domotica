@@ -35,9 +35,6 @@ namespace CasaBackend.Casa.Infrastructure
 
             modelBuilder.Entity<AutomationDeviceModel>()
                 .ToTable("automation_device");
-                /*.HasOne(ad => ad.Device)
-                .WithMany()
-                .HasForeignKey(d => d.DeviceId);*/
         }
     }
 }

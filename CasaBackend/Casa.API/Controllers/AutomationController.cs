@@ -1,4 +1,4 @@
-using CasaBackend.Casa.Application.UseCases;
+    using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
@@ -90,6 +90,23 @@ namespace CasaBackend.Casa.API.Controllers
             }
 
             _logger.LogInformation("Automation edited successfully with ID: {AutomationId}", id);
+            return Ok(result.ToJson());
+        }
+
+        [HttpPatch("/automation/{automationId}/device/{deviceId}/edit")]
+        public async Task<IActionResult> EditAutomationDevice(int automationId, int deviceId, [FromBody] AutomationDeviceDto dto)
+        {
+            _logger.LogInformation("Edting automation device Id: {DeviceId} in automation {AutomationId}", deviceId, automationId);
+
+            //var result = await _updateAutomationDeviceUseCase.ExecuteAsync(automationId, deviceId, dto);
+
+            if (!result.IsSuccess)
+            {
+                _logger.LogWarning("Error updating device state in automation: {Errors}", string.Join(", ", result.Errors));
+                return BadRequest(result.ToJson());
+            }
+
+            _logger.LogInformation("Successfully updated state for device {DeviceId} in automation {AutomationId}", deviceId, automationId);
             return Ok(result.ToJson());
         }
 

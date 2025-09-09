@@ -21,8 +21,6 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ReverseMap()
                 .ForMember(dest => dest.DeviceType, opt => opt.Ignore());
 
-            CreateMap<AutomationEntity, AutomationModel>().ReverseMap();
-            CreateMap<AutomationDeviceEntity, AutomationDeviceModel>().ReverseMap();
             //Capabilities
             CreateMap<DimmableModel, DimmableEntity>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
@@ -47,14 +45,16 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Velocity.Speed));
 
             //Automations
+            CreateMap<AutomationDeviceModel, AutomationDeviceEntity>().ReverseMap();
+            CreateMap<AutomationModel, AutomationEntity>()
+                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices))
+                .ReverseMap();
+
             CreateMap<AutomationEntity, AutomationDto>()
-                .ForMember(dest => dest.DeviceIds, opt => opt.MapFrom(src => src.Devices.Select(ad => ad.DeviceId)))
+                .ForMember(dest => dest.DeviceIds, opt => opt.MapFrom(src => src.Devices.Select(ad => ad)))
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<AutomationDto, AutomationEntity>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-            CreateMap<AutomationEntity, AutomationDetailViewModel>()
-                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => 
-                    src.Devices.Select(ad => ad.Device)));
             CreateMap<AutomationEntity, AutomationViewModel>();
         }
     }
