@@ -17,6 +17,7 @@ namespace CasaBackend.Casa.API.Controllers
         GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> getAutomationDetailUseCase,
         CreateAutomationUseCase<AutomationEntity, AutomationDto> createAutomationUseCase,
         EditAutomationUseCase<AutomationEntity, AutomationDto> editAutomationUseCase,
+        EditAutomationDeviceUseCase<AutomationDeviceDto> editAutomationDeviceUseCase,
         EraseAutomationUseCase<AutomationEntity> eraseAutomationUseCase,
         IValidator<AutomationDto> automationValidator,
         ILogger<AutomationController> logger) : ControllerBase
@@ -25,6 +26,7 @@ namespace CasaBackend.Casa.API.Controllers
         private readonly GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> _getAutomationDetailUseCase = getAutomationDetailUseCase;
         private readonly CreateAutomationUseCase<AutomationEntity, AutomationDto> _createAutomationUseCase = createAutomationUseCase;
         private readonly EditAutomationUseCase<AutomationEntity, AutomationDto> _editAutomationUseCase = editAutomationUseCase;
+        private readonly EditAutomationDeviceUseCase<AutomationDeviceDto> _editAutomationDeviceUseCase = editAutomationDeviceUseCase;
         private readonly EraseAutomationUseCase<AutomationEntity> _deleteAutomationUseCase = eraseAutomationUseCase;
         private readonly IValidator<AutomationDto> _automationValidator = automationValidator;
         private readonly ILogger<AutomationController> _logger = logger;
@@ -93,19 +95,17 @@ namespace CasaBackend.Casa.API.Controllers
             return Ok(result.ToJson());
         }
 
-        [HttpPatch("/automation/{automationId}/device/{deviceId}/edit")]
+        [HttpPatch("/automation/{automationId}/device/edit/{deviceId}")]
         public async Task<IActionResult> EditAutomationDevice(int automationId, int deviceId, [FromBody] AutomationDeviceDto dto)
         {
             _logger.LogInformation("Edting automation device Id: {DeviceId} in automation {AutomationId}", deviceId, automationId);
 
-            //var result = await _updateAutomationDeviceUseCase.ExecuteAsync(automationId, deviceId, dto);
-
+            var result = await _editAutomationDeviceUseCase.ExecuteAsync(automationId, deviceId, dto);
             if (!result.IsSuccess)
             {
                 _logger.LogWarning("Error updating device state in automation: {Errors}", string.Join(", ", result.Errors));
                 return BadRequest(result.ToJson());
             }
-
             _logger.LogInformation("Successfully updated state for device {DeviceId} in automation {AutomationId}", deviceId, automationId);
             return Ok(result.ToJson());
         }

@@ -93,12 +93,13 @@ builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
 builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
 
-//Casos de uso de automatizaciones
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationViewModel>>();
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel>>();
 builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationDto>>();
 builder.Services.AddScoped<EditAutomationUseCase<AutomationEntity, AutomationDto>>();
+builder.Services.AddScoped<EditAutomationDeviceUseCase<AutomationDeviceDto>>();
 builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
+
 
 
 builder.Services.AddAutoMapper(cfg =>

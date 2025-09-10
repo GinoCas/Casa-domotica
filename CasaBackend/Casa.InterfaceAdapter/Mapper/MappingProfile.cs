@@ -56,6 +56,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<AutomationDto, AutomationEntity>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<AutomationEntity, AutomationViewModel>();
+            CreateMap<AutomationDeviceDto, AutomationDeviceEntity>().ReverseMap();
         }
     }
 }

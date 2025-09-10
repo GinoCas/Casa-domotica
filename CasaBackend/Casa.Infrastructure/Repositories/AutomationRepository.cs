@@ -64,7 +64,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             var model = await _context.Automations.FindAsync(entity.Id);
             if (model == null)
             {
-                return CoreResult<AutomationEntity>.Failure(["Automatizaci�n no encontrada."]);
+                return CoreResult<AutomationEntity>.Failure(["Automatizacion no encontrada."]);
             }
             _mapper.Map(entity, model);
             await _context.SaveChangesAsync();
