@@ -69,16 +69,6 @@ namespace CasaBackend.Casa.API.Controllers
                         command.CommandName, command.DeviceId);
             return Ok(result.ToJson());
         }
-        [HttpPost("/device/create")]
-		public IActionResult CreateDevice([FromBody] dynamic request)
-		{
-			return Ok();
-		}
-		[HttpPut("/device/update")]
-		public IActionResult UpdateDevice([FromBody] dynamic request)
-		{
-			return Ok();
-		}
 		private static async Task<CoreResult<DTO>> ValidateDtoAsync<DTO>(IValidator<DTO> validator, DTO dto)
 		{
 			var validationResult = await validator.ValidateAsync(dto);

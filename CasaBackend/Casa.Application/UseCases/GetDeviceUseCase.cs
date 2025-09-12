@@ -8,22 +8,22 @@ namespace CasaBackend.Casa.Application.UseCases
 {
     public class GetDeviceUseCase<TEntity, TView>
         (
-        IRepository<TEntity> repository, 
+        IDeviceRepository<TEntity> repository, 
         IPresenter<TEntity, TView> presenter
         )
     {
-        private readonly IRepository<TEntity> _repository = repository;
+        private readonly IDeviceRepository<TEntity> _repository = repository;
         private readonly IPresenter<TEntity, TView> _presenter = presenter;
         public async Task<CoreResult<TView>> ExecuteAsync(int id)
         {
-            var result = await _repository.GetByIdAsync(id);
+            var result = await _repository.GetByDeviceIdAsync(id);
             return result.IsSuccess 
                 ? CoreResult<TView>.Success(_presenter.Present(result.Data))
                 : CoreResult<TView>.Failure(result.Errors);
         }
         public async Task<CoreResult<IEnumerable<TView>>> ExecuteAsync()
         {
-            var result = await _repository.GetAllAsync();
+            var result = await _repository.GetAllDevicesAsync();
             IEnumerable<TView> views = [];
             return result.IsSuccess 
                 ? CoreResult<IEnumerable<TView>>.Success(result.Data.Select(_presenter.Present).ToList())

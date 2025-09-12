@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CasaBackend.Casa.Infrastructure.Repositories
 {
-    public class AutomationRepository : IRepository<AutomationEntity>
+    public class AutomationRepository : IAutomationRepository<AutomationEntity>
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
@@ -19,7 +19,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             _mapper = mapper;
         }
 
-        public async Task<CoreResult<AutomationEntity>> CreateAsync(AutomationEntity entity)
+        public async Task<CoreResult<AutomationEntity>> CreateAutomationAsync(AutomationEntity entity)
         {
             var model = _mapper.Map<AutomationModel>(entity);
             await _context.Automations.AddAsync(model);
@@ -27,7 +27,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             return CoreResult<AutomationEntity>.Success(_mapper.Map<AutomationEntity>(model));
         }
 
-        public async Task<CoreResult<bool>> DeleteAsync(int id)
+        public async Task<CoreResult<bool>> DeleteAutomationAsync(int id)
         {
             var model = await _context.Automations.FindAsync(id);
             if (model == null)
@@ -39,14 +39,14 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             return CoreResult<bool>.Success(true);
         }
 
-        public async Task<CoreResult<IEnumerable<AutomationEntity>>> GetAllAsync()
+        public async Task<CoreResult<IEnumerable<AutomationEntity>>> GetAllAutomationsAsync()
         {
             var models = await _context.Automations.ToListAsync();
             var entities = _mapper.Map<IEnumerable<AutomationEntity>>(models);
             return CoreResult<IEnumerable<AutomationEntity>>.Success(entities);
         }
 
-        public async Task<CoreResult<AutomationEntity>> GetByIdAsync(int id)
+        public async Task<CoreResult<AutomationEntity>> GetByAutomationIdAsync(int id)
         {
             var model = await _context.Automations
                 .Include(a => a.Devices)
@@ -59,7 +59,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             return CoreResult<AutomationEntity>.Success(entity);
         }
 
-        public async Task<CoreResult<AutomationEntity>> UpdateAsync(AutomationEntity entity)
+        public async Task<CoreResult<AutomationEntity>> UpdateAutomationAsync(AutomationEntity entity)
         {
             var model = await _context.Automations.FindAsync(entity.Id);
             if (model == null)

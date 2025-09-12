@@ -9,10 +9,10 @@ namespace CasaBackend.Casa.Application.UseCases
         where TEntity : class
         where TDTO : class
     {
-        private readonly IRepository<TEntity> _repository;
+        private readonly IAutomationRepository<TEntity> _repository;
         private readonly IMapper _mapper;
 
-        public EditAutomationUseCase(IRepository<TEntity> repository, IMapper mapper)
+        public EditAutomationUseCase(IAutomationRepository<TEntity> repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;
@@ -20,7 +20,7 @@ namespace CasaBackend.Casa.Application.UseCases
 
         public async Task<CoreResult<bool>> ExecuteAsync(int id, TDTO dto)
         {
-            var entity = await _repository.GetByIdAsync(id);
+            var entity = await _repository.GetByAutomationIdAsync(id);
             if (!entity.IsSuccess)
             {
                 return CoreResult<bool>.Failure(entity.Errors);
@@ -28,7 +28,7 @@ namespace CasaBackend.Casa.Application.UseCases
 
             _mapper.Map(dto, entity.Data);
 
-            var result = await _repository.UpdateAsync(entity.Data);
+            var result = await _repository.UpdateAutomationAsync(entity.Data);
 
             return result.IsSuccess
                 ? CoreResult<bool>.Success(true)

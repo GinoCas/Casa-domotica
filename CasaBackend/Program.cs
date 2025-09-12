@@ -48,8 +48,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(finalConnectionString);
 });
 //Repositorios
-builder.Services.AddScoped<IRepository<DeviceEntity>, DeviceRepository>();
-builder.Services.AddScoped<IRepository<AutomationEntity>, AutomationRepository>();
+builder.Services.AddScoped<IDeviceRepository<DeviceEntity>, DeviceRepository>();
+builder.Services.AddScoped<IAutomationRepository<AutomationEntity>, AutomationRepository>();
 builder.Services.AddScoped<IRoomRepository<RoomEntity>, RoomRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, CapabilityRepository<DimmableEntity, DimmableModel>>();
 builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepository<VelocityEntity, VelocityModel>>();
@@ -71,7 +71,7 @@ builder.Services.AddScoped<IPresenter<AutomationEntity, AutomationDetailViewMode
 //Handlers
 builder.Services.AddScoped<ICommandHandler, SetStateCommand>(provider =>
     new SetStateCommand(
-        provider.GetRequiredService<IRepository<DeviceEntity>>(),
+        provider.GetRequiredService<IDeviceRepository<DeviceEntity>>(),
         "setState", new Dictionary<string, Type> { { "state", typeof(bool) } }));
 
 builder.Services.AddScoped<ICommandHandler, CapabilityCommand<DimmableEntity>>(provider =>

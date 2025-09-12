@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CasaBackend.Casa.Infrastructure.Repositories
 {
-    public class DeviceRepository : IRepository<DeviceEntity>
+    public class DeviceRepository : IDeviceRepository<DeviceEntity>
     {
         private readonly AppDbContext _dbContext;
         private readonly IFactory<DeviceEntity, DeviceContextDto> _deviceFactory;
@@ -22,7 +22,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             _capabilityService = capabilityService;
             _mapper = mapper;
         }
-        public async Task<CoreResult<DeviceEntity>> GetByIdAsync(int id)
+        public async Task<CoreResult<DeviceEntity>> GetByDeviceIdAsync(int id)
         {
             var model = await _dbContext.Devices.FindAsync(id);
             if (model is null) return CoreResult<DeviceEntity>.Failure([$"El dispositivo con id {id} no se encontro."]);
@@ -33,7 +33,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 ? CoreResult<DeviceEntity>.Success(fabricResult.Data)
                 : CoreResult<DeviceEntity>.Failure(fabricResult.Errors);
         }
-        public async Task<CoreResult<IEnumerable<DeviceEntity>>> GetAllAsync()
+        public async Task<CoreResult<IEnumerable<DeviceEntity>>> GetAllDevicesAsync()
         {
             var models = await _dbContext.Devices.ToListAsync();
             var capabilities = await _capabilityService.GetAllCapabilitiesAsync();
@@ -49,7 +49,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             }
             return CoreResult<IEnumerable<DeviceEntity>>.Success(entities);
         }
-        public async Task<CoreResult<DeviceEntity>> UpdateAsync(DeviceEntity device)
+        public async Task<CoreResult<DeviceEntity>> UpdateDeviceAsync(DeviceEntity device)
         {
             var existingModel = await _dbContext.Devices.FindAsync(device.Id);
             if (existingModel is null) return CoreResult<DeviceEntity>.Failure([$"El dispositivo con id {device.Id} no se encontró."]);
@@ -63,7 +63,5 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 ? CoreResult<DeviceEntity>.Success(result.Data)
                 : CoreResult<DeviceEntity>.Failure(result.Errors);
         }
-        public async Task<CoreResult<DeviceEntity>> CreateAsync(DeviceEntity device) {  throw new NotImplementedException(); }
-        public async Task<CoreResult<bool>> DeleteAsync(int id) { throw new NotImplementedException(); }
     }
 }

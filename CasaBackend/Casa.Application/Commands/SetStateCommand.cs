@@ -7,17 +7,17 @@ using CasaBackend.Casa.Core.Helpers;
 namespace CasaBackend.Casa.Application.Commands
 {
     public class SetStateCommand(
-        IRepository<DeviceEntity> repository,
+        IDeviceRepository<DeviceEntity> repository,
         string commandName,
         IReadOnlyDictionary<string, Type> requiredParameters) : ICommandHandler
     {
-        private readonly IRepository<DeviceEntity> _repository = repository;
+        private readonly IDeviceRepository<DeviceEntity> _repository = repository;
         public string CommandName { get; } = commandName;
         public IReadOnlyDictionary<string, Type> RequiredParameters { get; } = requiredParameters;
 
         public async Task<CoreResult<bool>> HandleAsync(CommandEntity entity)
         {
-            var getDeviceResult = await _repository.GetByIdAsync(entity.DeviceId);
+            var getDeviceResult = await _repository.GetByDeviceIdAsync(entity.DeviceId);
             if (!getDeviceResult.IsSuccess) return CoreResult<bool>.Failure(getDeviceResult.Errors);
 
             var device = getDeviceResult.Data;
@@ -30,7 +30,7 @@ namespace CasaBackend.Casa.Application.Commands
             }
             var mappingResult = ParameterHelper.MapParametersToEntity(device, entity.Parameters);
             if (!mappingResult.IsSuccess) return CoreResult<bool>.Failure(mappingResult.Errors);
-            var updateResult = await _repository.UpdateAsync(device);
+            var updateResult = await _repository.UpdateDeviceAsync(device);
             return updateResult.IsSuccess
                 ? CoreResult<bool>.Success(true)
                 : CoreResult<bool>.Failure(updateResult.Errors);

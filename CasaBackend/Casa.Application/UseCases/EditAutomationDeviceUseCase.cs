@@ -9,10 +9,10 @@ namespace CasaBackend.Casa.Application.UseCases
     public class EditAutomationDeviceUseCase<TDTO>
         where TDTO : class
     {
-        private readonly IRepository<AutomationEntity> _repository;
+        private readonly IAutomationRepository<AutomationEntity> _repository;
         private readonly IMapper _mapper;
 
-        public EditAutomationDeviceUseCase(IRepository<AutomationEntity> repository, IMapper mapper)
+        public EditAutomationDeviceUseCase(IAutomationRepository<AutomationEntity> repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;
@@ -20,7 +20,7 @@ namespace CasaBackend.Casa.Application.UseCases
 
         public async Task<CoreResult<bool>> ExecuteAsync(int automationId, int deviceId, TDTO dto)
         {
-            var entity = await _repository.GetByIdAsync(automationId);
+            var entity = await _repository.GetByAutomationIdAsync(automationId);
             if (!entity.IsSuccess)
             {
                 return CoreResult<bool>.Failure(entity.Errors);
@@ -31,7 +31,7 @@ namespace CasaBackend.Casa.Application.UseCases
                 return CoreResult<bool>.Failure([$"Device with id {deviceId} not found in automation {automationId}"]);
             }
             _mapper.Map(dto, device);
-            var result = await _repository.UpdateAsync(entity.Data);
+            var result = await _repository.UpdateAutomationAsync(entity.Data);
 
             return result.IsSuccess
                 ? CoreResult<bool>.Success(true)
