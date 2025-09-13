@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import GlobalStyles from "@/Utils/globalStyles";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
-import { Automation } from "@/types/Automation";
+import { Automation } from "@/src/core/entities/Automation";
 import useAutomationStore from "@/stores/useAutomationStore";
 
 export default function AutomationCard({
@@ -15,6 +15,14 @@ export default function AutomationCard({
 }) {
   const [isEnabled, setIsEnabled] = useState(automation?.state);
   const { updateAutomation } = useAutomationStore();
+
+  const handleToggle = async () => {
+    const newState = !isEnabled;
+    setIsEnabled(newState);
+    const updatedAutomation = { ...automation, state: newState };
+    await updateAutomation(updatedAutomation);
+  };
+
   return (
     <View
       style={[
@@ -29,13 +37,7 @@ export default function AutomationCard({
         </Text>
       </View>
       <View style={styles.actionsContainer}>
-        <Switch
-          toggleEnabled={() => {
-            setIsEnabled(!isEnabled);
-            updateAutomation(automation);
-          }}
-          isEnabled={isEnabled}
-        />
+        <Switch toggleEnabled={handleToggle} isEnabled={isEnabled} />
         <TouchableOpacity
           style={{
             backgroundColor: GlobalStyles.enabledColor,

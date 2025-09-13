@@ -1,57 +1,67 @@
-import { Automation } from "@/types/Automation";
+import { Automation } from "@/src/core/entities/Automation";
+import { automationService } from "@/src/services/AutomationService";
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import AutomationsData from "@/stores/automations.json";
 
 interface AutomationState {
   automations: Automation[];
-  handleLoadAutomations: (newAutomations: Automation[]) => void;
-  createAutomation: () => Automation;
-  updateAutomation: (updatedAuto: Automation) => void;
-  deleteAutomation: (id: number) => void;
+  isLoadingAutomation: boolean;
+  fetchAllAutomations: () => Promise<void>;
+  createAutomation: () => Promise<Automation | null>;
+  updateAutomation: (updatedAuto: Automation) => Promise<void>;
+  deleteAutomation: (id: number) => Promise<void>;
 }
 
-const useAutomationStore = create<AutomationState>()(
-  persist(
-    (set, get) => ({
-      automations: AutomationsData,
-      handleLoadAutomations: (newAutomations) =>
-        set((state) => ({ ...state, automations: newAutomations })),
-      createAutomation: () => {
-        const automations = get().automations;
-        const autoId = Math.max(0, ...automations.map((auto) => auto.id)) + 1;
-        const template: Automation = {
-          id: autoId + 1,
-          title: "New Automation",
-          description: "Automation description",
-          devices: [],
-          initTime: "08:00",
-          endTime: "20:00",
-          state: false,
-        };
-        set((state) => ({
-          automations: [...state.automations, template],
-        }));
-        return template;
-      },
-      deleteAutomation: (id) =>
-        set((state) => ({
-          automations: state.automations.filter((auto) => auto.id !== id),
-        })),
-      updateAutomation: (updatedAuto) =>
-        set((state) => {
-          const updatedAutomations = state.automations.map((auto) =>
-            auto.id === updatedAuto.id ? { ...auto, ...updatedAuto } : auto,
-          );
-          return { automations: updatedAutomations };
-        }),
-    }),
-    {
-      name: "automation-store",
-      storage: createJSONStorage(() => AsyncStorage),
-    },
-  ),
-);
+const useAutomationStore = create<AutomationState>((set, get) => ({
+  automations: [],
+  isLoadingAutomation: false,
+  error: null,
+  fetchAllAutomations: async () => {
+    set({ isLoadingAutomation: true });
+    const result = await automationService.getAllAutomations();
+    if (result.isSuccess) {
+      set({ automations: result.data, isLoadingAutomation: false });
+    } else {
+      set({ isLoadingAutomation: false });
+    }
+  },
+  createAutomation: async () => {
+    set({ isLoadingAutomation: true });
+    const result = await automationService.createAutomation();
+    if (result.isSuccess) {
+      set((state) => ({ automations: [...state.automations, result.data] }));
+      set({ isLoadingAutomation: false });
+      return result.data;
+    } else {
+      set({ isLoadingAutomation: false });
+      return null;
+    }
+  },
+  deleteAutomation: async (id) => {
+    set({ isLoadingAutomation: true });
+    const result = await automationService.deleteAutomation(id);
+    if (result.isSuccess) {
+      set((state) => ({
+        automations: state.automations.filter((auto) => auto.id !== id),
+        loading: false,
+      }));
+    } else {
+      set({ isLoadingAutomation: false });
+    }
+  },
+  updateAutomation: async (updatedAuto) => {
+    set({ isLoadingAutomation: true });
+    const result = await automationService.updateAutomation(updatedAuto);
+    if (result.isSuccess) {
+      set((state) => {
+        const updatedAutomations = state.automations.map((auto) =>
+          auto.id === updatedAuto.id ? result.data : auto,
+        );
+        return { automations: updatedAutomations, loading: false };
+      });
+    } else {
+      set({ isLoadingAutomation: false });
+    }
+  },
+}));
 
 export default useAutomationStore;

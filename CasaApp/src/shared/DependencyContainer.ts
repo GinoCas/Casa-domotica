@@ -14,12 +14,21 @@ import {
   GetRoomByNameUseCase,
   GetDevicesByRoomNameUseCase,
 } from "../application/usecases/RoomUseCases";
+import { ApiAutomationRepository } from "../infrastructure/repositories/ApiAutomationRepository";
+import {
+  CreateAutomationUseCase,
+  DeleteAutomationUseCase,
+  GetAllAutomationsUseCase,
+  GetAutomationByIdUseCase,
+  UpdateAutomationUseCase,
+} from "../application/usecases/AutomationUseCases";
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
   private httpClient: HttpClient;
   private deviceRepository: ApiDeviceRepository;
   private roomRepository: ApiRoomRepository;
+  private automationRepository: ApiAutomationRepository;
 
   // Use cases
   private getDeviceListUseCase: GetDeviceListUseCase;
@@ -30,6 +39,11 @@ export class DependencyContainer {
   private getRoomNamesUseCase: GetRoomNamesUseCase;
   private getRoomByNameUseCase: GetRoomByNameUseCase;
   private getDevicesByRoomNameUseCase: GetDevicesByRoomNameUseCase;
+  private getAllAutomationsUseCase: GetAllAutomationsUseCase;
+  private getAutomationByIdUseCase: GetAutomationByIdUseCase;
+  private createAutomationUseCase: CreateAutomationUseCase;
+  private deleteAutomationUseCase: DeleteAutomationUseCase;
+  private updateAutomationUseCase: UpdateAutomationUseCase;
 
   private constructor() {
     // Configuración de la URL base desde las variables de entorno
@@ -39,6 +53,7 @@ export class DependencyContainer {
     this.httpClient = new HttpClient(apiUrl);
     this.deviceRepository = new ApiDeviceRepository(this.httpClient);
     this.roomRepository = new ApiRoomRepository(this.httpClient);
+    this.automationRepository = new ApiAutomationRepository(this.httpClient);
 
     // Inicialización de casos de uso
     this.getDeviceListUseCase = new GetDeviceListUseCase(this.deviceRepository);
@@ -56,6 +71,21 @@ export class DependencyContainer {
     this.getRoomByNameUseCase = new GetRoomByNameUseCase(this.roomRepository);
     this.getDevicesByRoomNameUseCase = new GetDevicesByRoomNameUseCase(
       this.roomRepository,
+    );
+    this.getAllAutomationsUseCase = new GetAllAutomationsUseCase(
+      this.automationRepository,
+    );
+    this.getAutomationByIdUseCase = new GetAutomationByIdUseCase(
+      this.automationRepository,
+    );
+    this.createAutomationUseCase = new CreateAutomationUseCase(
+      this.automationRepository,
+    );
+    this.deleteAutomationUseCase = new DeleteAutomationUseCase(
+      this.automationRepository,
+    );
+    this.updateAutomationUseCase = new UpdateAutomationUseCase(
+      this.automationRepository,
     );
   }
 
@@ -98,5 +128,26 @@ export class DependencyContainer {
 
   public getGetDevicesByRoomNameUseCase(): GetDevicesByRoomNameUseCase {
     return this.getDevicesByRoomNameUseCase;
+  }
+
+  // Getters para casos de uso de Automation
+  public getGetAllAutomationsUseCase(): GetAllAutomationsUseCase {
+    return this.getAllAutomationsUseCase;
+  }
+
+  public getGetAutomationByIdUseCase(): GetAutomationByIdUseCase {
+    return this.getAutomationByIdUseCase;
+  }
+
+  public getCreateAutomationUseCase(): CreateAutomationUseCase {
+    return this.createAutomationUseCase;
+  }
+
+  public getDeleteAutomationUseCase(): DeleteAutomationUseCase {
+    return this.deleteAutomationUseCase;
+  }
+
+  public getUpdateAutomationUseCase(): UpdateAutomationUseCase {
+    return this.updateAutomationUseCase;
   }
 }

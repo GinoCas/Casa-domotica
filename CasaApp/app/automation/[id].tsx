@@ -20,17 +20,17 @@ import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
 import { parseTimeString } from "@/Utils/parseTimeString";
 import useAutomation from "@/hooks/useAutomations";
-import { Automation } from "@/types/Automation";
-import { Device } from "@/types/Device";
 import { deviceService } from "@/src/services/DeviceService";
 import useDeviceStore from "@/stores/useDeviceStore";
+import { Automation } from "@/src/core/entities/Automation";
+import { Device } from "@/src/core/entities/Device";
 
 export default function AutomationId() {
   const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
   const { updateAutomation, deleteAutomation } = useAutomation();
 
   const [currentAutomation, setCurrentAutomation] = useState<Automation>(
-    JSON.parse(initialAuto),
+    Automation.fromApiResponse(JSON.parse(initialAuto)),
   );
 
   const originalAutomation: Automation = useMemo(
@@ -44,10 +44,10 @@ export default function AutomationId() {
     selectedDate?: Date,
   ) => {
     if (!currentAutomation) return;
-    const newAutomationState = {
-      ...currentAutomation,
-      [value]: getTimeString(selectedDate as Date),
-    };
+    const newAutomationState =
+      value === "initTime"
+        ? currentAutomation.withInitTime(getTimeString(selectedDate as Date))
+        : currentAutomation.withEndTime(getTimeString(selectedDate as Date));
     setCurrentAutomation(newAutomationState);
     updateAutomation(newAutomationState);
   };
@@ -67,16 +67,12 @@ export default function AutomationId() {
   const handleToggleEnabled = (selectedDevice: Device, newState: boolean) => {
     if (!currentAutomation) return;
     const updatedDevices = currentAutomation.devices.map((device) => {
-      if (device.id === selectedDevice.baseProperties.id) {
+      if (device.id === selectedDevice.id) {
         return { ...device, state: !newState };
       }
       return device;
     });
-
-    const updatedAuto: Automation = {
-      ...currentAutomation,
-      devices: updatedDevices,
-    };
+    const updatedAuto = currentAutomation.withDevices(updatedDevices);
 
     setCurrentAutomation(updatedAuto);
     updateAutomation(updatedAuto);
@@ -96,10 +92,10 @@ export default function AutomationId() {
   };
 
   const handleChangeText = (key: "title" | "description", value: string) => {
-    setCurrentAutomation({
-      ...currentAutomation,
-      [key]: value,
-    });
+    if (!currentAutomation) return;
+    console.log("automation:", currentAutomation);
+    console.log(currentAutomation.withTitle(value));
+    setCurrentAutomation(currentAutomation);
   };
 
   const { devices, handleLoadDevices } = useDeviceStore();

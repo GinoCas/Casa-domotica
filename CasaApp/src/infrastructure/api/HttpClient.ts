@@ -60,4 +60,29 @@ export class HttpClient {
       return Result.fromError(error as Error);
     }
   }
+  async patch<T>(endpoint: string, data?: any): Promise<Result<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/${endpoint}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return await this.handleResponse<T>(response);
+    } catch (error) {
+      return Result.fromError(error as Error);
+    }
+  }
+
+  async delete<T>(endpoint: string): Promise<Result<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/${endpoint}`, {
+        method: "DELETE",
+      });
+      return await this.handleResponse<T>(response);
+    } catch (error) {
+      return Result.fromError(error as Error);
+    }
+  }
 }
