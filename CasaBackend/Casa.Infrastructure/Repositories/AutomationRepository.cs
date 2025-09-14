@@ -41,7 +41,9 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
 
         public async Task<CoreResult<IEnumerable<AutomationEntity>>> GetAllAutomationsAsync()
         {
-            var models = await _context.Automations.ToListAsync();
+            var models = await _context.Automations
+                .Include(a => a.Devices)
+                .ToListAsync();
             var entities = _mapper.Map<IEnumerable<AutomationEntity>>(models);
             return CoreResult<IEnumerable<AutomationEntity>>.Success(entities);
         }

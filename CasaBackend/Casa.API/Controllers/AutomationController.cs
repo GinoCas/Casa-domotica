@@ -13,17 +13,15 @@ namespace CasaBackend.Casa.API.Controllers
     [AllowAnonymous]
     public class AutomationController(
         GetAutomationUseCase<AutomationEntity, AutomationViewModel> getAutomationUseCase,
-        GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> getAutomationDetailUseCase,
         CreateAutomationUseCase<AutomationEntity, AutomationDto> createAutomationUseCase,
-        EditAutomationUseCase editAutomationUseCase,
+        UpdateAutomationUseCase updateAutomationUseCase,
         EraseAutomationUseCase<AutomationEntity> eraseAutomationUseCase,
         IValidator<AutomationDto> automationValidator,
         ILogger<AutomationController> logger) : ControllerBase
     {
         private readonly GetAutomationUseCase<AutomationEntity, AutomationViewModel> _getAutomationUseCase = getAutomationUseCase;
-        private readonly GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> _getAutomationDetailUseCase = getAutomationDetailUseCase;
         private readonly CreateAutomationUseCase<AutomationEntity, AutomationDto> _createAutomationUseCase = createAutomationUseCase;
-        private readonly EditAutomationUseCase _editAutomationUseCase = editAutomationUseCase;
+        private readonly UpdateAutomationUseCase _updateAutomationUseCase = updateAutomationUseCase;
         private readonly EraseAutomationUseCase<AutomationEntity> _deleteAutomationUseCase = eraseAutomationUseCase;
         private readonly IValidator<AutomationDto> _automationValidator = automationValidator;
         private readonly ILogger<AutomationController> _logger = logger;
@@ -41,7 +39,7 @@ namespace CasaBackend.Casa.API.Controllers
         public async Task<IActionResult> GetAutomationById(int id)
         {
             _logger.LogInformation("Getting automation with ID: {AutomationId}", id);
-            var result = await _getAutomationDetailUseCase.ExecuteAsync(id);
+            var result = await _getAutomationUseCase.ExecuteAsync(id);
             if (!result.IsSuccess)
             {
                 _logger.LogWarning("Automation {AutomationId} not found: {Errors}",
@@ -74,12 +72,19 @@ namespace CasaBackend.Casa.API.Controllers
             return Ok(result.ToJson());
         }
 
-        [HttpPatch("/automation/edit/{id}")]
-        public async Task<IActionResult> EditAutomation(int id, [FromBody] AutomationDto dto)
+        [HttpPut("/automation/update/{id}")]
+        public async Task<IActionResult> UpdateAutomation(int id, [FromBody] AutomationDto dto)
         {
             _logger.LogInformation("Editing automation with ID: {AutomationId}", id);
 
-            var result = await _editAutomationUseCase.ExecuteAsync(id, dto);
+            var validationResult = await ValidateDtoAsync(_automationValidator, dto);
+            if (!validationResult.IsSuccess)
+            {
+                _logger.LogWarning("Validation failed for automation: {Errors}",
+                    string.Join(", ", validationResult.Errors));
+                return BadRequest(validationResult.ToJson());
+            }
+            var result = await _updateAutomationUseCase.ExecuteAsync(id, dto);
 
             if (!result.IsSuccess)
             {

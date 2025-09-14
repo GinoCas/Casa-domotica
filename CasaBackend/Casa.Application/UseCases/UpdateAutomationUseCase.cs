@@ -7,12 +7,12 @@ using CasaBackend.Casa.InterfaceAdapter.DTOs;
 
 namespace CasaBackend.Casa.Application.UseCases
 {
-    public class EditAutomationUseCase
+    public class UpdateAutomationUseCase
     {
         private readonly IAutomationRepository<AutomationEntity> _repository;
         private readonly IMapper _mapper;
 
-        public EditAutomationUseCase(IAutomationRepository<AutomationEntity> repository, IMapper mapper)
+        public UpdateAutomationUseCase(IAutomationRepository<AutomationEntity> repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;
@@ -26,7 +26,6 @@ namespace CasaBackend.Casa.Application.UseCases
                 return CoreResult<bool>.Failure(entity.Errors);
             }
             _mapper.Map(dto, entity.Data);
-
             entity.Data.Devices.Clear();
             foreach (var deviceDto in dto.Devices)
             {

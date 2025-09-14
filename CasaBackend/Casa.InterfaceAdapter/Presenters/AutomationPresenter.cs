@@ -11,10 +11,16 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters
             {
                 Id = entity.Id,
                 State = entity.State,
+                StateText = entity.State ? "Encendido" : "Apagado",
                 Name = entity.Name,
                 Description = entity.Description,
-                InitTime = "Inicio:" + entity.InitTime.ToString(),
-                EndTime = "Final:" + entity.EndTime.ToString(),
+                InitTime = entity.InitTime.ToString(),
+                EndTime = entity.EndTime.ToString(),
+                Devices = entity.Devices.Select(ad => new AutomationDeviceViewModel
+                {
+                    Id = ad.DeviceId,
+                    AutoState = ad.State,
+                }).ToList()
             };
         }
     }

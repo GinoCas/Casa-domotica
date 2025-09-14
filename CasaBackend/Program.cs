@@ -62,11 +62,11 @@ builder.Services.AddScoped<CapabilityService>();
 //Validadores
 builder.Services.AddValidatorsFromAssemblyContaining<DeviceValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CommandValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AutomationValidator>();
 
 //Presentadores
 builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();
 builder.Services.AddScoped<IPresenter<AutomationEntity, AutomationViewModel>, AutomationPresenter>();
-builder.Services.AddScoped<IPresenter<AutomationEntity, AutomationDetailViewModel>, AutomationDetailPresenter>();
 
 //Handlers
 builder.Services.AddScoped<ICommandHandler, SetStateCommand>(provider =>
@@ -94,9 +94,8 @@ builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
 builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
 
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationViewModel>>();
-builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel>>();
 builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationDto>>();
-builder.Services.AddScoped<EditAutomationUseCase>();
+builder.Services.AddScoped<UpdateAutomationUseCase>();
 builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 
