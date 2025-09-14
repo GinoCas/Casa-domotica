@@ -96,8 +96,7 @@ builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationViewModel>>();
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel>>();
 builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationDto>>();
-builder.Services.AddScoped<EditAutomationUseCase<AutomationEntity, AutomationDto>>();
-builder.Services.AddScoped<EditAutomationDeviceUseCase<AutomationDeviceDto>>();
+builder.Services.AddScoped<EditAutomationUseCase>();
 builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 

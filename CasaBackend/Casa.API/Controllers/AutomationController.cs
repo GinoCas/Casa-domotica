@@ -1,11 +1,10 @@
-    using CasaBackend.Casa.Application.UseCases;
+using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CasaBackend.Casa.API.Controllers
@@ -16,8 +15,7 @@ namespace CasaBackend.Casa.API.Controllers
         GetAutomationUseCase<AutomationEntity, AutomationViewModel> getAutomationUseCase,
         GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> getAutomationDetailUseCase,
         CreateAutomationUseCase<AutomationEntity, AutomationDto> createAutomationUseCase,
-        EditAutomationUseCase<AutomationEntity, AutomationDto> editAutomationUseCase,
-        EditAutomationDeviceUseCase<AutomationDeviceDto> editAutomationDeviceUseCase,
+        EditAutomationUseCase editAutomationUseCase,
         EraseAutomationUseCase<AutomationEntity> eraseAutomationUseCase,
         IValidator<AutomationDto> automationValidator,
         ILogger<AutomationController> logger) : ControllerBase
@@ -25,8 +23,7 @@ namespace CasaBackend.Casa.API.Controllers
         private readonly GetAutomationUseCase<AutomationEntity, AutomationViewModel> _getAutomationUseCase = getAutomationUseCase;
         private readonly GetAutomationUseCase<AutomationEntity, AutomationDetailViewModel> _getAutomationDetailUseCase = getAutomationDetailUseCase;
         private readonly CreateAutomationUseCase<AutomationEntity, AutomationDto> _createAutomationUseCase = createAutomationUseCase;
-        private readonly EditAutomationUseCase<AutomationEntity, AutomationDto> _editAutomationUseCase = editAutomationUseCase;
-        private readonly EditAutomationDeviceUseCase<AutomationDeviceDto> _editAutomationDeviceUseCase = editAutomationDeviceUseCase;
+        private readonly EditAutomationUseCase _editAutomationUseCase = editAutomationUseCase;
         private readonly EraseAutomationUseCase<AutomationEntity> _deleteAutomationUseCase = eraseAutomationUseCase;
         private readonly IValidator<AutomationDto> _automationValidator = automationValidator;
         private readonly ILogger<AutomationController> _logger = logger;
@@ -92,21 +89,6 @@ namespace CasaBackend.Casa.API.Controllers
             }
 
             _logger.LogInformation("Automation edited successfully with ID: {AutomationId}", id);
-            return Ok(result.ToJson());
-        }
-
-        [HttpPatch("/automation/{automationId}/device/edit/{deviceId}")]
-        public async Task<IActionResult> EditAutomationDevice(int automationId, int deviceId, [FromBody] AutomationDeviceDto dto)
-        {
-            _logger.LogInformation("Edting automation device Id: {DeviceId} in automation {AutomationId}", deviceId, automationId);
-
-            var result = await _editAutomationDeviceUseCase.ExecuteAsync(automationId, deviceId, dto);
-            if (!result.IsSuccess)
-            {
-                _logger.LogWarning("Error updating device state in automation: {Errors}", string.Join(", ", result.Errors));
-                return BadRequest(result.ToJson());
-            }
-            _logger.LogInformation("Successfully updated state for device {DeviceId} in automation {AutomationId}", deviceId, automationId);
             return Ok(result.ToJson());
         }
 

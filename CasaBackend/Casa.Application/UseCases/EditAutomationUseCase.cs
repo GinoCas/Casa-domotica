@@ -1,32 +1,37 @@
 using AutoMapper;
+using Casa.InterfaceAdapter.Models;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;
-using Microsoft.AspNetCore.JsonPatch;
+using CasaBackend.Casa.Core.Entities;
+using CasaBackend.Casa.InterfaceAdapter.DTOs;
 
 namespace CasaBackend.Casa.Application.UseCases
 {
-    public class EditAutomationUseCase<TEntity, TDTO>
-        where TEntity : class
-        where TDTO : class
+    public class EditAutomationUseCase
     {
-        private readonly IAutomationRepository<TEntity> _repository;
+        private readonly IAutomationRepository<AutomationEntity> _repository;
         private readonly IMapper _mapper;
 
-        public EditAutomationUseCase(IAutomationRepository<TEntity> repository, IMapper mapper)
+        public EditAutomationUseCase(IAutomationRepository<AutomationEntity> repository, IMapper mapper)
         {
             _repository = repository;
             _mapper = mapper;
         }
 
-        public async Task<CoreResult<bool>> ExecuteAsync(int id, TDTO dto)
+        public async Task<CoreResult<bool>> ExecuteAsync(int id, AutomationDto dto)
         {
             var entity = await _repository.GetByAutomationIdAsync(id);
             if (!entity.IsSuccess)
             {
                 return CoreResult<bool>.Failure(entity.Errors);
             }
-
             _mapper.Map(dto, entity.Data);
+
+            entity.Data.Devices.Clear();
+            foreach (var deviceDto in dto.Devices)
+            {
+                entity.Data.Devices.Add(new AutomationDeviceEntity { DeviceId = deviceDto.Id, State = deviceDto.State, AutomationId = entity.Data.Id });
+            }
 
             var result = await _repository.UpdateAutomationAsync(entity.Data);
 

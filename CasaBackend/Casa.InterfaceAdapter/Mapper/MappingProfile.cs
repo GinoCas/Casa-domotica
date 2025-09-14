@@ -50,8 +50,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices))
                 .ReverseMap();
 
-            CreateMap<AutomationEntity, AutomationDto>()
-                .ForMember(dest => dest.DeviceIds, opt => opt.MapFrom(src => src.Devices.Select(ad => ad)))
+            CreateMap<AutomationDto, AutomationEntity>()
+                .ForMember(dest => dest.Devices, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             CreateMap<AutomationDto, AutomationEntity>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
