@@ -12,13 +12,8 @@ export default function Home() {
   const router = useRouter();
 
   const handleAutomationPress = (automationId: number) => {
-    const automation =
-      automationId === -1
-        ? createAutomation()
-        : getAutomationById(automationId);
     router.push({
       pathname: `/automation/${automationId}`,
-      params: { initialAuto: JSON.stringify(automation) },
     });
   };
   return (

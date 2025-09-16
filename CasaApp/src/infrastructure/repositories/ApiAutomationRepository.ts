@@ -2,6 +2,7 @@ import { IAutomationRepository } from "@/src/core/repositories/IAutomationReposi
 import { HttpClient } from "../api/HttpClient";
 import { Result } from "@/src/shared/Result";
 import { Automation } from "@/src/core/entities/Automation";
+import { AutomationDto } from "@/src/application/dtos/AutomationDto";
 
 export class ApiAutomationRepository implements IAutomationRepository {
   constructor(private httpClient: HttpClient) {}
@@ -33,8 +34,11 @@ export class ApiAutomationRepository implements IAutomationRepository {
       return Result.fromError(error as Error);
     }
   }
-  async create(): Promise<Result<Automation>> {
-    const result = await this.httpClient.post<any>("automation/create", {});
+  async create(automationDto: AutomationDto): Promise<Result<Automation>> {
+    const result = await this.httpClient.post<any>(
+      "automation/create",
+      automationDto,
+    );
     if (!result.isSuccess) {
       return result as Result<Automation>;
     }

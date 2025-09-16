@@ -1,6 +1,7 @@
 import { Automation } from "@/src/core/entities/Automation";
 import { IAutomationRepository } from "@/src/core/repositories/IAutomationRepository";
 import { Result } from "@/src/shared/Result";
+import { AutomationDto } from "../dtos/AutomationDto";
 
 export class GetAllAutomationsUseCase {
   constructor(private automationRepository: IAutomationRepository) {}
@@ -31,7 +32,15 @@ export class CreateAutomationUseCase {
 
   async execute(): Promise<Result<Automation>> {
     try {
-      return await this.automationRepository.create();
+      const newAutomation = new AutomationDto(
+        "New Automation",
+        false,
+        "Description",
+        "08:00",
+        "20:00",
+        [],
+      );
+      return await this.automationRepository.create(newAutomation);
     } catch (error) {
       return Result.fromError(error as Error);
     }

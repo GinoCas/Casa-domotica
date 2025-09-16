@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -24,10 +24,46 @@ import { deviceService } from "@/src/services/DeviceService";
 import useDeviceStore from "@/stores/useDeviceStore";
 import { Automation } from "@/src/core/entities/Automation";
 import { Device } from "@/src/core/entities/Device";
+import Loader from "@/components/ui/Loader";
 
 export default function AutomationId() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const {
+    getAutomationById,
+    createAutomation,
+    updateAutomation,
+    deleteAutomation,
+  } = useAutomation();
+
+  const [currentAutomation, setCurrentAutomation] = useState<Automation>();
+  const [originalAutomation, setOriginalAutomation] = useState<Automation>();
+  const [loadingAutomation, setLoadingAutomation] = useState(true);
+
+  useEffect(() => {
+    const loadAutomation = async () => {
+      setLoadingAutomation(true);
+      let automation: Automation | null | undefined;
+      if (id === "-1") {
+        automation = await createAutomation();
+      } else {
+        automation = getAutomationById(Number(id));
+      }
+      if (automation === null || automation === undefined) {
+        return;
+      }
+
+      setCurrentAutomation(automation);
+      setOriginalAutomation(automation);
+      setLoadingAutomation(false);
+    };
+
+    loadAutomation();
+  }, [id]);
+  /*
   const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
   const { updateAutomation, deleteAutomation } = useAutomation();
+  const loadingAutomation = true;
+  
 
   const originalAutomation: Automation = useMemo(
     () => Automation.fromApiResponse(JSON.parse(initialAuto)),
@@ -37,6 +73,7 @@ export default function AutomationId() {
   const [currentAutomation, setCurrentAutomation] = useState<Automation>(() =>
     Automation.fromApiResponse(JSON.parse(initialAuto)),
   );
+  */
 
   const onChangeDate = (
     value: "initTime" | "endTime",
@@ -114,86 +151,100 @@ export default function AutomationId() {
     loadDevices();
   }, [handleLoadDevices]);
 
+  const styles = StyleSheet.create({
+    timeContainer: {
+      flexDirection: "row",
+      gap: 4,
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    timeButtonsContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 8,
+    },
+    timeButton: {
+      padding: 8,
+      backgroundColor: GlobalStyles.enabledColor,
+      borderRadius: 10,
+    },
+    devicesContainer: {
+      flexDirection: "row",
+      paddingVertical: 8,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+  });
+
   return (
     <Container>
-      <AutomationHeader
-        handleCancel={handleCancel}
-        handleSave={handleSave}
-        handleDelete={handleDelete}
-        currentAutomation={currentAutomation}
-        handleChangeText={handleChangeText}
-      />
-
-      <View style={styles.timeContainer}>
-        <View style={styles.timeButtonsContainer}>
-          <TouchableOpacity
-            style={styles.timeButton}
-            onPress={() => showTimepicker("initTime")}
-          >
-            <Text style={{ color: "#fff" }}>
-              Inicio: {currentAutomation.initTime}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.timeButton}
-            onPress={() => showTimepicker("endTime")}
-          >
-            <Text style={{ color: "#fff" }}>
-              Fin: {currentAutomation.endTime}
-            </Text>
-          </TouchableOpacity>
+      {loadingAutomation || !currentAutomation ? (
+        <View style={styles.loaderContainer}>
+          <Loader size="large" />
         </View>
-        <Text>
-          <FontAwesome5 name="clock" size={16} color="black" />
-        </Text>
-      </View>
-      <View style={styles.devicesContainer}>
-        <Text style={{ fontWeight: "600" }}>Devices </Text>
-        <Chip text={currentAutomation.devices.length.toString() || "0"} />
-      </View>
+      ) : (
+        <>
+          <AutomationHeader
+            handleCancel={handleCancel}
+            handleSave={handleSave}
+            handleDelete={handleDelete}
+            currentAutomation={currentAutomation}
+            handleChangeText={handleChangeText}
+          />
 
-      <FlatList
-        data={currentAutomation.devices}
-        keyExtractor={(device) => device.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={{
-          justifyContent: "space-between",
-        }}
-        renderItem={({ item }) => {
-          const device = devices[item.id];
-          return (
-            <DeviceCard
-              key={item.id}
-              device={device}
-              handleToogleEnabled={handleToggleEnabled}
-            />
-          );
-        }}
-      />
+          <View style={styles.timeContainer}>
+            <View style={styles.timeButtonsContainer}>
+              <TouchableOpacity
+                style={styles.timeButton}
+                onPress={() => showTimepicker("initTime")}
+              >
+                <Text style={{ color: "#fff" }}>
+                  Inicio: {currentAutomation.initTime}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.timeButton}
+                onPress={() => showTimepicker("endTime")}
+              >
+                <Text style={{ color: "#fff" }}>
+                  Fin: {currentAutomation.endTime}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text>
+              <FontAwesome5 name="clock" size={16} color="black" />
+            </Text>
+          </View>
+
+          <View style={styles.devicesContainer}>
+            <Text style={{ fontWeight: "600" }}>Devices </Text>
+            <Chip text={currentAutomation.devices.length.toString() || "0"} />
+          </View>
+
+          <FlatList
+            data={currentAutomation.devices}
+            keyExtractor={(device) => device.id.toString()}
+            numColumns={2}
+            columnWrapperStyle={{
+              justifyContent: "space-between",
+            }}
+            renderItem={({ item }) => {
+              const device = devices[item.id];
+              return (
+                <DeviceCard
+                  key={item.id}
+                  device={device}
+                  handleToogleEnabled={handleToggleEnabled}
+                />
+              );
+            }}
+          />
+        </>
+      )}
     </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  timeContainer: {
-    flexDirection: "row",
-    gap: 4,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  timeButtonsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 8,
-  },
-  timeButton: {
-    padding: 8,
-    backgroundColor: GlobalStyles.enabledColor,
-    borderRadius: 10,
-  },
-  devicesContainer: {
-    flexDirection: "row",
-    paddingVertical: 8,
-  },
-});
