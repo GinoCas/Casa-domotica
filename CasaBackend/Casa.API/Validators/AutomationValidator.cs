@@ -9,16 +9,7 @@ namespace CasaBackend.Casa.API.Validators
         {
             RuleForEach(x => x.Devices)
                 .NotNull()
-                .ChildRules(dev =>
-                {
-                    dev.RuleFor(d => d.Id)
-                       .InclusiveBetween(1, 13)
-                       .WithMessage("El ID del dispositivo debe estar entre 1 y 13.");
-
-                    dev.RuleFor(d => d.State)
-                       .NotNull()
-                       .WithMessage("El estado del dispositivo es obligatorio.");
-                });
+                .WithMessage("La lista de dispositivos no puede ser nula");
 
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("El nombre es obligatorio.")
