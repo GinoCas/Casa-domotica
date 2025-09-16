@@ -55,8 +55,8 @@ export class ApiAutomationRepository implements IAutomationRepository {
     return Result.success(true);
   }
   async update(automation: Automation): Promise<Result<Automation>> {
-    const result = await this.httpClient.patch<any>(
-      `automation/edit/${automation.id}`,
+    const result = await this.httpClient.put<any>(
+      `automation/update/${automation.id}`,
       automation,
     );
     if (!result.isSuccess) {

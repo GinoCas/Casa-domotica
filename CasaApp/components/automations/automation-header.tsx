@@ -8,15 +8,15 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { Automation } from "@/types/Automation";
 import GlobalStyles from "@/Utils/globalStyles";
+import { Automation } from "@/src/core/entities/Automation";
 
 interface Props {
   currentAutomation: Automation;
   handleSave: () => void;
   handleCancel: () => void;
   handleDelete: () => void;
-  handleChangeText: (key: "title" | "description", value: string) => void;
+  handleChangeText: (key: "name" | "description", value: string) => void;
 }
 
 const AutomationHeader = ({
@@ -35,7 +35,7 @@ const AutomationHeader = ({
   const handleDeleteHeader = () => {
     Alert.alert(
       "Eliminar automatización",
-      `¿Estás seguro que deseas eliminar "${currentAutomation.title}"?`,
+      `¿Estás seguro que deseas eliminar "${currentAutomation.name}"?`,
       [
         {
           text: "Cancelar",
@@ -66,8 +66,8 @@ const AutomationHeader = ({
         <View style={styles.editContainer}>
           <TextInput
             style={[styles.input, { fontSize: 20, fontWeight: "600" }]}
-            value={currentAutomation.title}
-            onChangeText={(text) => handleChangeText("title", text)}
+            value={currentAutomation.name}
+            onChangeText={(text) => handleChangeText("name", text)}
             placeholder="Title"
           />
           <TextInput
@@ -101,7 +101,7 @@ const AutomationHeader = ({
       ) : (
         <View>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{currentAutomation.title}</Text>
+            <Text style={styles.title}>{currentAutomation.name}</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={handleEdit}>
                 <FontAwesome5

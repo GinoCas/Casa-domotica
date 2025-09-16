@@ -6,7 +6,7 @@ export interface AutomationDevice {
 export class Automation {
   constructor(
     public readonly id: number,
-    public readonly title: string,
+    public readonly name: string,
     public readonly description: string,
     public readonly initTime: string,
     public readonly endTime: string,
@@ -22,7 +22,7 @@ export class Automation {
     }
     return new Automation(
       this.id,
-      this.title,
+      this.name,
       this.description,
       this.initTime,
       this.endTime,
@@ -34,7 +34,7 @@ export class Automation {
   removeDevice(deviceId: number): Automation {
     return new Automation(
       this.id,
-      this.title,
+      this.name,
       this.description,
       this.initTime,
       this.endTime,
@@ -46,7 +46,7 @@ export class Automation {
   withDevices(devices: AutomationDevice[]): Automation {
     return new Automation(
       this.id,
-      this.title,
+      this.name,
       this.description,
       this.initTime,
       this.endTime,
@@ -54,22 +54,23 @@ export class Automation {
       this.state,
     );
   }
-  withTitle(title: string): Automation {
-    return new Automation(
+  withName(name: string): Automation {
+    const auto = new Automation(
       this.id,
-      title,
+      name,
       this.description,
       this.initTime,
       this.endTime,
       this.devices,
       this.state,
     );
+    return auto;
   }
 
   withDescription(description: string): Automation {
     return new Automation(
       this.id,
-      this.title,
+      this.name,
       description,
       this.initTime,
       this.endTime,
@@ -81,7 +82,7 @@ export class Automation {
   withInitTime(initTime: string): Automation {
     return new Automation(
       this.id,
-      this.title,
+      this.name,
       this.description,
       initTime,
       this.endTime,
@@ -93,7 +94,7 @@ export class Automation {
   withEndTime(endTime: string): Automation {
     return new Automation(
       this.id,
-      this.title,
+      this.name,
       this.description,
       this.initTime,
       endTime,
@@ -105,7 +106,7 @@ export class Automation {
   withState(state: boolean): Automation {
     return new Automation(
       this.id,
-      this.title,
+      this.name,
       this.description,
       this.initTime,
       this.endTime,

@@ -29,13 +29,13 @@ export default function AutomationId() {
   const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
   const { updateAutomation, deleteAutomation } = useAutomation();
 
-  const [currentAutomation, setCurrentAutomation] = useState<Automation>(
-    Automation.fromApiResponse(JSON.parse(initialAuto)),
+  const originalAutomation: Automation = useMemo(
+    () => Automation.fromApiResponse(JSON.parse(initialAuto)),
+    [initialAuto],
   );
 
-  const originalAutomation: Automation = useMemo(
-    () => JSON.parse(initialAuto),
-    [initialAuto],
+  const [currentAutomation, setCurrentAutomation] = useState<Automation>(() =>
+    Automation.fromApiResponse(JSON.parse(initialAuto)),
   );
 
   const onChangeDate = (
@@ -91,11 +91,13 @@ export default function AutomationId() {
     router.back();
   };
 
-  const handleChangeText = (key: "title" | "description", value: string) => {
+  const handleChangeText = (key: "name" | "description", value: string) => {
     if (!currentAutomation) return;
-    console.log("automation:", currentAutomation);
-    console.log(currentAutomation.withTitle(value));
-    setCurrentAutomation(currentAutomation);
+    const updatedAutomation =
+      key === "name"
+        ? currentAutomation.withName(value)
+        : currentAutomation.withDescription(value);
+    setCurrentAutomation(updatedAutomation);
   };
 
   const { devices, handleLoadDevices } = useDeviceStore();

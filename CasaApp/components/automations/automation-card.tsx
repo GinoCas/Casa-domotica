@@ -19,7 +19,7 @@ export default function AutomationCard({
   const handleToggle = async () => {
     const newState = !isEnabled;
     setIsEnabled(newState);
-    const updatedAutomation = { ...automation, state: newState };
+    const updatedAutomation = automation.withState(newState);
     await updateAutomation(updatedAutomation);
   };
 
@@ -31,7 +31,7 @@ export default function AutomationCard({
       ]}
     >
       <View style={{ maxWidth: 190 }}>
-        <Text style={styles.title}>{automation.title}</Text>
+        <Text style={styles.title}>{automation.name}</Text>
         <Text style={styles.subtitle} numberOfLines={1}>
           {automation.description}
         </Text>
