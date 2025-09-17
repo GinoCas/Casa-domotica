@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useRoomStore from "@/stores/useRoomStore";
 import Loader from "./Loader";
 import { Feather } from "@expo/vector-icons";
@@ -9,6 +9,8 @@ import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
 import { turnOnLedRandom } from "@/Utils/GeneralCommands";
 import { roomService } from "@/src/services/RoomService";
+import { Text } from "react-native-svg";
+import { Room } from "@/src/core/entities/Room";
 
 export default function AppHeader() {
   const {
@@ -18,10 +20,15 @@ export default function AppHeader() {
     changeActivityMode,
   } = useModeStore();
 
-  const [rooms, setRooms] = useState(["Empty"]);
-
-  const { changeCurrentRoom, roomName, changeLoadingRooms, isLoadingRooms } =
-    useRoomStore();
+  const {
+    rooms,
+    changeCurrentRoom,
+    currentRoom,
+    changeLoadingRooms,
+    isLoadingRooms,
+    handleLoadRooms,
+    getRoomByName,
+  } = useRoomStore();
 
   const toggleEnergySaveMode = () => {
     changeSaveEnergyMode(!saveEnergyMode);
@@ -32,14 +39,14 @@ export default function AppHeader() {
   useEffect(() => {
     const getAllRooms = async () => {
       changeLoadingRooms(true);
-      let roomList = await roomService.getRoomNames();
-      if (!roomList.isSuccess) {
-        console.log("error loading rooms", roomList.errors);
+      const roomsResult = await roomService.getAllRooms();
+      if (!roomsResult.isSuccess) {
+        console.log("error loading rooms", roomsResult.errors);
         changeLoadingRooms(false);
         return;
       }
-      changeCurrentRoom(roomList.data[0]);
-      setRooms(roomList.data);
+      changeCurrentRoom(roomsResult.data[0]);
+      handleLoadRooms(roomsResult.data);
       changeLoadingRooms(false);
     };
     getAllRooms();
@@ -72,14 +79,18 @@ export default function AppHeader() {
         >
           <Loader size="small" />
         </View>
+      ) : !currentRoom ? (
+        <View style={{ width: 150 }}>
+          <Text>No se encontro</Text>
+        </View>
       ) : (
         <Picker
-          selectedValue={roomName}
+          selectedValue={currentRoom}
           style={{ width: 150 }}
-          onValueChange={(itemValue) => changeCurrentRoom(itemValue)}
+          onValueChange={(itemValue: Room) => changeCurrentRoom(itemValue)}
         >
           {rooms.map((room) => (
-            <Picker.Item label={room} key={room} value={room} />
+            <Picker.Item label={room.name} key={room.name} value={room} />
           ))}
         </Picker>
       )}

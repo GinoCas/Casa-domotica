@@ -6,6 +6,11 @@ import { DependencyContainer } from "../shared/DependencyContainer";
 export class RoomService {
   private container = DependencyContainer.getInstance();
 
+  async getAllRooms(): Promise<Result<Room[]>> {
+    const useCase = this.container.getGetAllRoomsUseCase();
+    return await useCase.execute();
+  }
+
   async getRoomNames(): Promise<Result<string[]>> {
     const useCase = this.container.getGetRoomNamesUseCase();
     return await useCase.execute();

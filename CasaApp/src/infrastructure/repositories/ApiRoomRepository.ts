@@ -7,36 +7,22 @@ import { HttpClient } from "../api/HttpClient";
 export class ApiRoomRepository implements IRoomRepository {
   constructor(private httpClient: HttpClient) {}
 
-  async getNames(): Promise<Result<string[]>> {
-    return await this.httpClient.get<string[]>("room/names");
-  }
-
-  async getByName(name: string): Promise<Result<Room>> {
-    const result = await this.httpClient.get<any>(`room/${name}`);
+  async getAll(): Promise<Result<Room[]>> {
+    const result = await this.httpClient.get<any>("room/list");
 
     if (!result.isSuccess) {
-      return result as Result<Room>;
+      return result as Result<Room[]>;
     }
 
     try {
-      const room = Room.createFromApiResponse(result.data);
-      return Result.success(room);
-    } catch (error) {
-      return Result.fromError(error as Error);
-    }
-  }
-
-  async getDevicesByRoomName(roomName: string): Promise<Result<number[]>> {
-    const result = await this.httpClient.get<any[]>(`room/${roomName}/devices`);
-
-    if (!result.isSuccess) {
-      return result as Result<number[]>;
-    }
-
-    try {
-      const devices = result.data;
-
-      return Result.success(devices);
+      const rooms = result.data.map((roomData: any) =>
+        Room.createFromApiResponse({
+          id: roomData.id,
+          name: roomData.name,
+          deviceIds: roomData.devicesId || [],
+        }),
+      );
+      return Result.success(rooms);
     } catch (error) {
       return Result.fromError(error as Error);
     }

@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
-import { Device } from "@/types/Device";
 import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
 import { Feather } from "@expo/vector-icons";
@@ -12,17 +11,19 @@ import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
 import useModeStore from "@/stores/useModeStore";
 import useDeviceStore from "@/stores/useDeviceStore";
+import { Device } from "@/src/core/entities/Device";
+import useRoomStore from "@/stores/useRoomStore";
 
 export function RoomView({
   devices,
-  isLoadingDevices,
+  loadingRoomDevices,
 }: {
-  roomName: string;
   devices: Device[];
-  isLoadingDevices: boolean;
+  loadingRoomDevices: boolean;
 }) {
   const { getDeviceById, setDeviceBrightness, toggleDeviceState } =
     useDeviceStore();
+  const { currentRoom, isLoadingRooms } = useRoomStore();
   const [selectedDevice, setSelectedDevice] = useState<Device>();
   const { changeSaveEnergyMode } = useModeStore();
   const [isModalOpen, setisModalOpen] = useState(false);
@@ -55,7 +56,7 @@ export function RoomView({
 
   return (
     <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
-      {isLoadingDevices ? (
+      {isLoadingRooms || loadingRoomDevices ? (
         <View
           style={{
             height: "100%",
@@ -65,10 +66,28 @@ export function RoomView({
         >
           <Loader size="large" />
         </View>
+      ) : !currentRoom ? (
+        <View style={{ flex: 2 }}>
+          <View style={styles.connectedDevices}>
+            <Text style={{ fontWeight: 600 }}>Dispositivos conectados</Text>
+            <Chip text="0" />
+          </View>
+          <View
+            style={{
+              height: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontWeight: 600 }}>
+              No se encontraron dispositivos
+            </Text>
+          </View>
+        </View>
       ) : (
         <View style={{ flex: 2 }}>
           <View style={styles.connectedDevices}>
-            <Text style={{ fontWeight: 600 }}>Connected Devices</Text>
+            <Text style={{ fontWeight: 600 }}>Dispositivos conectados</Text>
             <Chip text={devices.length} />
           </View>
           <FlatList

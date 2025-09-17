@@ -1,26 +1,22 @@
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
+import { Device } from "@/src/core/entities/Device";
 import { deviceService } from "@/src/services/DeviceService";
-import { roomService } from "@/src/services/RoomService";
 import useDeviceStore from "@/stores/useDeviceStore";
 import useRoomStore from "@/stores/useRoomStore";
 import useSpeechStore from "@/stores/useSpeechStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Text } from "react-native";
 
 export default function Home() {
-  const {
-    roomName,
-    changeLoadingRoomDevices,
-    roomDevices,
-    handleLoadRoomDevices,
-    isLoadingRoomDevices,
-  } = useRoomStore();
-
+  const { currentRoom, changeCurrentRoom } = useRoomStore();
   const { devices, handleLoadDevices, syncChanges } = useDeviceStore();
+  const [roomDevices, setRoomDevices] = useState<Device[]>([]);
+  const [loadingRoomDevices, setLoadingRoomDevices] = useState<boolean>(false);
 
   const { results, voice, cmdVoice } = useSpeechStore();
+
   useEffect(() => {
     const loadDevices = async () => {
       const devicesResult = await deviceService.getDeviceList();
@@ -34,29 +30,16 @@ export default function Home() {
   }, [handleLoadDevices]);
 
   useEffect(() => {
-    const getDevicesOfRoom = async () => {
-      changeLoadingRoomDevices(true);
-      if (!roomName) {
-        changeLoadingRoomDevices(false);
-        return;
-      }
-      if (roomName === "Todas") {
-        handleLoadRoomDevices(devices);
-        changeLoadingRoomDevices(false);
-        return;
-      }
-      const devIds = await roomService.getDevicesByRoomName(roomName);
-      if (!devIds.isSuccess) {
-        handleLoadRoomDevices([]);
-        changeLoadingRoomDevices(false);
-        return;
-      }
-      const currentDevices = devices.filter((d) => devIds.data.includes(d.id));
-      handleLoadRoomDevices(currentDevices);
-      changeLoadingRoomDevices(false);
-    };
-    getDevicesOfRoom();
-  }, [changeLoadingRoomDevices, roomName, handleLoadRoomDevices, devices]);
+    setLoadingRoomDevices(true);
+    if (currentRoom?.name === "Todas") {
+      setRoomDevices(devices);
+    } else {
+      setRoomDevices(
+        devices.filter((d) => currentRoom?.deviceIds.includes(d.id)),
+      );
+    }
+    setLoadingRoomDevices(false);
+  }, [currentRoom]);
 
   useEffect(() => {
     const syncInterval = setInterval(() => {
@@ -72,11 +55,7 @@ export default function Home() {
       <Text>Resultados: {results}</Text>
       <Text>{voice}</Text>
       <Text>{cmdVoice}</Text>
-      <RoomView
-        roomName={roomName}
-        devices={roomDevices}
-        isLoadingDevices={isLoadingRoomDevices}
-      />
+      <RoomView devices={roomDevices} loadingRoomDevices={loadingRoomDevices} />
     </Container>
   );
 }

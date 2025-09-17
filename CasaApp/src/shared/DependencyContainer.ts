@@ -9,11 +9,7 @@ import {
   SetDeviceBrightnessUseCase,
   SetDeviceSpeedUseCase,
 } from "../application/usecases/DeviceUseCases";
-import {
-  GetRoomNamesUseCase,
-  GetRoomByNameUseCase,
-  GetDevicesByRoomNameUseCase,
-} from "../application/usecases/RoomUseCases";
+import { GetAllRoomsUseCase } from "../application/usecases/RoomUseCases";
 import { ApiAutomationRepository } from "../infrastructure/repositories/ApiAutomationRepository";
 import {
   CreateAutomationUseCase,
@@ -36,9 +32,7 @@ export class DependencyContainer {
   private setDeviceStateUseCase: SetDeviceStateUseCase;
   private setDeviceBrightnessUseCase: SetDeviceBrightnessUseCase;
   private setDeviceSpeedUseCase: SetDeviceSpeedUseCase;
-  private getRoomNamesUseCase: GetRoomNamesUseCase;
-  private getRoomByNameUseCase: GetRoomByNameUseCase;
-  private getDevicesByRoomNameUseCase: GetDevicesByRoomNameUseCase;
+  private getAllRoomsUseCase: GetAllRoomsUseCase;
   private getAllAutomationsUseCase: GetAllAutomationsUseCase;
   private getAutomationByIdUseCase: GetAutomationByIdUseCase;
   private createAutomationUseCase: CreateAutomationUseCase;
@@ -67,11 +61,7 @@ export class DependencyContainer {
     this.setDeviceSpeedUseCase = new SetDeviceSpeedUseCase(
       this.deviceRepository,
     );
-    this.getRoomNamesUseCase = new GetRoomNamesUseCase(this.roomRepository);
-    this.getRoomByNameUseCase = new GetRoomByNameUseCase(this.roomRepository);
-    this.getDevicesByRoomNameUseCase = new GetDevicesByRoomNameUseCase(
-      this.roomRepository,
-    );
+    this.getAllRoomsUseCase = new GetAllRoomsUseCase(this.roomRepository);
     this.getAllAutomationsUseCase = new GetAllAutomationsUseCase(
       this.automationRepository,
     );
@@ -118,16 +108,9 @@ export class DependencyContainer {
   }
 
   // Getters para casos de uso de Room
-  public getGetRoomNamesUseCase(): GetRoomNamesUseCase {
-    return this.getRoomNamesUseCase;
-  }
 
-  public getGetRoomByNameUseCase(): GetRoomByNameUseCase {
-    return this.getRoomByNameUseCase;
-  }
-
-  public getGetDevicesByRoomNameUseCase(): GetDevicesByRoomNameUseCase {
-    return this.getDevicesByRoomNameUseCase;
+  public getGetAllRoomsUseCase(): GetAllRoomsUseCase {
+    return this.getAllRoomsUseCase;
   }
 
   // Getters para casos de uso de Automation
