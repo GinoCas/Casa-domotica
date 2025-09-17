@@ -17,12 +17,12 @@ namespace CasaBackend.Casa.Application.UseCases
                 ? CoreResult<TEntity>.Success(result.Data)
                 : CoreResult<TEntity>.Failure(result.Errors);
         }
-        public async Task<CoreResult<IEnumerable<string>>> ExecuteAsync()
+        public async Task<CoreResult<IEnumerable<TEntity>>> ExecuteAsync()
         {
-            var result = await _repository.GetAllRoomNamesAsync();
+            var result = await _repository.GetAllRoomsAsync();
             return result.IsSuccess
-                ? CoreResult<IEnumerable<string>>.Success(result.Data)
-                : CoreResult<IEnumerable<string>>.Failure(result.Errors);
+                ? CoreResult<IEnumerable<TEntity>>.Success(result.Data)
+                : CoreResult<IEnumerable<TEntity>>.Failure(result.Errors);
         }
     }
 }

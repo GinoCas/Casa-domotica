@@ -24,16 +24,17 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             var entity = _mapper.Map<RoomEntity>(model);
             return CoreResult<RoomEntity>.Success(entity);
         }
-        public async Task<CoreResult<IEnumerable<string>>> GetAllRoomNamesAsync()
+        public async Task<CoreResult<IEnumerable<RoomEntity>>> GetAllRoomsAsync()
         {
-            var roomNames = await _dbContext.Rooms
-                .Select((room) => room.Name)
+            var rooms = await _dbContext.Rooms
+                .Include(r => r.RoomDevices)
                 .ToListAsync();
-            if(roomNames.Count == 0 || roomNames == null) 
+            if(rooms.Count == 0 || rooms == null) 
             {
-                return CoreResult<IEnumerable<string>>.Failure(["No se pudieron obtener los nombres de las habitaciones."]);
-            } 
-            return CoreResult<IEnumerable<string>>.Success(roomNames);
+                return CoreResult<IEnumerable<RoomEntity>>.Failure(["No se pudieron obtener las habitaciones."]);
+            }
+            var entities = _mapper.Map<IEnumerable<RoomEntity>>(rooms);
+            return CoreResult<IEnumerable<RoomEntity>>.Success(entities);
         }
     }
 }
