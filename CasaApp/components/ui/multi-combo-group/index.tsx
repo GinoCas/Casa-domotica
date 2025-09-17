@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { MultiComboGroupProps, Option } from './types';
+import React, { useState } from "react";
+import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { MultiComboGroupProps, Option } from "./types";
 
 const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
   options,
@@ -11,19 +11,20 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
 
   // Sincronizar el estado interno con la prop value cuando cambie
-  useEffect(() => {
+  /*   useEffect(() => {
+    console.log("MultiComboGroup useEffect value", value);
     setSelectedOptions(value);
   }, [value]);
-
+ */
   const toggleOption = (option: Option) => {
     const isSelected = selectedOptions.some(
-      (selected) => selected.deviceId === option.deviceId
+      (selected) => selected.deviceId === option.deviceId,
     );
 
     let newSelectedOptions: Option[];
     if (isSelected) {
       newSelectedOptions = selectedOptions.filter(
-        (selected) => selected.deviceId !== option.deviceId
+        (selected) => selected.deviceId !== option.deviceId,
       );
     } else {
       newSelectedOptions = [...selectedOptions, option];
@@ -43,7 +44,7 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
 
   const isOptionSelected = (option: Option) => {
     return selectedOptions.some(
-      (selected) => selected.deviceId === option.deviceId
+      (selected) => selected.deviceId === option.deviceId,
     );
   };
 
@@ -59,7 +60,7 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
           >
             <Text style={styles.groupLabel}>{group.label}</Text>
             <Text style={styles.expandIcon}>
-              {expandedGroups.includes(group.label) ? '−' : '+'}
+              {expandedGroups.includes(group.label) ? "−" : "+"}
             </Text>
           </TouchableOpacity>
 
@@ -109,17 +110,17 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
           </Text>
         </View>
       )}
-      <Button title='Aceptar' onPress={() => console.log(selectedOptions)} />
+      <Button title="Aceptar" onPress={() => console.log(selectedOptions)} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -127,91 +128,91 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
-    color: '#333',
+    color: "#333",
   },
   groupContainer: {
     marginBottom: 12,
     borderRadius: 6,
-    backgroundColor: '#f8f9fa',
-    overflow: 'hidden',
+    backgroundColor: "#f8f9fa",
+    overflow: "hidden",
   },
   groupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 12,
-    backgroundColor: '#e9ecef',
+    backgroundColor: "#e9ecef",
   },
   groupLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#495057',
+    fontWeight: "600",
+    color: "#495057",
   },
   expandIcon: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#6c757d',
+    fontWeight: "bold",
+    color: "#6c757d",
   },
   optionsContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: "#e9ecef",
   },
   selectedOption: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: "#e3f2fd",
   },
   optionContent: {
     flex: 1,
   },
   optionLabel: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     marginBottom: 2,
   },
   selectedOptionText: {
-    color: '#1976d2',
-    fontWeight: '500',
+    color: "#1976d2",
+    fontWeight: "500",
   },
   optionType: {
     fontSize: 12,
-    color: '#6c757d',
+    color: "#6c757d",
   },
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#dee2e6',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#dee2e6",
+    alignItems: "center",
+    justifyContent: "center",
   },
   checkedBox: {
-    backgroundColor: '#28a745',
-    borderColor: '#28a745',
+    backgroundColor: "#28a745",
+    borderColor: "#28a745",
   },
   checkmark: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   selectedSummary: {
     marginVertical: 8,
     padding: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderRadius: 6,
   },
   summaryText: {
     fontSize: 14,
-    color: '#495057',
-    textAlign: 'center',
+    color: "#495057",
+    textAlign: "center",
   },
 });
 
