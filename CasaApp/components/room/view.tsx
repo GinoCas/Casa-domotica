@@ -24,8 +24,9 @@ export function RoomView({
   const { getDeviceById, setDeviceBrightness, toggleDeviceState } =
     useDeviceStore();
   const { currentRoom, isLoadingRooms } = useRoomStore();
-  const [selectedDevice, setSelectedDevice] = useState<Device>();
   const { changeSaveEnergyMode } = useModeStore();
+
+  const [selectedDevice, setSelectedDevice] = useState<Device>();
   const [isModalOpen, setisModalOpen] = useState(false);
 
   const openBrightnessModal = (device: Device) => {

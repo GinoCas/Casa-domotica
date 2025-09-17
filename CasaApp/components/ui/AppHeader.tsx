@@ -1,16 +1,14 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { useEffect } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
-import { useEffect } from "react";
-import useRoomStore from "@/stores/useRoomStore";
-import Loader from "./Loader";
-import { Feather } from "@expo/vector-icons";
+import { Room } from "@/src/core/entities/Room";
+import { turnOnLedRandom } from "@/Utils/GeneralCommands";
 import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
-import { turnOnLedRandom } from "@/Utils/GeneralCommands";
-import { roomService } from "@/src/services/RoomService";
-import { Text } from "react-native-svg";
-import { Room } from "@/src/core/entities/Room";
+import useRooms from "@/hooks/useRooms";
+import Loader from "./Loader";
 
 export default function AppHeader() {
   const {
@@ -20,37 +18,13 @@ export default function AppHeader() {
     changeActivityMode,
   } = useModeStore();
 
-  const {
-    rooms,
-    changeCurrentRoom,
-    currentRoom,
-    changeLoadingRooms,
-    isLoadingRooms,
-    handleLoadRooms,
-    getRoomByName,
-  } = useRoomStore();
+  const { currentRoom, rooms, isLoadingRooms, changeCurrentRoom } = useRooms();
 
   const toggleEnergySaveMode = () => {
     changeSaveEnergyMode(!saveEnergyMode);
     if (saveEnergyMode) return;
     //UpdateAllLeds();
   };
-
-  useEffect(() => {
-    const getAllRooms = async () => {
-      changeLoadingRooms(true);
-      const roomsResult = await roomService.getAllRooms();
-      if (!roomsResult.isSuccess) {
-        console.log("error loading rooms", roomsResult.errors);
-        changeLoadingRooms(false);
-        return;
-      }
-      changeCurrentRoom(roomsResult.data[0]);
-      handleLoadRooms(roomsResult.data);
-      changeLoadingRooms(false);
-    };
-    getAllRooms();
-  }, [changeCurrentRoom, changeLoadingRooms]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
