@@ -2,11 +2,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useState } from "react";
 import { Switch } from "../ui/switch";
 import GlobalStyles from "@/Utils/globalStyles";
-import { DeviceType, Device } from "@/types/Device";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Device, DeviceType } from "@/src/core/entities/Device";
 
 export function DeviceCard({
   device,

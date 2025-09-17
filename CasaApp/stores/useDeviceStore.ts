@@ -25,7 +25,7 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
   },
   getDeviceById: (deviceId: number) => {
     const deviceWithState = get().devices.find(
-      (item) => item.device.id === deviceId,
+      (item: Device) => item.id === deviceId,
     );
     if (deviceWithState === undefined) {
       return Result.failure([

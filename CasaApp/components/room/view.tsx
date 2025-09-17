@@ -31,7 +31,6 @@ export function RoomView({
 
   const openBrightnessModal = (device: Device) => {
     if (device.deviceType === "Led") {
-      // Buscar el device en el store para obtener el estado completo
       const deviceResult = getDeviceById(device.id);
       if (deviceResult.isSuccess) {
         setSelectedDevice(deviceResult.data);
