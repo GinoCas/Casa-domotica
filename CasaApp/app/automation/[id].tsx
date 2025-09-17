@@ -115,12 +115,6 @@ export default function AutomationId() {
     updateAutomation(updatedAuto);
   };
 
-  const handleSave = () => {
-    if (!currentAutomation) return;
-    console.log("auto:", currentAutomation);
-    updateAutomation(currentAutomation);
-  };
-
   const handleCancel = () => setCurrentAutomation(originalAutomation);
   const handleDelete = () => {
     if (!currentAutomation) return;
@@ -188,7 +182,7 @@ export default function AutomationId() {
     getSelectedDevices();
   }, [originalAutomation]);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!currentAutomation) return;
     let devices: AutomationDevice[] = [];
     selectedDevices.forEach((op) => {
@@ -198,7 +192,8 @@ export default function AutomationId() {
     console.log("auto updated:", updatedAutomation);
     setCurrentAutomation(updatedAutomation);
     setShowDeviceSelector(false);
-    handleSave();
+    /* TODO: agregar loading state ?? */
+    await updateAutomation(updatedAutomation);
   };
 
   const styles = StyleSheet.create({
@@ -240,7 +235,7 @@ export default function AutomationId() {
         <View style={{ flex: 2 }}>
           <AutomationHeader
             handleCancel={handleCancel}
-            handleSave={handleSave}
+            handleSave={handleConfirm}
             handleDelete={handleDelete}
             currentAutomation={currentAutomation}
             handleChangeText={handleChangeText}
