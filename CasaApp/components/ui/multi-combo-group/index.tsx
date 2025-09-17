@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { MultiComboGroupProps, Option } from "./types";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
   options,
@@ -59,88 +61,88 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Seleccionar Dispositivos</Text>
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <FlatList
+          style={{ flex: 1 }}
+          data={options}
+          keyExtractor={(group) => group.label}
+          renderItem={({ item: group }) => (
+            <View style={styles.groupContainer}>
+              <TouchableOpacity
+                style={styles.groupHeader}
+                onPress={() => toggleGroup(group.label)}
+              >
+                <Text style={styles.groupLabel}>{group.label}</Text>
+                <Text style={styles.expandIcon}>
+                  {expandedGroups.includes(group.label) ? "−" : "+"}
+                </Text>
+              </TouchableOpacity>
 
-      {options.map((group) => (
-        <View key={group.label} style={styles.groupContainer}>
-          <TouchableOpacity
-            style={styles.groupHeader}
-            onPress={() => toggleGroup(group.label)}
-          >
-            <Text style={styles.groupLabel}>{group.label}</Text>
-            <Text style={styles.expandIcon}>
-              {expandedGroups.includes(group.label) ? "−" : "+"}
-            </Text>
-          </TouchableOpacity>
-
-          {expandedGroups.includes(group.label) && (
-            <View style={styles.optionsContainer}>
-              {group.options.map((option) => (
-                <TouchableOpacity
-                  key={option.deviceId}
-                  style={[
-                    styles.optionItem,
-                    isOptionSelected(option) && styles.selectedOption,
-                  ]}
-                  onPress={() => toggleOption(option)}
-                >
-                  <View style={styles.optionContent}>
-                    <Text
+              {expandedGroups.includes(group.label) && (
+                <View style={styles.optionsContainer}>
+                  {group.options.map((option) => (
+                    <TouchableOpacity
+                      key={option.deviceId}
                       style={[
-                        styles.optionLabel,
-                        isOptionSelected(option) && styles.selectedOptionText,
+                        styles.optionItem,
+                        isOptionSelected(option) && styles.selectedOption,
                       ]}
+                      onPress={() => toggleOption(option)}
                     >
-                      {option.label}
-                    </Text>
-                    <Text style={styles.optionType}>{option.deviceType}</Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.checkbox,
-                      isOptionSelected(option) && styles.checkedBox,
-                    ]}
-                  >
-                    {isOptionSelected(option) && (
-                      <Text style={styles.checkmark}>✓</Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
+                      <View style={styles.optionContent}>
+                        <Text
+                          style={[
+                            styles.optionLabel,
+                            isOptionSelected(option) &&
+                              styles.selectedOptionText,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                        <Text style={styles.optionType}>
+                          {option.deviceType}
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.checkbox,
+                          isOptionSelected(option) && styles.checkedBox,
+                        ]}
+                      >
+                        {isOptionSelected(option) && (
+                          <Text style={styles.checkmark}>✓</Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           )}
+        />
+        <View>
+          {selectedOptions.length > 0 && (
+            <View style={styles.selectedSummary}>
+              <Text style={styles.summaryText}>
+                Seleccionados: {selectedOptions.length} dispositivos
+              </Text>
+            </View>
+          )}
+          <Button
+            title="Aceptar"
+            onPress={() => console.log(selectedOptions)}
+          />
         </View>
-      ))}
-
-      {selectedOptions.length > 0 && (
-        <View style={styles.selectedSummary}>
-          <Text style={styles.summaryText}>
-            Seleccionados: {selectedOptions.length} dispositivos
-          </Text>
-        </View>
-      )}
-      <Button title="Aceptar" onPress={() => console.log(selectedOptions)} />
-    </View>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
+    maxHeight: 500,
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#333",
   },
   groupContainer: {
     marginBottom: 12,
@@ -159,6 +161,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#495057",
+    width: 200,
   },
   expandIcon: {
     fontSize: 18,

@@ -28,7 +28,11 @@ import DottedButton from "@/components/ui/dotted-button";
 import { Feather } from "@expo/vector-icons";
 import useDeviceStore from "@/stores/useDeviceStore";
 import useRoomStore from "@/stores/useRoomStore";
-import { GroupedOptions } from "@/components/ui/multi-combo-group/types";
+import {
+  GroupedOptions,
+  Option,
+} from "@/components/ui/multi-combo-group/types";
+import CustomModal from "@/components/ui/modal";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -155,17 +159,12 @@ export default function AutomationId() {
       setGroupedOptions(options);
     };
     prepareGroupedOptions();
-  }, []);
+  }, [devices]);
 
-  const handleAddDevice = (option: any) => {
+  const handleAddDevice = (option: Option) => {
     if (!currentAutomation) return;
-    const updatedAutomation = currentAutomation.addDevice(option.id);
+    const updatedAutomation = currentAutomation.addDevice(option.deviceId);
     setCurrentAutomation(updatedAutomation);
-    setShowDeviceSelector(false);
-  };
-
-  const toggleDeviceSelector = () => {
-    setShowDeviceSelector(!showDeviceSelector);
   };
 
   const styles = StyleSheet.create({
@@ -204,7 +203,7 @@ export default function AutomationId() {
           <Loader size="large" />
         </View>
       ) : (
-        <>
+        <View style={{ flex: 2 }}>
           <AutomationHeader
             handleCancel={handleCancel}
             handleSave={handleSave}
@@ -260,24 +259,30 @@ export default function AutomationId() {
               );
             }}
           />
-          <DottedButton
-            label="Add Device"
-            icon={
-              <Feather
-                name="plus"
-                size={24}
-                color={GlobalStyles.enabledColor}
-              />
-            }
-            onPress={() => setShowDeviceSelector(!showDeviceSelector)}
-          />
-          {showDeviceSelector && (
-            <MultiComboGroup
-              options={groupedOptions}
-              onOptionPress={handleAddDevice}
+          <View>
+            <DottedButton
+              label="Add Device"
+              icon={
+                <Feather
+                  name="plus"
+                  size={24}
+                  color={GlobalStyles.enabledColor}
+                />
+              }
+              onPress={() => setShowDeviceSelector(!showDeviceSelector)}
             />
-          )}
-        </>
+            <CustomModal
+              isOpen={showDeviceSelector}
+              onClose={() => setShowDeviceSelector(false)}
+              title="Seleccionar dispositivos"
+            >
+              <MultiComboGroup
+                options={groupedOptions}
+                onOptionPress={handleAddDevice}
+              />
+            </CustomModal>
+          </View>
+        </View>
       )}
     </Container>
   );
