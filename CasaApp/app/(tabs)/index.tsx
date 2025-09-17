@@ -10,8 +10,8 @@ import { useEffect, useState } from "react";
 import { Text } from "react-native";
 
 export default function Home() {
-  const { currentRoom, changeCurrentRoom } = useRoomStore();
-  const { devices, handleLoadDevices, syncChanges } = useDeviceStore();
+  const { currentRoom /* , changeCurrentRoom  */ } = useRoomStore();
+  const { devices, handleLoadDevices /* , syncChanges */ } = useDeviceStore();
   const [roomDevices, setRoomDevices] = useState<Device[]>([]);
   const [loadingRoomDevices, setLoadingRoomDevices] = useState<boolean>(false);
 
@@ -39,15 +39,17 @@ export default function Home() {
       );
     }
     setLoadingRoomDevices(false);
-  }, [currentRoom]);
+  }, [currentRoom, devices]);
 
+  /* 
+  TODO: Revisar caso de uso y si es posible buscar una mejor estrategia
   useEffect(() => {
     const syncInterval = setInterval(() => {
       syncChanges();
     }, 10000);
 
     return () => clearInterval(syncInterval);
-  }, [syncChanges]);
+  }, [syncChanges]); */
 
   return (
     <Container>
