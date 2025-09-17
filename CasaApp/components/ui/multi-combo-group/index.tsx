@@ -6,7 +6,8 @@ import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 
 const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
   options,
-  onOptionPress,
+  onOptionChange,
+  onClose,
   value = [],
 }) => {
   const [selectedOptions, setSelectedOptions] = useState<Option[]>(value);
@@ -22,7 +23,6 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
       );
 
     if (hasChanged) {
-      console.log("MultiComboGroup useEffect value", value);
       setSelectedOptions(value);
       previousValue.current = value;
     }
@@ -41,9 +41,8 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
     } else {
       newSelectedOptions = [...selectedOptions, option];
     }
-
     setSelectedOptions(newSelectedOptions);
-    onOptionPress(option);
+    onOptionChange(newSelectedOptions);
   };
 
   const toggleGroup = (groupLabel: string) => {
@@ -131,7 +130,10 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
           )}
           <Button
             title="Aceptar"
-            onPress={() => console.log(selectedOptions)}
+            onPress={() => {
+              console.log(value);
+              onClose();
+            }}
           />
         </View>
       </SafeAreaView>

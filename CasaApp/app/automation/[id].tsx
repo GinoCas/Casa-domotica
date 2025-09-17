@@ -20,7 +20,7 @@ import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
 import { parseTimeString } from "@/Utils/parseTimeString";
 import useAutomation from "@/hooks/useAutomations";
-import { Automation } from "@/src/core/entities/Automation";
+import { Automation, AutomationDevice } from "@/src/core/entities/Automation";
 import { Device } from "@/src/core/entities/Device";
 import Loader from "@/components/ui/Loader";
 import MultiComboGroup from "@/components/ui/multi-combo-group";
@@ -33,6 +33,7 @@ import {
   Option,
 } from "@/components/ui/multi-combo-group/types";
 import CustomModal from "@/components/ui/modal";
+import { filter, forEach } from "lodash";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,7 +51,8 @@ export default function AutomationId() {
   const [originalAutomation, setOriginalAutomation] = useState<Automation>();
   const [loadingAutomation, setLoadingAutomation] = useState(true);
   const [showDeviceSelector, setShowDeviceSelector] = useState(false);
-  const [groupedOptions, setGroupedOptions] = useState<any[]>([]);
+  const [groupedOptions, setGroupedOptions] = useState<GroupedOptions[]>([]);
+  const [selectedDevices, setSelectedDevices] = useState<Option[]>([]);
 
   useEffect(() => {
     const loadAutomation = async () => {
@@ -115,11 +117,11 @@ export default function AutomationId() {
 
   const handleSave = () => {
     if (!currentAutomation) return;
+    console.log("auto:", currentAutomation);
     updateAutomation(currentAutomation);
   };
 
   const handleCancel = () => setCurrentAutomation(originalAutomation);
-
   const handleDelete = () => {
     if (!currentAutomation) return;
     deleteAutomation(currentAutomation.id);
@@ -161,10 +163,42 @@ export default function AutomationId() {
     prepareGroupedOptions();
   }, [devices]);
 
-  const handleAddDevice = (option: Option) => {
+  useEffect(() => {
+    if (!currentAutomation) {
+      return;
+    }
+    const getSelectedDevices = () => {
+      let newSelectedOptions: Option[] = [];
+      const matchedDevices = devices.filter((d) =>
+        currentAutomation.devices.some((ad) => ad.id === d.id),
+      );
+      matchedDevices.forEach((d) => {
+        const option: Option = {
+          deviceId: d.id,
+          label: d.deviceType,
+          deviceType: d.deviceType,
+        };
+        newSelectedOptions = [...newSelectedOptions, option];
+      });
+      if (newSelectedOptions.length === 0) {
+        return;
+      }
+      setSelectedDevices(newSelectedOptions);
+    };
+    getSelectedDevices();
+  }, [originalAutomation]);
+
+  const handleConfirm = () => {
     if (!currentAutomation) return;
-    const updatedAutomation = currentAutomation.addDevice(option.deviceId);
+    let devices: AutomationDevice[] = [];
+    selectedDevices.forEach((op) => {
+      devices = [...devices, { id: op.deviceId, autoState: true }];
+    });
+    const updatedAutomation = currentAutomation.withDevices(devices);
+    console.log("auto updated:", updatedAutomation);
     setCurrentAutomation(updatedAutomation);
+    setShowDeviceSelector(false);
+    handleSave();
   };
 
   const styles = StyleSheet.create({
@@ -278,7 +312,9 @@ export default function AutomationId() {
             >
               <MultiComboGroup
                 options={groupedOptions}
-                onOptionPress={handleAddDevice}
+                onOptionChange={(options) => setSelectedDevices(options)}
+                onClose={handleConfirm}
+                value={selectedDevices}
               />
             </CustomModal>
           </View>

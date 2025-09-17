@@ -10,7 +10,8 @@ export interface Option {
 }
 
 export interface MultiComboGroupProps {
-  onOptionPress: (option: Option) => void;
+  onOptionChange: (option: Option[]) => void;
+  onClose: () => void;
   options: GroupedOptions[];
   value?: Option[];
 }
