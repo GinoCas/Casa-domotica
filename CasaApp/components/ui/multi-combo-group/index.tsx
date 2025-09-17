@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { MultiComboGroupProps, Option } from "./types";
 
@@ -9,13 +9,23 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
 }) => {
   const [selectedOptions, setSelectedOptions] = useState<Option[]>(value);
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+  const previousValue = useRef<Option[]>(value);
 
-  // Sincronizar el estado interno con la prop value cuando cambie
-  /*   useEffect(() => {
-    console.log("MultiComboGroup useEffect value", value);
-    setSelectedOptions(value);
+  // Solo sincronizar si la prop value realmente cambió
+  useEffect(() => {
+    const hasChanged =
+      value.length !== previousValue.current.length ||
+      !value.every((v) =>
+        previousValue.current.some((s) => s.deviceId === v.deviceId),
+      );
+
+    if (hasChanged) {
+      console.log("MultiComboGroup useEffect value", value);
+      setSelectedOptions(value);
+      previousValue.current = value;
+    }
   }, [value]);
- */
+
   const toggleOption = (option: Option) => {
     const isSelected = selectedOptions.some(
       (selected) => selected.deviceId === option.deviceId,
