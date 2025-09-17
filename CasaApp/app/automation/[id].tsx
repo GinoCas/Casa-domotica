@@ -20,11 +20,15 @@ import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
 import { parseTimeString } from "@/Utils/parseTimeString";
 import useAutomation from "@/hooks/useAutomations";
-import { deviceService } from "@/src/services/DeviceService";
-import useDeviceStore from "@/stores/useDeviceStore";
 import { Automation } from "@/src/core/entities/Automation";
 import { Device } from "@/src/core/entities/Device";
 import Loader from "@/components/ui/Loader";
+import MultiComboGroup from "@/components/ui/multi-combo-group";
+import DottedButton from "@/components/ui/dotted-button";
+import { Feather } from "@expo/vector-icons";
+import useDeviceStore from "@/stores/useDeviceStore";
+import useRoomStore from "@/stores/useRoomStore";
+import { GroupedOptions } from "@/components/ui/multi-combo-group/types";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,9 +39,14 @@ export default function AutomationId() {
     deleteAutomation,
   } = useAutomation();
 
+  const { devices } = useDeviceStore();
+  const { rooms } = useRoomStore();
+
   const [currentAutomation, setCurrentAutomation] = useState<Automation>();
   const [originalAutomation, setOriginalAutomation] = useState<Automation>();
   const [loadingAutomation, setLoadingAutomation] = useState(true);
+  const [showDeviceSelector, setShowDeviceSelector] = useState(false);
+  const [groupedOptions, setGroupedOptions] = useState<any[]>([]);
 
   useEffect(() => {
     const loadAutomation = async () => {
@@ -59,21 +68,6 @@ export default function AutomationId() {
 
     loadAutomation();
   }, [id]);
-  /*
-  const { initialAuto } = useLocalSearchParams<{ initialAuto: string }>();
-  const { updateAutomation, deleteAutomation } = useAutomation();
-  const loadingAutomation = true;
-  
-
-  const originalAutomation: Automation = useMemo(
-    () => Automation.fromApiResponse(JSON.parse(initialAuto)),
-    [initialAuto],
-  );
-
-  const [currentAutomation, setCurrentAutomation] = useState<Automation>(() =>
-    Automation.fromApiResponse(JSON.parse(initialAuto)),
-  );
-  */
 
   const onChangeDate = (
     value: "initTime" | "endTime",
@@ -137,19 +131,42 @@ export default function AutomationId() {
     setCurrentAutomation(updatedAutomation);
   };
 
-  const { devices, handleLoadDevices } = useDeviceStore();
-
   useEffect(() => {
-    const loadDevices = async () => {
-      const devicesResult = await deviceService.getDeviceList();
-      if (!devicesResult.isSuccess) {
-        console.log("Error on loading devices", devicesResult.errors);
-        return;
+    const prepareGroupedOptions = async () => {
+      if (rooms.length === 0 || !devices || devices.length === 0) return;
+
+      const options: GroupedOptions[] = [];
+
+      for (const room of rooms) {
+        const roomDevices = devices.filter((device) =>
+          room.deviceIds.includes(device.id),
+        );
+        if (roomDevices.length > 0) {
+          options.push({
+            label: room.name,
+            options: roomDevices.map((device) => ({
+              label: device.deviceType,
+              deviceId: device.id,
+              deviceType: device.deviceType,
+            })),
+          });
+        }
       }
-      handleLoadDevices(devicesResult.data);
+      setGroupedOptions(options);
     };
-    loadDevices();
-  }, [handleLoadDevices]);
+    prepareGroupedOptions();
+  }, []);
+
+  const handleAddDevice = (option: any) => {
+    if (!currentAutomation) return;
+    const updatedAutomation = currentAutomation.addDevice(option.id);
+    setCurrentAutomation(updatedAutomation);
+    setShowDeviceSelector(false);
+  };
+
+  const toggleDeviceSelector = () => {
+    setShowDeviceSelector(!showDeviceSelector);
+  };
 
   const styles = StyleSheet.create({
     timeContainer: {
@@ -243,6 +260,23 @@ export default function AutomationId() {
               );
             }}
           />
+          <DottedButton
+            label="Add Device"
+            icon={
+              <Feather
+                name="plus"
+                size={24}
+                color={GlobalStyles.enabledColor}
+              />
+            }
+            onPress={() => setShowDeviceSelector(!showDeviceSelector)}
+          />
+          {showDeviceSelector && (
+            <MultiComboGroup
+              options={groupedOptions}
+              onOptionPress={handleAddDevice}
+            />
+          )}
         </>
       )}
     </Container>
