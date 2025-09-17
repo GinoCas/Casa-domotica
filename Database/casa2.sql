@@ -42,9 +42,12 @@ CREATE TABLE automation_device(
 	aude_state BIT DEFAULT(0) NOT NULL,
 	aude_automationId INT NOT NULL,
 	aude_deviceId INT NOT NULL,
-	FOREIGN KEY(aude_automationId) REFERENCES automation(auto_id),
-	FOREIGN KEY(aude_deviceId) REFERENCES device(devi_id),
-	PRIMARY KEY(aude_id)
+	PRIMARY KEY(aude_id),
+	CONSTRAINT FK_aude_automationId FOREIGN KEY (aude_automationId)
+        REFERENCES automation(auto_id)
+        ON DELETE CASCADE,
+    CONSTRAINT FK_aude_deviceId FOREIGN KEY (aude_deviceId)
+        REFERENCES device(devi_id)
 );
 
 CREATE TABLE dimmable(

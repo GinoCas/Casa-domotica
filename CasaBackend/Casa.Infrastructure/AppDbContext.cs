@@ -31,7 +31,8 @@ namespace CasaBackend.Casa.Infrastructure
                 .ToTable("automation")
                 .HasMany(a => a.Devices)
                 .WithOne()
-                .HasForeignKey(ad => ad.AutomationId);
+                .HasForeignKey(ad => ad.AutomationId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<AutomationDeviceModel>()
                 .ToTable("automation_device");
