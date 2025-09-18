@@ -189,11 +189,11 @@ export default function AutomationId() {
       devices = [...devices, { id: op.deviceId, autoState: true }];
     });
     const updatedAutomation = currentAutomation.withDevices(devices);
-    console.log("auto updated:", updatedAutomation);
     setCurrentAutomation(updatedAutomation);
     setShowDeviceSelector(false);
-    /* TODO: agregar loading state ?? */
+    setLoadingAutomation(true);
     await updateAutomation(updatedAutomation);
+    setLoadingAutomation(false);
   };
 
   const styles = StyleSheet.create({
