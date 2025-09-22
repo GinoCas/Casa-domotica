@@ -98,7 +98,7 @@ builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationD
 builder.Services.AddScoped<UpdateAutomationUseCase>();
 builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
-
+builder.Services.AddSingleton<MqttService<DeviceEntity>>();
 
 builder.Services.AddAutoMapper(cfg =>
 {
