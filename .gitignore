@@ -9,3 +9,4 @@
 /CasaBackend/bin
 CasaBackend/appsettings.json
 CasaBackend/.env
+MQTT/mqtt/config.env

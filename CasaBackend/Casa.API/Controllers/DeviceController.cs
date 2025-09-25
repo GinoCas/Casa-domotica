@@ -1,4 +1,5 @@
-﻿using CasaBackend.Casa.Application.UseCases;
+using CasaBackend.Casa.Application.Interfaces.Services;
+using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
@@ -16,6 +17,7 @@ namespace CasaBackend.Casa.API.Controllers
 		GetDeviceUseCase<DeviceEntity, DeviceViewModel> getDeviceUseCase,
 		IValidator<DeviceDto> deviceValidator,
 		IValidator<CommandDto> commandValidator,
+		IArduinoService<ArduinoDeviceDto> arduinoService,
 		ILogger<DeviceController> logger) : ControllerBase
 	{
 		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase = doDeviceCommandUseCase;
@@ -23,14 +25,26 @@ namespace CasaBackend.Casa.API.Controllers
 		private readonly IValidator<DeviceDto> _deviceValidator = deviceValidator;
 		private readonly IValidator<CommandDto> _commandValidator = commandValidator;
 		private readonly ILogger<DeviceController> _logger = logger;
+		private readonly IArduinoService<ArduinoDeviceDto> _arduinoService = arduinoService;
 
-        [HttpGet("/device/list")]
+		[HttpGet("/device/list")]
 		public async Task<IActionResult> GetDeviceList()
 		{
-            _logger.LogInformation("Obteniendo lista de dispositivos");
+			var result = await _arduinoService.GetAllAsync();
+			if (!result.IsSuccess)
+			{
+				return Ok("Dio error xd: " + result.Errors);
+			}
+			var devices = result.Data;
+			foreach (var device in devices)
+			{
+				Console.WriteLine($"Device: ${device.Id}, Estado: {device.State}");
+			}
+			/*_logger.LogInformation("Obteniendo lista de dispositivos");
 			var result = await _getDeviceUseCase.ExecuteAsync();
             _logger.LogInformation("Lista de dispositivos obtenida correctamente. Total: {Count}", result.Data.Count());
-            return Ok(result.ToJson());
+            return Ok(result.ToJson());*/
+			return Ok("OK");
         }
 		[HttpGet("/device/{id}")]
 		public async Task<IActionResult> GetDeviceById(int id)

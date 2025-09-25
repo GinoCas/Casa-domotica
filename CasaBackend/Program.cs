@@ -22,6 +22,7 @@ using CasaBackend.Casa.InterfaceAdapter.Presenters;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
+using CasaBackend.Casa.Application.Interfaces.Services;
 
 Env.Load();
 
@@ -99,6 +100,7 @@ builder.Services.AddScoped<UpdateAutomationUseCase>();
 builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 builder.Services.AddSingleton<MqttService<DeviceEntity>>();
+builder.Services.AddSingleton<IArduinoService<ArduinoDeviceDto>, SerialService<ArduinoDeviceDto>>();
 
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -115,6 +117,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.Services.GetRequiredService<IArduinoService<ArduinoDeviceDto>>().ConnectAsync();
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Casa Domotica"));
