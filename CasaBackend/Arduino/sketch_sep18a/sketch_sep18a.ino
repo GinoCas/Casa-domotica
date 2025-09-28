@@ -1,5 +1,7 @@
-#include <ArxContainer.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <ArxContainer.h>
 
 struct Device {
   int pin;
@@ -17,21 +19,54 @@ struct Automation {
 arx::stdx::vector<Device, 12> devices;
 arx::stdx::vector<Automation, 8> automations;
 
-void setup(){
-  Serial.begin(9600);
-  // Placeholder data for devices
-  devices.push_back({2, false});
-  devices.push_back({3, false});
-  devices.push_back({4, false});
+const char* ssid = "TU_SSID";
+const char* password = "TU_PASSWORD";
 
-  // Placeholder data for automations
-  automations.push_back({10, 30, 12, 30, {{1, true}, {2, true}}});
-  automations.push_back({18, 0, 20, 0, {{3, true}, {4, true}}});
+// 🔹 Configuración MQTT
+const char* mqttServer = "test.mosquitto.org"; 
+const int mqttPort = 1883;
+
+// 🔹 Objetos WiFi/MQTT
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Conectando a MQTT...");
+    if (client.connect("ESP32Client")) {
+      Serial.println("Conectado!");
+    } else {
+      Serial.print("Error: ");
+      Serial.println(client.state());
+      delay(2000);
+    }
+  }
 }
 
-void loop(){
-  StaticJsonDocument<1024> doc;
+void setup() {
+  Serial.begin(115200);
 
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Conectado a WiFi");
+
+  client.setServer(mqttServer, mqttPort);
+
+  devices.push_back({2, false});
+  devices.push_back({3, true});
+}
+
+void loop() {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  StaticJsonDocument<512> doc;
   JsonArray devicesArray = doc.createNestedArray("data");
   int devId = 0;
   for (const auto& device : devices) {
@@ -41,20 +76,11 @@ void loop(){
     deviceObj["State"] = device.state;
   }
 
-  /*JsonArray automationsArray = doc.createNestedArray("automations");
-  for (const auto& automation : automations) {
-    JsonObject automationObj = automationsArray.createNestedObject();
-    automationObj["initHour"] = automation.initHour;
-    automationObj["initMinute"] = automation.initMinute;
-    automationObj["endHour"] = automation.endHour;
-    automationObj["endMinute"] = automation.endMinute;
-    JsonObject devicesStateObj = automationObj.createNestedObject("devicesState");
-    for (const auto& pair : automation.devicesState) {
-      devicesStateObj[String(pair.first)] = pair.second;
-    }
-  }*/
+  String json;
+  serializeJson(doc, json);
 
-  serializeJson(doc, Serial);
-  Serial.println();
+  client.publish("casa/devices", json.c_str());
+  Serial.println("Publicado: " + json);
+
   delay(5000);
 }

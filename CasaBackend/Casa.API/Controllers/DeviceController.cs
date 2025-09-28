@@ -18,6 +18,7 @@ namespace CasaBackend.Casa.API.Controllers
 		IValidator<DeviceDto> deviceValidator,
 		IValidator<CommandDto> commandValidator,
 		IArduinoService<ArduinoDeviceDto> arduinoService,
+		MqttService<DeviceEntity> mqttService,
 		ILogger<DeviceController> logger) : ControllerBase
 	{
 		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase = doDeviceCommandUseCase;
@@ -26,6 +27,7 @@ namespace CasaBackend.Casa.API.Controllers
 		private readonly IValidator<CommandDto> _commandValidator = commandValidator;
 		private readonly ILogger<DeviceController> _logger = logger;
 		private readonly IArduinoService<ArduinoDeviceDto> _arduinoService = arduinoService;
+		private readonly MqttService<DeviceEntity> _mqttService = mqttService;
 
 		[HttpGet("/device/list")]
 		public async Task<IActionResult> GetDeviceList()
@@ -83,6 +85,18 @@ namespace CasaBackend.Casa.API.Controllers
                         command.CommandName, command.DeviceId);
             return Ok(result.ToJson());
         }
+
+		[HttpPost("/device/subscribe")]
+		public async Task<IActionResult> SubscribeToTopic([FromBody] string topic)
+		{
+			await _mqttService.SubscribeAsync(topic, (payload) => 
+			{
+				_logger.LogInformation($"Message received on topic {topic}: {payload}");
+				return Task.CompletedTask;
+			});
+			return Ok($"Subscribed to topic {topic}");
+		}
+
 		private static async Task<CoreResult<DTO>> ValidateDtoAsync<DTO>(IValidator<DTO> validator, DTO dto)
 		{
 			var validationResult = await validator.ValidateAsync(dto);
