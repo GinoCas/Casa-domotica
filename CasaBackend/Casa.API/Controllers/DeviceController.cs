@@ -2,6 +2,7 @@ using CasaBackend.Casa.Application.Interfaces.Services;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
+using CasaBackend.Casa.Infrastructure.Services;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
 using FluentValidation;
@@ -17,8 +18,6 @@ namespace CasaBackend.Casa.API.Controllers
 		GetDeviceUseCase<DeviceEntity, DeviceViewModel> getDeviceUseCase,
 		IValidator<DeviceDto> deviceValidator,
 		IValidator<CommandDto> commandValidator,
-		IArduinoService<ArduinoDeviceDto> arduinoService,
-		MqttService<DeviceEntity> mqttService,
 		ILogger<DeviceController> logger) : ControllerBase
 	{
 		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase = doDeviceCommandUseCase;
@@ -26,13 +25,11 @@ namespace CasaBackend.Casa.API.Controllers
 		private readonly IValidator<DeviceDto> _deviceValidator = deviceValidator;
 		private readonly IValidator<CommandDto> _commandValidator = commandValidator;
 		private readonly ILogger<DeviceController> _logger = logger;
-		private readonly IArduinoService<ArduinoDeviceDto> _arduinoService = arduinoService;
-		private readonly MqttService<DeviceEntity> _mqttService = mqttService;
 
 		[HttpGet("/device/list")]
 		public async Task<IActionResult> GetDeviceList()
 		{
-			var result = await _arduinoService.GetAllAsync();
+			/*var result = await _mqttService.GetAllAsync();
 			if (!result.IsSuccess)
 			{
 				return Ok("Dio error xd: " + result.Errors);
@@ -41,7 +38,7 @@ namespace CasaBackend.Casa.API.Controllers
 			foreach (var device in devices)
 			{
 				Console.WriteLine($"Device: ${device.Id}, Estado: {device.State}");
-			}
+			}*/
 			/*_logger.LogInformation("Obteniendo lista de dispositivos");
 			var result = await _getDeviceUseCase.ExecuteAsync();
             _logger.LogInformation("Lista de dispositivos obtenida correctamente. Total: {Count}", result.Data.Count());
@@ -85,17 +82,6 @@ namespace CasaBackend.Casa.API.Controllers
                         command.CommandName, command.DeviceId);
             return Ok(result.ToJson());
         }
-
-		[HttpPost("/device/subscribe")]
-		public async Task<IActionResult> SubscribeToTopic([FromBody] string topic)
-		{
-			await _mqttService.SubscribeAsync(topic, (payload) => 
-			{
-				_logger.LogInformation($"Message received on topic {topic}: {payload}");
-				return Task.CompletedTask;
-			});
-			return Ok($"Subscribed to topic {topic}");
-		}
 
 		private static async Task<CoreResult<DTO>> ValidateDtoAsync<DTO>(IValidator<DTO> validator, DTO dto)
 		{

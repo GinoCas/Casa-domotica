@@ -2,7 +2,6 @@ using CasaBackend.Casa.API.Middleware;
 using CasaBackend.Casa.API.Validators;
 using CasaBackend.Casa.Application.Commands;
 using CasaBackend.Casa.Application.Factories;
-using CasaBackend.Casa.Application.Interfaces.Command;
 using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Presenter;
 using CasaBackend.Casa.Application.Interfaces.Providers;
@@ -23,6 +22,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using CasaBackend.Casa.Application.Interfaces.Services;
+using CasaBackend.Casa.Application.Interfaces.Handlers;
 
 Env.Load();
 
@@ -58,7 +58,6 @@ builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepo
 //Providers
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<DimmableModel>>();
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<VelocityModel>>();
-builder.Services.AddScoped<CapabilityService>();
 
 //Validadores
 builder.Services.AddValidatorsFromAssemblyContaining<DeviceValidator>();
@@ -99,8 +98,8 @@ builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationD
 builder.Services.AddScoped<UpdateAutomationUseCase>();
 builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
-builder.Services.AddSingleton<MqttService<DeviceEntity>>();
-builder.Services.AddSingleton<IArduinoService<ArduinoDeviceDto>, SerialService<ArduinoDeviceDto>>();
+// Services
+builder.Services.AddScoped<CapabilityService>();
 
 builder.Services.AddAutoMapper(cfg =>
 {

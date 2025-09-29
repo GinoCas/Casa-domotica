@@ -1,5 +1,5 @@
-﻿using CasaBackend.Casa.Application.Interfaces.Command;
-using CasaBackend.Casa.Application.Interfaces.Factory;
+﻿using CasaBackend.Casa.Application.Interfaces.Factory;
+using CasaBackend.Casa.Application.Interfaces.Handlers;
 using CasaBackend.Casa.Core;
 
 namespace CasaBackend.Casa.Application.Factories

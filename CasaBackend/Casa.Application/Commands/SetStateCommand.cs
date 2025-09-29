@@ -1,4 +1,4 @@
-﻿using CasaBackend.Casa.Application.Interfaces.Command;
+﻿using CasaBackend.Casa.Application.Interfaces.Handlers;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
