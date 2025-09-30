@@ -19,8 +19,6 @@ struct Automation {
 arx::stdx::vector<Device, 12> devices;
 arx::stdx::vector<Automation, 8> automations;
 
-const char* ssid = "TU_SSID";
-const char* password = "TU_PASSWORD";
 
 // 🔹 Configuración MQTT
 const char* mqttServer = "test.mosquitto.org"; 
@@ -34,7 +32,7 @@ PubSubClient client(espClient);
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Conectando a MQTT...");
-    if (client.connect("ESP32Client")) {
+    if (client.connect("ESP32Client-NASHEI12354")) {
       Serial.println("Conectado!");
     } else {
       Serial.print("Error: ");
@@ -46,16 +44,24 @@ void reconnect() {
 
 void setup() {
   Serial.begin(115200);
-
   WiFi.begin(ssid, password);
+
+  Serial.print("Conectando a ");
+  Serial.println(ssid);
+
+  unsigned long start = millis();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
+    int status = WiFi.status();
+    Serial.print(" (status: ");
+    Serial.print(status);
+    Serial.print(")\n");
   }
-  Serial.println("Conectado a WiFi");
+  Serial.println("✅ Conectado!");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
 
   client.setServer(mqttServer, mqttPort);
-
   devices.push_back({2, false});
   devices.push_back({3, true});
 }

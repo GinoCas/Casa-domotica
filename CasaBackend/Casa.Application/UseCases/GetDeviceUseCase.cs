@@ -10,17 +10,14 @@ namespace CasaBackend.Casa.Application.UseCases
     public class GetDeviceUseCase<TEntity, TView>
         (
         IDeviceRepository<TEntity> repository, 
-        IPresenter<TEntity, TView> presenter,
-        MqttService<TEntity> mqttService
+        IPresenter<TEntity, TView> presenter
         )
     {
         private readonly IDeviceRepository<TEntity> _repository = repository;
         private readonly IPresenter<TEntity, TView> _presenter = presenter;
-        private readonly MqttService<TEntity> _mqttService = mqttService;
         public async Task<CoreResult<TView>> ExecuteAsync(int id)
         {
             var result = await _repository.GetByDeviceIdAsync(id);
-            await _mqttService.PublishAsync(result.Data);
             return result.IsSuccess 
                 ? CoreResult<TView>.Success(_presenter.Present(result.Data))
                 : CoreResult<TView>.Failure(result.Errors);

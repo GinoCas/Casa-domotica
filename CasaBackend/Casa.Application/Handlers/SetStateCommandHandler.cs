@@ -4,9 +4,9 @@ using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Helpers;
 
-namespace CasaBackend.Casa.Application.Commands
+namespace CasaBackend.Casa.Application.Handlers
 {
-    public class SetStateCommand(
+    public class SetStateCommandHandler(
         IDeviceRepository<DeviceEntity> repository,
         string commandName,
         IReadOnlyDictionary<string, Type> requiredParameters) : ICommandHandler

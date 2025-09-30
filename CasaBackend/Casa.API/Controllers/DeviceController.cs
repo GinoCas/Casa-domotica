@@ -1,7 +1,8 @@
-using CasaBackend.Casa.Application.Interfaces.Services;
+using CasaBackend.Casa.Application.Interfaces.Handlers;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
+using CasaBackend.Casa.Infrastructure.Handlers;
 using CasaBackend.Casa.Infrastructure.Services;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
@@ -13,39 +14,52 @@ namespace CasaBackend.Casa.API.Controllers
 {
 	[ApiController]
 	[AllowAnonymous]
-	public class DeviceController(
-		DoDeviceCommandUseCase<CommandDto> doDeviceCommandUseCase, 
-		GetDeviceUseCase<DeviceEntity, DeviceViewModel> getDeviceUseCase,
-		IValidator<DeviceDto> deviceValidator,
-		IValidator<CommandDto> commandValidator,
-		ILogger<DeviceController> logger) : ControllerBase
+	public class DeviceController : ControllerBase
 	{
-		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase = doDeviceCommandUseCase;
-        private readonly GetDeviceUseCase<DeviceEntity, DeviceViewModel> _getDeviceUseCase = getDeviceUseCase;
-		private readonly IValidator<DeviceDto> _deviceValidator = deviceValidator;
-		private readonly IValidator<CommandDto> _commandValidator = commandValidator;
-		private readonly ILogger<DeviceController> _logger = logger;
+		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase;
+        private readonly GetDeviceUseCase<DeviceEntity, DeviceViewModel> _getDeviceUseCase;
+        private readonly GetArduinoDevicesUseCase _getArduinoDevicesUseCase;
+        private readonly IValidator<DeviceDto> _deviceValidator;
+		private readonly IValidator<CommandDto> _commandValidator;
+		private readonly ILogger<DeviceController> _logger;
 
-		[HttpGet("/device/list")]
+        public DeviceController(
+            DoDeviceCommandUseCase<CommandDto> doDeviceCommandUseCase,
+            GetDeviceUseCase<DeviceEntity, DeviceViewModel> getDeviceUseCase,
+            GetArduinoDevicesUseCase getArduinoDevicesUseCase,
+            IValidator<DeviceDto> deviceValidator,
+            IValidator<CommandDto> commandValidator,
+            ILogger<DeviceController> logger)
+        {
+            _doDeviceCommandUseCase = doDeviceCommandUseCase;
+            _getDeviceUseCase = getDeviceUseCase;
+            _getArduinoDevicesUseCase = getArduinoDevicesUseCase;
+            _deviceValidator = deviceValidator;
+            _commandValidator = commandValidator;
+            _logger = logger;
+        }
+        [HttpGet("/arduino/device")]
+        public async Task<IActionResult> GetArduinoDevices()
+        {
+            _getArduinoDevicesUseCase.ExecuteAsync();   
+            return Ok("OK");
+        }
+        [HttpGet("/device/list")]
 		public async Task<IActionResult> GetDeviceList()
 		{
-			/*var result = await _mqttService.GetAllAsync();
-			if (!result.IsSuccess)
-			{
-				return Ok("Dio error xd: " + result.Errors);
-			}
-			var devices = result.Data;
-			foreach (var device in devices)
-			{
-				Console.WriteLine($"Device: ${device.Id}, Estado: {device.State}");
-			}*/
-			/*_logger.LogInformation("Obteniendo lista de dispositivos");
+            _logger.LogInformation("Obteniendo lista de dispositivos");
 			var result = await _getDeviceUseCase.ExecuteAsync();
             _logger.LogInformation("Lista de dispositivos obtenida correctamente. Total: {Count}", result.Data.Count());
-            return Ok(result.ToJson());*/
-			return Ok("OK");
+            return Ok(result.ToJson());
         }
-		[HttpGet("/device/{id}")]
+
+        private void _mqttHandler_OnMessageReceived(string arg1, ArduinoMessageDto<ArduinoDeviceDto> arg2)
+        {
+			Console.WriteLine($"Mensaje recibido: {arg2}");
+            _logger.LogInformation("MQTT mensaje recibido en DeviceController: Tema={Topic}, Payload={Payload}", arg1, arg2);
+        }
+
+        [HttpGet("/device/{id}")]
 		public async Task<IActionResult> GetDeviceById(int id)
 		{
             _logger.LogInformation("Obteniendo dispositivo con ID: {DeviceId}", id);
@@ -74,7 +88,7 @@ namespace CasaBackend.Casa.API.Controllers
 			var result = await _doDeviceCommandUseCase.ExecuteAsync(command);
 			if (!result.IsSuccess)
 			{
-                logger.LogWarning("Error ejecutando comando {CommandName}: {Errors}",
+                _logger.LogWarning("Error ejecutando comando {CommandName}: {Errors}",
                         command.CommandName, string.Join(", ", result.Errors));
 				return BadRequest(result.ToJson());
             }

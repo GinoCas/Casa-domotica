@@ -4,18 +4,16 @@ using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Core.Helpers;
-using Microsoft.Extensions.Logging;
-using System.Reflection;
 
-namespace CasaBackend.Casa.Application.Commands
+namespace CasaBackend.Casa.Application.Handlers
 {
-    public class CapabilityCommand<TEntity> : ICommandHandler
+    public class CapabilityCommandHandler<TEntity> : ICommandHandler
         where TEntity : class, ICapabilityEntity<TEntity>, new()
     {
         private readonly ICapabilityRepository<TEntity> _repository;
         public string CommandName { get; }
         public IReadOnlyDictionary<string, Type> RequiredParameters { get; }
-        public CapabilityCommand(
+        public CapabilityCommandHandler(
             ICapabilityRepository<TEntity> repository, 
             string commandName, 
             IReadOnlyDictionary<string, Type> requiredParameters)

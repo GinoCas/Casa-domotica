@@ -1,25 +1,28 @@
 ﻿using CasaBackend.Casa.Application.Interfaces.Handlers;
+using CasaBackend.Casa.Infrastructure.Handlers;
 using MQTTnet;
 using System.Text;
 
 namespace CasaBackend.Casa.Infrastructure.Services
 {
-	public class MQTTService<TEntity>
-	{
-		private readonly IMqttClient _mqttClient;
-		private readonly IConfiguration _configuration;
-        //private readonly Dictionary<string, IMQTTHandler> _handlers;
+    public class MQTTService
+    {
+        private readonly IMqttClient _mqttClient;
+        private readonly IConfiguration _configuration;
+        private readonly IEnumerable<IMQTTHandler> _handlers;
+        public event Action<string, string> OnMessageReceived;
 
-        public MQTTService(IConfiguration configuration)
-		{
-			_configuration = configuration;
-			_mqttClient = new MqttClientFactory().CreateMqttClient();
-			_mqttClient.ApplicationMessageReceivedAsync += HandleReceivedApplicationMessageAsync;
-
+        public MQTTService(IConfiguration configuration, IEnumerable<IMQTTHandler> handlers)
+        {
+            _configuration = configuration;
+            _handlers = handlers;
+            _mqttClient = new MqttClientFactory().CreateMqttClient();
+        }
+        public async Task ConnectAsync()
+        {
             var mqttBroker = _configuration["MQTT_BROKER"];
-            var mqttPortVar = _configuration["MQTT_PORT"];
-
-            if (string.IsNullOrEmpty(mqttBroker) || !int.TryParse(mqttPortVar, out var mqttPort))
+            var mqttPortStr = _configuration["MQTT_PORT"];
+            if (string.IsNullOrEmpty(mqttBroker) || !int.TryParse(mqttPortStr, out var mqttPort))
             {
                 Console.WriteLine("Error: MQTT Broker/Port is not configured correctly.");
                 return;
@@ -29,20 +32,40 @@ namespace CasaBackend.Casa.Infrastructure.Services
                 .WithClientId("CasaBackend.API")
                 .Build();
 
-            _mqttClient.ConnectAsync(options, CancellationToken.None).Wait();
-        }
+            _mqttClient.ApplicationMessageReceivedAsync += HandleMessageAsync;
 
-		private Task HandleReceivedApplicationMessageAsync(MqttApplicationMessageReceivedEventArgs arg)
-		{
-            /*var topic = arg.ApplicationMessage.Topic;
-            var payload = Encoding.UTF8.GetString(arg.ApplicationMessage.PayloadSegment);
+            await _mqttClient.ConnectAsync(options, CancellationToken.None);
 
-            if (_handlers.TryGetValue(topic, out var handler))
+            foreach (var handler in _handlers)
             {
-                await handler.HandleMessageAsync(payload);
-            }*/
-            throw new NotImplementedException();
+                await _mqttClient.SubscribeAsync(handler.Topic);
+                Console.WriteLine($"Suscrito al topic: {handler.Topic}");
+            }
         }
-	}
+        private Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs e)
+        {
+            var topic = e.ApplicationMessage.Topic;
+            var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+            foreach (var handler in _handlers)
+            {
+                if (handler.Topic == topic)
+                {
+                    handler.Handle(topic, payload);
+                }
+            }
+            return Task.CompletedTask;
+        }
+        public MQTTHandler<T>? GetHandler<T>() 
+        {
+            foreach (var handler in _handlers)
+            {
+                if (handler.GetType() == typeof(MQTTHandler<T>))
+                {
+                    return (MQTTHandler<T>)handler;
+                }
+            }
+            return default(MQTTHandler<T>);
+        }
+    }
 }
 

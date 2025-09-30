@@ -1,8 +1,9 @@
 using CasaBackend.Casa.API.Middleware;
 using CasaBackend.Casa.API.Validators;
-using CasaBackend.Casa.Application.Commands;
 using CasaBackend.Casa.Application.Factories;
+using CasaBackend.Casa.Application.Handlers;
 using CasaBackend.Casa.Application.Interfaces.Factory;
+using CasaBackend.Casa.Application.Interfaces.Handlers;
 using CasaBackend.Casa.Application.Interfaces.Presenter;
 using CasaBackend.Casa.Application.Interfaces.Providers;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
@@ -11,6 +12,7 @@ using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Infrastructure;
 using CasaBackend.Casa.Infrastructure.Factories;
+using CasaBackend.Casa.Infrastructure.Handlers;
 using CasaBackend.Casa.Infrastructure.Providers;
 using CasaBackend.Casa.Infrastructure.Repositories;
 using CasaBackend.Casa.Infrastructure.Services;
@@ -18,11 +20,9 @@ using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Mapper;
 using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
+using DotNetEnv;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using DotNetEnv;
-using CasaBackend.Casa.Application.Interfaces.Services;
-using CasaBackend.Casa.Application.Interfaces.Handlers;
 
 Env.Load();
 
@@ -68,21 +68,25 @@ builder.Services.AddValidatorsFromAssemblyContaining<AutomationValidator>();
 builder.Services.AddScoped<IPresenter<DeviceEntity, DeviceViewModel>, DevicePresenter>();
 builder.Services.AddScoped<IPresenter<AutomationEntity, AutomationViewModel>, AutomationPresenter>();
 
-//Handlers
-builder.Services.AddScoped<ICommandHandler, SetStateCommand>(provider =>
-    new SetStateCommand(
+//Handlers - Comandos
+builder.Services.AddScoped<ICommandHandler, SetStateCommandHandler>(provider =>
+    new SetStateCommandHandler(
         provider.GetRequiredService<IDeviceRepository<DeviceEntity>>(),
         "setState", new Dictionary<string, Type> { { "state", typeof(bool) } }));
 
-builder.Services.AddScoped<ICommandHandler, CapabilityCommand<DimmableEntity>>(provider =>
-    new CapabilityCommand<DimmableEntity>(
+builder.Services.AddScoped<ICommandHandler, CapabilityCommandHandler<DimmableEntity>>(provider =>
+    new CapabilityCommandHandler<DimmableEntity>(
         provider.GetRequiredService<ICapabilityRepository<DimmableEntity>>(),
         "setBrightness", new Dictionary<string, Type> { { "brightness", typeof(int) } }));
 
-builder.Services.AddScoped<ICommandHandler, CapabilityCommand<VelocityEntity>>(provider =>
-    new CapabilityCommand<VelocityEntity>(
+builder.Services.AddScoped<ICommandHandler, CapabilityCommandHandler<VelocityEntity>>(provider =>
+    new CapabilityCommandHandler<VelocityEntity>(
         provider.GetRequiredService<ICapabilityRepository<VelocityEntity>>(),
         "setSpeed", new Dictionary<string, Type> { { "speed", typeof(int) } }));
+
+//Handlers - MQTT
+builder.Services.AddSingleton<IMQTTHandler, MQTTHandler<ArduinoMessageDto<ArduinoDeviceDto>>>(provider =>
+    new MQTTHandler<ArduinoMessageDto<ArduinoDeviceDto>>("casa/devices"));
 
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
@@ -91,6 +95,7 @@ builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, CapabilityF
 //Casos de uso
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
+builder.Services.AddScoped<GetArduinoDevicesUseCase>();
 builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
 
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationViewModel>>();
@@ -100,6 +105,7 @@ builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 // Services
 builder.Services.AddScoped<CapabilityService>();
+builder.Services.AddSingleton<MQTTService>();
 
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -117,7 +123,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Services.GetRequiredService<IArduinoService<ArduinoDeviceDto>>().ConnectAsync();
+await app.Services.GetRequiredService<MQTTService>().ConnectAsync();
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Casa Domotica"));

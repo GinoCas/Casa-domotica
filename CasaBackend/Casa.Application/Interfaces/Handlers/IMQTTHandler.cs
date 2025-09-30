@@ -1,9 +1,8 @@
-﻿namespace CasaBackend.Casa.Application.Interfaces.Handlers
+namespace CasaBackend.Casa.Application.Interfaces.Handlers
 {
-    public interface IMQTTHandler<TDTO>
+    public interface IMQTTHandler
     {
         string Topic { get; }
-        TDTO HandleMessageAsync(string payload);
-        Task HandlePublishAsync(TDTO dto);
+        void Handle(string topic, string payload);
     }
 }
