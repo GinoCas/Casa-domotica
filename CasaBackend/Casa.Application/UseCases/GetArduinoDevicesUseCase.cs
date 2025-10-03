@@ -5,9 +5,9 @@ using CasaBackend.Casa.InterfaceAdapter.DTOs;
 
 namespace CasaBackend.Casa.Application.UseCases
 {
-    public class GetArduinoDevicesUseCase(MQTTService mqttService)
+    public class GetArduinoDevicesUseCase()//MQTTService mqttService)
     {
-        private readonly MQTTService _mqttService = mqttService;
+       /* private readonly MQTTService _mqttService = mqttService;
         public async Task ExecuteAsync()
         {
             var handler = _mqttService.GetHandler<ArduinoMessageDto<ArduinoDeviceDto>>();
@@ -15,6 +15,6 @@ namespace CasaBackend.Casa.Application.UseCases
             {
                 handler.GetHistory();
             }
-        }
+        }*/
     }
 }

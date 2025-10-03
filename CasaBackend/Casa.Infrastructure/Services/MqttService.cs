@@ -5,12 +5,11 @@ using System.Text;
 
 namespace CasaBackend.Casa.Infrastructure.Services
 {
-    public class MQTTService
+    public class MQTTService : BackgroundService
     {
         private readonly IMqttClient _mqttClient;
         private readonly IConfiguration _configuration;
         private readonly IEnumerable<IMQTTHandler> _handlers;
-        public event Action<string, string> OnMessageReceived;
 
         public MQTTService(IConfiguration configuration, IEnumerable<IMQTTHandler> handlers)
         {
@@ -18,15 +17,17 @@ namespace CasaBackend.Casa.Infrastructure.Services
             _handlers = handlers;
             _mqttClient = new MqttClientFactory().CreateMqttClient();
         }
-        public async Task ConnectAsync()
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var mqttBroker = _configuration["MQTT_BROKER"];
             var mqttPortStr = _configuration["MQTT_PORT"];
             if (string.IsNullOrEmpty(mqttBroker) || !int.TryParse(mqttPortStr, out var mqttPort))
             {
-                Console.WriteLine("Error: MQTT Broker/Port is not configured correctly.");
+                Console.WriteLine("Error: MQTT Broker/Port is not configured correctamente.");
                 return;
             }
+
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(mqttBroker, mqttPort)
                 .WithClientId("CasaBackend.API")
@@ -34,7 +35,7 @@ namespace CasaBackend.Casa.Infrastructure.Services
 
             _mqttClient.ApplicationMessageReceivedAsync += HandleMessageAsync;
 
-            await _mqttClient.ConnectAsync(options, CancellationToken.None);
+            await _mqttClient.ConnectAsync(options, stoppingToken);
 
             foreach (var handler in _handlers)
             {
@@ -42,10 +43,12 @@ namespace CasaBackend.Casa.Infrastructure.Services
                 Console.WriteLine($"Suscrito al topic: {handler.Topic}");
             }
         }
+
         private Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs e)
         {
             var topic = e.ApplicationMessage.Topic;
             var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+
             foreach (var handler in _handlers)
             {
                 if (handler.Topic == topic)
@@ -53,9 +56,11 @@ namespace CasaBackend.Casa.Infrastructure.Services
                     handler.Handle(topic, payload);
                 }
             }
+
             return Task.CompletedTask;
         }
-        public MQTTHandler<T>? GetHandler<T>() 
+
+        public MQTTHandler<T>? GetHandler<T>()
         {
             foreach (var handler in _handlers)
             {

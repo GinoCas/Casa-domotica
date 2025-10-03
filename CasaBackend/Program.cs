@@ -105,7 +105,7 @@ builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 // Services
 builder.Services.AddScoped<CapabilityService>();
-builder.Services.AddSingleton<MQTTService>();
+builder.Services.AddHostedService<MQTTService>();
 
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -122,8 +122,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-await app.Services.GetRequiredService<MQTTService>().ConnectAsync();
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Casa Domotica"));

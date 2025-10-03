@@ -38,12 +38,7 @@ namespace CasaBackend.Casa.API.Controllers
             _commandValidator = commandValidator;
             _logger = logger;
         }
-        [HttpGet("/arduino/device")]
-        public async Task<IActionResult> GetArduinoDevices()
-        {
-            _getArduinoDevicesUseCase.ExecuteAsync();   
-            return Ok("OK");
-        }
+
         [HttpGet("/device/list")]
 		public async Task<IActionResult> GetDeviceList()
 		{
@@ -51,12 +46,6 @@ namespace CasaBackend.Casa.API.Controllers
 			var result = await _getDeviceUseCase.ExecuteAsync();
             _logger.LogInformation("Lista de dispositivos obtenida correctamente. Total: {Count}", result.Data.Count());
             return Ok(result.ToJson());
-        }
-
-        private void _mqttHandler_OnMessageReceived(string arg1, ArduinoMessageDto<ArduinoDeviceDto> arg2)
-        {
-			Console.WriteLine($"Mensaje recibido: {arg2}");
-            _logger.LogInformation("MQTT mensaje recibido en DeviceController: Tema={Topic}, Payload={Payload}", arg1, arg2);
         }
 
         [HttpGet("/device/{id}")]
