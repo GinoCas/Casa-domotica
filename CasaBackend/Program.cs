@@ -85,8 +85,7 @@ builder.Services.AddScoped<ICommandHandler, CapabilityCommandHandler<VelocityEnt
         "setSpeed", new Dictionary<string, Type> { { "speed", typeof(int) } }));
 
 //Handlers - MQTT
-builder.Services.AddSingleton<IMQTTHandler, MQTTHandler<ArduinoMessageDto<ArduinoDeviceDto>>>(provider =>
-    new MQTTHandler<ArduinoMessageDto<ArduinoDeviceDto>>("casa/devices"));
+builder.Services.AddScoped<IMQTTHandler, ArduinoDeviceMessageHandler>();
 
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();

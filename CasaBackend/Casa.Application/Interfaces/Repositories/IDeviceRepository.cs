@@ -1,4 +1,5 @@
-﻿using CasaBackend.Casa.Core;
+using CasaBackend.Casa.Core;
+using CasaBackend.Casa.Core.Entities;
 
 namespace CasaBackend.Casa.Application.Interfaces.Repositories
 {
@@ -7,5 +8,6 @@ namespace CasaBackend.Casa.Application.Interfaces.Repositories
         Task<CoreResult<TEntity>> GetByDeviceIdAsync(int id);
         Task<CoreResult<IEnumerable<TEntity>>> GetAllDevicesAsync();
         Task<CoreResult<TEntity>> UpdateDeviceAsync(TEntity entity);
+        Task<CoreResult<TEntity>> AddDeviceAsync(TEntity entity);
     }
 }

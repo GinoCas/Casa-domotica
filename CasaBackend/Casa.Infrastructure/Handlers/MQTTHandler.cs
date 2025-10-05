@@ -1,39 +1,50 @@
 using CasaBackend.Casa.Application.Interfaces.Handlers;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace CasaBackend.Casa.Infrastructure.Handlers
 {
-    public class MQTTHandler<T> : IMQTTHandler
+    public abstract class MQTTHandler<TDTO> : IMQTTHandler
     {
         public string Topic { get; }
-        public event Action<string, T>? OnMessageReceived;
-        private readonly List<T> _messagesHistory;
-        public MQTTHandler(string topic)
+        private readonly List<TDTO> _messagesHistory;
+        private readonly ILogger<MQTTHandler<TDTO>> _logger;
+
+        protected MQTTHandler(string topic, ILogger<MQTTHandler<TDTO>> logger)
         {
             Topic = topic;
-            _messagesHistory = new List<T>();
+            _logger = logger;
+            _messagesHistory = new List<TDTO>();
         }
 
-        public void Handle(string topic, string payloadJson)
+        public async Task Handle(string topic, string payloadJson)
         {
-            var obj = JsonSerializer.Deserialize<T>(payloadJson, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            });
-            if (obj != null)
+                Console.WriteLine($"JSON RECIBIDO:{payloadJson}");
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var dto = JsonSerializer.Deserialize<TDTO>(payloadJson, options);
+
+                if (dto != null)
+                {
+                    _messagesHistory.Add(dto);
+                    await ProcessMessageAsync(dto);
+                }
+                else
+                {
+                    _logger.LogWarning("El mensaje recibido en el topic {Topic} no pudo ser deserializado a {DTOType}.", topic, typeof(TDTO).Name);
+                }
+            }
+            catch (JsonException ex)
             {
-                Console.WriteLine($"Objeto: {obj}");
-                _messagesHistory.Add(obj);
-                OnMessageReceived?.Invoke(topic, obj);
+                _logger.LogError(ex, "Error al deserializar el mensaje del topic {Topic}. Payload: {Payload}", topic, payloadJson);
             }
         }
-        public IEnumerable<T> GetHistory()
+
+        protected abstract Task ProcessMessageAsync(TDTO dto);
+
+        public IEnumerable<TDTO> GetHistory()
         {
-            Console.WriteLine("Se quiere obtener historia con:");
-            foreach (var message in _messagesHistory)
-            {
-                Console.WriteLine($"Mensaje: {message}");
-            }
             return _messagesHistory;
         }
     }

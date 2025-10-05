@@ -5,6 +5,7 @@ using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Infrastructure.Services;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
+using CasaBackend.Casa.InterfaceAdapter.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CasaBackend.Casa.Infrastructure.Repositories
@@ -22,11 +23,24 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             _capabilityService = capabilityService;
             _mapper = mapper;
         }
+
+        public async Task<CoreResult<DeviceEntity>> AddDeviceAsync(DeviceEntity entity)
+        {
+            Console.WriteLine("Agregando dispositivo...");
+            var model = _mapper.Map<DeviceModel>(entity);
+            Console.WriteLine($"Modelo: {model}");
+            _dbContext.Devices.Add(model);
+            Console.WriteLine("Guardando...");
+            await _dbContext.SaveChangesAsync();
+            Console.WriteLine("Guardado");
+            return CoreResult<DeviceEntity>.Success(entity);
+        }
+
         public async Task<CoreResult<DeviceEntity>> GetByDeviceIdAsync(int id)
         {
-            var model = await _dbContext.Devices.FindAsync(id);
+            var model = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == id);
             if (model is null) return CoreResult<DeviceEntity>.Failure([$"El dispositivo con id {id} no se encontro."]);
-            var capabilities = await _capabilityService.GetCapabilitiesForDeviceAsync(id);
+            var capabilities = await _capabilityService.GetCapabilitiesForDeviceAsync(model.Id);
             var dto = new DeviceContextDto { DeviceModel = model, Capabilities = capabilities };
             var fabricResult = _deviceFactory.Fabric(dto);
             return fabricResult.IsSuccess

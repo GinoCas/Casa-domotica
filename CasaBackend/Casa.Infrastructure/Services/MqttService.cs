@@ -1,5 +1,5 @@
-﻿using CasaBackend.Casa.Application.Interfaces.Handlers;
-using CasaBackend.Casa.Infrastructure.Handlers;
+using CasaBackend.Casa.Application.Interfaces.Handlers;
+using Microsoft.Extensions.DependencyInjection;
 using MQTTnet;
 using System.Text;
 
@@ -9,12 +9,12 @@ namespace CasaBackend.Casa.Infrastructure.Services
     {
         private readonly IMqttClient _mqttClient;
         private readonly IConfiguration _configuration;
-        private readonly IEnumerable<IMQTTHandler> _handlers;
+        private readonly IServiceProvider _serviceProvider;
 
-        public MQTTService(IConfiguration configuration, IEnumerable<IMQTTHandler> handlers)
+        public MQTTService(IConfiguration configuration, IServiceProvider serviceProvider)
         {
             _configuration = configuration;
-            _handlers = handlers;
+            _serviceProvider = serviceProvider;
             _mqttClient = new MqttClientFactory().CreateMqttClient();
         }
 
@@ -37,39 +37,33 @@ namespace CasaBackend.Casa.Infrastructure.Services
 
             await _mqttClient.ConnectAsync(options, stoppingToken);
 
-            foreach (var handler in _handlers)
+            // Create a scope to get the topics from the handlers
+            using (var scope = _serviceProvider.CreateScope())
             {
-                await _mqttClient.SubscribeAsync(handler.Topic);
-                Console.WriteLine($"Suscrito al topic: {handler.Topic}");
+                var handlers = scope.ServiceProvider.GetServices<IMQTTHandler>();
+                foreach (var handler in handlers)
+                {
+                    await _mqttClient.SubscribeAsync(handler.Topic);
+                    Console.WriteLine($"Suscrito al topic: {handler.Topic}");
+                }
             }
         }
 
-        private Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs e)
+        private async Task HandleMessageAsync(MqttApplicationMessageReceivedEventArgs e)
         {
             var topic = e.ApplicationMessage.Topic;
             var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-            foreach (var handler in _handlers)
+            // Create a new scope for each message to resolve scoped services
+            using (var scope = _serviceProvider.CreateScope())
             {
-                if (handler.Topic == topic)
-                {
-                    handler.Handle(topic, payload);
-                }
-            }
+                var handlers = scope.ServiceProvider.GetServices<IMQTTHandler>();
+                var handlingTasks = handlers
+                    .Where(handler => handler.Topic == topic)
+                    .Select(handler => handler.Handle(topic, payload));
 
-            return Task.CompletedTask;
-        }
-
-        public MQTTHandler<T>? GetHandler<T>()
-        {
-            foreach (var handler in _handlers)
-            {
-                if (handler.GetType() == typeof(MQTTHandler<T>))
-                {
-                    return (MQTTHandler<T>)handler;
-                }
+                await Task.WhenAll(handlingTasks);
             }
-            return default(MQTTHandler<T>);
         }
     }
 }
