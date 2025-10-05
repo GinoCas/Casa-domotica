@@ -8,5 +8,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.DTOs
 
         [JsonProperty("State")]
         public bool IsOn { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public int? Brightness { get; set; }
+        public int? Speed { get; set; }
     }
 }

@@ -16,8 +16,15 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<DeviceEntity, DeviceDto>();
             CreateMap<CommandDto, CommandEntity>();
             CreateMap<ArduinoDeviceDto, DeviceEntity>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.IsOn))
-                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.Id));
+                .IncludeAllDerived();
+
+            CreateMap<ArduinoDeviceDto, LedEntity>()
+                .ForMember(dest => dest.Dimmable, opt => opt.MapFrom(src => new DimmableEntity { Brightness = src.Brightness ?? 0 }));
+
+            CreateMap<ArduinoDeviceDto, FanEntity>()
+                .ForMember(dest => dest.Velocity, opt => opt.MapFrom(src => new VelocityEntity { Speed = src.Speed ?? 0 }));
 
             CreateMap<DeviceEntity, DeviceModel>()
                 .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.DeviceType.ToString()))

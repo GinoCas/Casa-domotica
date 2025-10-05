@@ -3,9 +3,28 @@
 #include <ArduinoJson.h>
 #include <ArxContainer.h>
 
+enum DeviceType {
+  DEVICE_LED,
+  DEVICE_FAN
+};
+
+struct Led {
+  int brightness; // 0-255
+};
+
+struct Fan {
+  int speed;      // 0-3
+};
+
 struct Device {
   int pin;
   bool state;
+  DeviceType type;
+  
+  union {
+    Led led;
+    Fan fan;
+  } props;
 };
 
 struct Automation {
@@ -115,9 +134,19 @@ void publishDevice(int devId, const Device& device) {
   obj["Id"] = devId;
   obj["State"] = device.state;
 
+   switch (device.type) {
+    case DEVICE_LED:
+      obj["Type"] = "Led";
+      obj["Brightness"] = device.props.led.brightness;
+      break;
+    case DEVICE_FAN:
+      obj["Type"] = "Fan";
+      obj["Speed"] = device.props.fan.speed;
+      break;
+  }
+
   String json;
   serializeJson(doc, json);
-
   client.publish("casa/devices", json.c_str());
   Serial.println("Publicado cambio: " + json);
 }
@@ -132,8 +161,19 @@ void setup() {
   client.setServer(mqttServer, mqttPort);
 
   // Ejemplo de dispositivos
-  devices.push_back({2, false});
-  devices.push_back({3, true});
+  Device led1;
+  led1.pin = 2;
+  led1.state = true;
+  led1.type = DEVICE_LED;
+  led1.props.led.brightness = 128;
+  devices.push_back(led1);
+
+  Device fan1;
+  fan1.pin = 4;
+  fan1.state = false;
+  fan1.type = DEVICE_FAN;
+  fan1.props.fan.speed = 2;
+  devices.push_back(fan1);
   int devId = 0;
   for (const auto& device : devices) {
     devId++;

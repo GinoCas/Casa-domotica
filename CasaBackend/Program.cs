@@ -90,6 +90,7 @@ builder.Services.AddScoped<IMQTTHandler, ArduinoDeviceMessageHandler>();
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
 builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, CapabilityFactory>();
+builder.Services.AddScoped<IFactory<DeviceEntity, ArduinoDeviceDto>, ArduinoDeviceFactory>();
 
 //Casos de uso
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();

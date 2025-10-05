@@ -34,7 +34,7 @@ namespace CasaBackend.Casa.Infrastructure.Factories
                 case DeviceType.Fan:
                     var vel = dto.Capabilities.OfType<VelocityModel>().FirstOrDefault();
                     var fan = new FanEntity(_mapper.Map<VelocityEntity>(vel));
-                    return CoreResult<DeviceEntity>.Success( _mapper.Map<DeviceEntity>(MapModelToEntity(dto.DeviceModel, fan)));
+                    return CoreResult<DeviceEntity>.Success(_mapper.Map<DeviceEntity>(MapModelToEntity(dto.DeviceModel, fan)));
                 default:
                     return CoreResult<DeviceEntity>.Failure([$"Device type {dto.DeviceModel.DeviceType} not supported."]);
             }
