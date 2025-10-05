@@ -172,3 +172,31 @@ VALUES (1, 'Luces Nocturnas', 'Encender luces exteriores', '19:00', '23:59');
 
 INSERT INTO automation_device(aude_state, aude_automationId, aude_deviceId)
 VALUES (1, 1, 5);
+
+
+-- Eliminar relaciones que dependen de otras tablas
+DELETE FROM automation_device;
+DELETE FROM room_device;
+
+-- Eliminar capacidades
+DELETE FROM dimmable;
+DELETE FROM velocity;
+
+-- Eliminar automatizaciones
+DELETE FROM automation;
+
+-- Eliminar dispositivos
+DELETE FROM device;
+
+-- Opcional: eliminar habitaciones
+-- DELETE FROM room;
+
+-- Reiniciar los contadores IDENTITY
+DBCC CHECKIDENT ('device', RESEED, 0);
+DBCC CHECKIDENT ('dimmable', RESEED, 0);
+DBCC CHECKIDENT ('velocity', RESEED, 0);
+DBCC CHECKIDENT ('automation', RESEED, 0);
+DBCC CHECKIDENT ('automation_device', RESEED, 0);
+DBCC CHECKIDENT ('room_device', RESEED, 0);
+
+SELECT * FROM device;

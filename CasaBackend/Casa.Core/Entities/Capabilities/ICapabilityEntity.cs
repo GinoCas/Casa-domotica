@@ -1,8 +1,13 @@
-﻿namespace CasaBackend.Casa.Core.Entities.Capabilities
+namespace CasaBackend.Casa.Core.Entities.Capabilities
 {
-    public interface ICapabilityEntity<TSelf> where TSelf : class, ICapabilityEntity<TSelf>
+    public interface ICapabilityEntity
     {
         int Id { get; set; }
+        DeviceEntity Device { get; set; }
+    }
+
+    public interface ICapabilityEntity<TSelf> : ICapabilityEntity where TSelf : class, ICapabilityEntity<TSelf>
+    {
         CoreResult<bool> UpdateFrom(TSelf source);
     }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;
@@ -13,10 +13,10 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
     public class DeviceRepository : IDeviceRepository<DeviceEntity>
     {
         private readonly AppDbContext _dbContext;
-        private readonly IFactory<DeviceEntity, DeviceContextDto> _deviceFactory;
+        private readonly IDeviceFactory _deviceFactory;
         private readonly CapabilityService _capabilityService;
         private readonly IMapper _mapper;
-        public DeviceRepository(AppDbContext dbContext, IFactory<DeviceEntity, DeviceContextDto> factory, CapabilityService capabilityService, IMapper mapper)
+        public DeviceRepository(AppDbContext dbContext, IDeviceFactory factory, CapabilityService capabilityService, IMapper mapper)
         {
             _dbContext = dbContext;
             _deviceFactory = factory;
@@ -41,8 +41,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             var model = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == id);
             if (model is null) return CoreResult<DeviceEntity>.Failure([$"El dispositivo con id {id} no se encontro."]);
             var capabilities = await _capabilityService.GetCapabilitiesForDeviceAsync(model.Id);
-            var dto = new DeviceContextDto { DeviceModel = model, Capabilities = capabilities };
-            var fabricResult = _deviceFactory.Fabric(dto);
+            var fabricResult = _deviceFactory.Fabric(model, capabilities);
             return fabricResult.IsSuccess
                 ? CoreResult<DeviceEntity>.Success(fabricResult.Data)
                 : CoreResult<DeviceEntity>.Failure(fabricResult.Errors);

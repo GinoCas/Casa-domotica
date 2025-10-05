@@ -1,4 +1,5 @@
-﻿using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
+﻿using CasaBackend.Casa.Core.Entities.ValueObjects;
+using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 
 namespace CasaBackend.Casa.Application.Interfaces.Providers
 {

@@ -17,14 +17,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<CommandDto, CommandEntity>();
             CreateMap<ArduinoDeviceDto, DeviceEntity>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.IsOn))
-                .IncludeAllDerived();
-
-            CreateMap<ArduinoDeviceDto, LedEntity>()
-                .ForMember(dest => dest.Dimmable, opt => opt.MapFrom(src => new DimmableEntity { Brightness = src.Brightness ?? 0 }));
-
-            CreateMap<ArduinoDeviceDto, FanEntity>()
-                .ForMember(dest => dest.Velocity, opt => opt.MapFrom(src => new VelocityEntity { Speed = src.Speed ?? 0 }));
+                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.IsOn));
 
             CreateMap<DeviceEntity, DeviceModel>()
                 .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.DeviceType.ToString()))
@@ -47,12 +40,20 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<RoomEntity, RoomModel>()
                  .ForMember(dest => dest.RoomDevices, opt => opt.Ignore());
 
+            CreateMap<ICapabilityModel, ICapabilityEntity>()
+                .Include<DimmableModel, DimmableEntity>()
+                .Include<VelocityModel, VelocityEntity>();
+
             //Presentation
-            CreateMap<DeviceViewModel, DeviceEntity>();
-            CreateMap<LedEntity, LedViewModel>()
-                .ForMember(dest => dest.Brightness, opt => opt.MapFrom(src => src.Dimmable.Brightness));
-            CreateMap<FanEntity, FanViewModel>()
-                .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Velocity.Speed));
+            /*CreateMap<DeviceEntity, DeviceViewModel>()
+                .ForMember(dest => dest.Capabilities, opt => opt.MapFrom(src => src.Capabilities));
+
+            CreateMap<ICapabilityEntity, CapabilityViewModel>()
+                .Include<DimmableEntity, DimmableViewModel>()
+                .Include<VelocityEntity, VelocityViewModel>();
+
+            CreateMap<DimmableEntity, DimmableViewModel>();
+            CreateMap<VelocityEntity, VelocityViewModel>();*/
 
             //Automations
             CreateMap<AutomationDeviceModel, AutomationDeviceEntity>().ReverseMap();

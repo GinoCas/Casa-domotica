@@ -10,6 +10,7 @@ using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
+using CasaBackend.Casa.Core.Entities.ValueObjects;
 using CasaBackend.Casa.Infrastructure;
 using CasaBackend.Casa.Infrastructure.Factories;
 using CasaBackend.Casa.Infrastructure.Handlers;
@@ -89,9 +90,9 @@ builder.Services.AddScoped<IMQTTHandler, ArduinoDeviceMessageHandler>();
 
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
-builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, CapabilityFactory>();
 builder.Services.AddScoped<IFactory<DeviceEntity, ArduinoDeviceDto>, ArduinoDeviceFactory>();
 
+builder.Services.AddScoped<IFactory<IEnumerable<ICapabilityEntity>, DeviceType>, CapabilityFactory>();
 //Casos de uso
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();

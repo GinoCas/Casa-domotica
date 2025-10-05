@@ -1,8 +1,9 @@
-﻿namespace CasaBackend.Casa.Core.Entities.Capabilities
+namespace CasaBackend.Casa.Core.Entities.Capabilities
 {
     public class VelocityEntity : ICapabilityEntity<VelocityEntity>
     {
         public int Id { get; set; }
+        public DeviceEntity Device { get; set; }
         public int Speed { get; set; }
         public CoreResult<bool> UpdateFrom(VelocityEntity source)
         {

@@ -1,5 +1,4 @@
 using CasaBackend.Casa.Application.Interfaces.Handlers;
-using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace CasaBackend.Casa.Infrastructure.Handlers
