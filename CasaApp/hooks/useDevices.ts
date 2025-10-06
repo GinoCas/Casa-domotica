@@ -7,8 +7,9 @@ import useRoomStore from "@/stores/useRoomStore";
 export default function useDevices() {
   const [roomDevices, setRoomDevices] = useState<Device[]>([]);
   const [loadingRoomDevices, setLoadingRoomDevices] = useState<boolean>(false);
+  const [unassignedDevices, setUnassignedDevices] = useState<Device[]>([]);
 
-  const { currentRoom } = useRoomStore();
+  const { currentRoom, rooms } = useRoomStore();
 
   const { devices, handleLoadDevices } = useDeviceStore();
 
@@ -25,6 +26,14 @@ export default function useDevices() {
   }, [handleLoadDevices]);
 
   useEffect(() => {
+    const allDeviceIdsInRooms = rooms.flatMap((room) => room.deviceIds);
+    const unassigned = devices.filter(
+      (device) => !allDeviceIdsInRooms.includes(device.id),
+    );
+    setUnassignedDevices(unassigned);
+  }, [devices, rooms]);
+
+  useEffect(() => {
     setLoadingRoomDevices(true);
     if (currentRoom?.name === "Todas") {
       setRoomDevices(devices);
@@ -36,5 +45,5 @@ export default function useDevices() {
     setLoadingRoomDevices(false);
   }, [currentRoom, devices]);
 
-  return { roomDevices, loadingRoomDevices };
+  return { roomDevices, loadingRoomDevices, unassignedDevices };
 }
