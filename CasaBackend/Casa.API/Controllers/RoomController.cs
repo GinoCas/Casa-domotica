@@ -37,7 +37,7 @@ namespace CasaBackend.Casa.API.Controllers
             return result.IsSuccess ? Ok(result.ToJson()) : BadRequest(result.Errors);
         }
 
-        [HttpPost("{roomId}/devices")]
+        [HttpPost("room/{roomId}/device")]
         public async Task<IActionResult> AddDeviceToRoom(int roomId, [FromBody] AddDevicesToRoomDto addDeviceToRoomDto)
         {
             var result = await _addDeviceToRoomUseCase.ExecuteAsync(roomId, addDeviceToRoomDto.DeviceId);
