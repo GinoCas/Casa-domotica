@@ -3,8 +3,6 @@ import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
-import { Feather } from "@expo/vector-icons";
-import DottedButton from "../ui/dotted-button";
 import { useCallback, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
@@ -13,21 +11,28 @@ import useModeStore from "@/stores/useModeStore";
 import useDeviceStore from "@/stores/useDeviceStore";
 import { Device } from "@/src/core/entities/Device";
 import useRoomStore from "@/stores/useRoomStore";
+import DeviceModal from "../device/device-modal";
+
+interface RoomViewProps {
+  devices: Device[];
+  loadingRoomDevices: boolean;
+  unassignedDevices: Device[];
+}
 
 export function RoomView({
   devices,
   loadingRoomDevices,
-}: {
-  devices: Device[];
-  loadingRoomDevices: boolean;
-}) {
+  unassignedDevices,
+}: RoomViewProps) {
   const { getDeviceById, setDeviceBrightness, toggleDeviceState } =
     useDeviceStore();
-  const { currentRoom, isLoadingRooms } = useRoomStore();
+  const { currentRoom, isLoadingRooms, rooms } = useRoomStore();
   const { changeSaveEnergyMode } = useModeStore();
 
   const [selectedDevice, setSelectedDevice] = useState<Device>();
   const [isModalOpen, setisModalOpen] = useState(false);
+
+  const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
 
   const openBrightnessModal = (device: Device) => {
     if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
@@ -54,87 +59,94 @@ export function RoomView({
     toggleDeviceState(device.id, !newState);
   };
 
-  return (
-    <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
-      {isLoadingRooms || loadingRoomDevices ? (
-        <View
-          style={{
-            height: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Loader size="large" />
+  if (isLoadingRooms || loadingRoomDevices) return <Loader size="large" />;
+
+  if (devices.length === 0)
+    return (
+      <Text style={{ textAlign: "center" }}>
+        No se encontraron dispositivos
+      </Text>
+    );
+
+  const renderListHeader = () => {
+    if (currentRoom?.name !== "Todas" || unassignedDevices.length === 0) {
+      return null;
+    }
+
+    return (
+      <View>
+        <View style={styles.connectedDevices}>
+          <Text style={{ fontWeight: 600 }}>Dispositivos sin asignar</Text>
+          <Chip text={unassignedDevices.length} />
         </View>
-      ) : !currentRoom ? (
-        <View style={{ flex: 2 }}>
-          <View style={styles.connectedDevices}>
-            <Text style={{ fontWeight: 600 }}>Dispositivos conectados</Text>
-            <Chip text="0" />
-          </View>
-          <View
-            style={{
-              height: "100%",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontWeight: 600 }}>
-              No se encontraron dispositivos
-            </Text>
-          </View>
-        </View>
-      ) : (
-        <View style={{ flex: 2 }}>
-          <View style={styles.connectedDevices}>
-            <Text style={{ fontWeight: 600 }}>Dispositivos conectados</Text>
-            <Chip text={devices.length} />
-          </View>
-          <FlatList
-            data={devices}
-            keyExtractor={(device) => device.id.toString()}
-            numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: "space-between",
-            }}
-            renderItem={({ item, index }) => (
+        <View style={styles.devicesGrid}>
+          {unassignedDevices.map((device) => (
+            <View key={device.id} style={styles.deviceCardWrapper}>
               <DeviceCard
                 handleToogleEnabled={handleToggleEnabled}
-                key={item.id}
-                device={item}
+                device={device}
+                onCardPress={() => handlePressDevice(device)}
               />
-            )}
-          />
-          <View>
-            <DottedButton
-              label="Add Device"
-              icon={
-                <Feather
-                  name="plus"
-                  size={24}
-                  color={GlobalStyles.enabledColor}
-                />
-              }
-            />
-            <CustomModal
-              isOpen={isModalOpen}
-              onClose={() => setisModalOpen(false)}
-              title="Brightness"
-            >
-              <Slider
-                style={{ width: 200, height: 40 }}
-                minimumValue={0}
-                maximumValue={255}
-                step={1}
-                minimumTrackTintColor={GlobalStyles.secondaryColor}
-                maximumTrackTintColor={GlobalStyles.secondaryColor}
-                thumbTintColor={GlobalStyles.enabledColor}
-                onValueChange={handleBrightnessChange}
-              />
-            </CustomModal>
-          </View>
+            </View>
+          ))}
         </View>
-      )}
+        <View style={styles.connectedDevices}>
+          <Text style={{ fontWeight: 600 }}>Dispositivos conectados</Text>
+          {/* //TODO: revisar TODO de la linea 103 */}
+          <Chip text={devices.length} />
+        </View>
+      </View>
+    );
+  };
+
+  const handlePressDevice = (device: Device) => {
+    setSelectedDevice(device);
+    setIsDeviceModalOpen(true);
+  };
+
+  return (
+    <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
+      <FlatList
+        //TODO: Esto estaba renderizando todos los dispositivos, no solo los asignados al room.
+        data={devices.filter((d) => !unassignedDevices.includes(d))}
+        keyExtractor={(device) => device.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={{
+          justifyContent: "space-between",
+        }}
+        ListHeaderComponent={renderListHeader}
+        renderItem={({ item }) => (
+          <DeviceCard
+            handleToogleEnabled={handleToggleEnabled}
+            key={item.id}
+            device={item}
+            onCardPress={() => handlePressDevice(item)}
+          />
+        )}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      />
+      <CustomModal
+        isOpen={isModalOpen}
+        onClose={() => setisModalOpen(false)}
+        title="Brightness"
+      >
+        <Slider
+          style={{ width: 200, height: 40 }}
+          minimumValue={0}
+          maximumValue={255}
+          step={1}
+          minimumTrackTintColor={GlobalStyles.secondaryColor}
+          maximumTrackTintColor={GlobalStyles.secondaryColor}
+          thumbTintColor={GlobalStyles.enabledColor}
+          onValueChange={handleBrightnessChange}
+        />
+      </CustomModal>
+      <DeviceModal
+        rooms={rooms}
+        currentDevice={selectedDevice}
+        isOpen={isDeviceModalOpen}
+        onClose={() => setIsDeviceModalOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -146,5 +158,15 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     marginBottom: 10,
     gap: 10,
+  },
+  devicesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  deviceCardWrapper: {
+    width: "48%",
+    marginBottom: 8,
   },
 });
