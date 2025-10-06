@@ -106,3 +106,7 @@ DELETE FROM automation;
 
 -- Eliminar dispositivos
 DELETE FROM device;
+
+SELECT * FROM device;
+SELECT * FROM velocity;
+SELECT * FROM dimmable;

@@ -67,7 +67,6 @@ builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<DimmableModel
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<VelocityModel>>();
 
 //Validadores
-builder.Services.AddValidatorsFromAssemblyContaining<DeviceValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AutomationValidator>();
 
@@ -102,7 +101,8 @@ builder.Services.AddScoped<IFactory<IEnumerable<ICapabilityEntity>, DeviceType>,
 //Casos de uso
 builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
-builder.Services.AddScoped<GetArduinoDevicesUseCase>();
+builder.Services.AddScoped<UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel>>();
+
 builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
 builder.Services.AddScoped<CreateRoomUseCase<RoomEntity, CreateRoomDto>>();
 builder.Services.AddScoped<AddDeviceToRoomUseCase<RoomEntity>>();

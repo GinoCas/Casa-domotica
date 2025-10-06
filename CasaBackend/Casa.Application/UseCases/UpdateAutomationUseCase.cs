@@ -1,5 +1,4 @@
 using AutoMapper;
-using Casa.InterfaceAdapter.Models;
 using CasaBackend.Casa.Application.Interfaces.Presenter;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;

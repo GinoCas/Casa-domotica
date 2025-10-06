@@ -13,7 +13,10 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
         public MappingProfile()
         {
             //DTO
-            CreateMap<DeviceEntity, DeviceDto>();
+            CreateMap<DeviceDto, DeviceEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.ArduinoId, opt => opt.Ignore());
+
             CreateMap<CommandDto, CommandEntity>();
             CreateMap<ArduinoDeviceDto, DeviceEntity>()
                 .ForMember(dest => dest.ArduinoId, opt => opt.MapFrom(src => src.ArduinoId))

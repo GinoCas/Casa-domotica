@@ -2,9 +2,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.DTOs
 {
 	public class DeviceDto
 	{
-		public int Id { get; set; }
-		public int ArduinoId { get; set; }
-		public bool State { get; set; }
-		public string DeviceType { get; set; } = string.Empty;
+		public string Description { get; set; }
+		public string Name { get; set; }
 	}
 }

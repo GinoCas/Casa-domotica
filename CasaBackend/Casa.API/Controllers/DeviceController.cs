@@ -18,23 +18,20 @@ namespace CasaBackend.Casa.API.Controllers
 	{
 		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase;
         private readonly GetDeviceUseCase<DeviceEntity, DeviceViewModel> _getDeviceUseCase;
-        private readonly GetArduinoDevicesUseCase _getArduinoDevicesUseCase;
-        private readonly IValidator<DeviceDto> _deviceValidator;
+        private readonly UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel> _updateDeviceUseCase;
 		private readonly IValidator<CommandDto> _commandValidator;
 		private readonly ILogger<DeviceController> _logger;
 
         public DeviceController(
             DoDeviceCommandUseCase<CommandDto> doDeviceCommandUseCase,
             GetDeviceUseCase<DeviceEntity, DeviceViewModel> getDeviceUseCase,
-            GetArduinoDevicesUseCase getArduinoDevicesUseCase,
-            IValidator<DeviceDto> deviceValidator,
+            UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel> updateDeviceUseCase,
             IValidator<CommandDto> commandValidator,
             ILogger<DeviceController> logger)
         {
             _doDeviceCommandUseCase = doDeviceCommandUseCase;
             _getDeviceUseCase = getDeviceUseCase;
-            _getArduinoDevicesUseCase = getArduinoDevicesUseCase;
-            _deviceValidator = deviceValidator;
+            _updateDeviceUseCase = updateDeviceUseCase;
             _commandValidator = commandValidator;
             _logger = logger;
         }
@@ -62,18 +59,18 @@ namespace CasaBackend.Casa.API.Controllers
             _logger.LogInformation("Dispositivo {DeviceId} encontrado exitosamente", id);
             return Ok(result.ToJson());
 		}
+        [HttpPost("/device/{id}/update")]
+        public async Task<IActionResult> UpdateDeviceById(int id, DeviceDto dto)
+        {
+            _logger.LogInformation("Obteniendo dispositivo con ID: {DeviceId}", id);
+            var result = await _updateDeviceUseCase.ExecuteAsync(id, dto);
+            return Ok(result.ToJson());
+        }
         [HttpPost("/device/execute")]
         public async Task<IActionResult> ExecuteDeviceCommand(CommandDto command)
         {
             _logger.LogInformation("Ejecutando comando {CommandName} para dispositivo {DeviceId}", 
 				command.CommandName, command.DeviceId);
-            var validationResult = await ValidateDtoAsync(_commandValidator, command);
-			if (!validationResult.IsSuccess) 
-			{
-                _logger.LogWarning("Validación fallida para comando {CommandName}: {Errors}",
-                        command.CommandName, string.Join(", ", validationResult.Errors));
-                return BadRequest(validationResult.ToJson());
-			};
 			var result = await _doDeviceCommandUseCase.ExecuteAsync(command);
 			if (!result.IsSuccess)
 			{
@@ -85,13 +82,5 @@ namespace CasaBackend.Casa.API.Controllers
                         command.CommandName, command.DeviceId);
             return Ok(result.ToJson());
         }
-
-		private static async Task<CoreResult<DTO>> ValidateDtoAsync<DTO>(IValidator<DTO> validator, DTO dto)
-		{
-			var validationResult = await validator.ValidateAsync(dto);
-			return validationResult.IsValid
-				? CoreResult<DTO>.Success(dto)
-				: CoreResult<DTO>.Failure(validationResult.Errors.Select(e => e.ErrorMessage).ToList());
-		}
 	}
 }
