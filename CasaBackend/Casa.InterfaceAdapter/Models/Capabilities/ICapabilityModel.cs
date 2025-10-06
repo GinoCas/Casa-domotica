@@ -1,6 +1,4 @@
-﻿using CasaBackend.Casa.Core.Entities.ValueObjects;
-
-namespace CasaBackend.Casa.InterfaceAdapter.Models.Capabilities
+﻿namespace CasaBackend.Casa.InterfaceAdapter.Models.Capabilities
 {
     public interface ICapabilityModel
     {

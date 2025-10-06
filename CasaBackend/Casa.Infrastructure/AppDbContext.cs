@@ -18,8 +18,14 @@ namespace CasaBackend.Casa.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DeviceModel>().ToTable("device");
-            modelBuilder.Entity<DimmableModel>().ToTable("dimmable");
-            modelBuilder.Entity<VelocityModel>().ToTable("velocity");
+            modelBuilder.Entity<DimmableModel>()
+                .ToTable("dimmable")
+                .HasKey(d => d.Id);
+            modelBuilder.Entity<DimmableModel>().Property(d => d.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<VelocityModel>()
+                .ToTable("velocity")
+                .HasKey(v => v.Id);
+            modelBuilder.Entity<VelocityModel>().Property(v => v.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<RoomModel>()
                 .ToTable("room")
                 .HasMany(r => r.RoomDevices)

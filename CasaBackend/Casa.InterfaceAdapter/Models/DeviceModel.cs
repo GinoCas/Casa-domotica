@@ -5,6 +5,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
     public class DeviceModel
     {
         [Column("devi_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Column("devi_pin")]
         public int Pin { get; set; }

@@ -6,6 +6,7 @@ using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Handlers;
 using CasaBackend.Casa.Application.Interfaces.Presenter;
 using CasaBackend.Casa.Application.Interfaces.Providers;
+using CasaBackend.Casa.Application.Interfaces.Registries;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core.Entities;
@@ -15,6 +16,7 @@ using CasaBackend.Casa.Infrastructure;
 using CasaBackend.Casa.Infrastructure.Factories;
 using CasaBackend.Casa.Infrastructure.Handlers;
 using CasaBackend.Casa.Infrastructure.Providers;
+using CasaBackend.Casa.Infrastructure.Registries;
 using CasaBackend.Casa.Infrastructure.Repositories;
 using CasaBackend.Casa.Infrastructure.Services;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
@@ -56,6 +58,9 @@ builder.Services.AddScoped<IRoomRepository<RoomEntity>, RoomRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, CapabilityRepository<DimmableEntity, DimmableModel>>();
 builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepository<VelocityEntity, VelocityModel>>();
 
+//Registries
+builder.Services.AddSingleton<ICapabilityRegistry, CapabilityRegistry>();
+
 //Providers
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<DimmableModel>>();
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<VelocityModel>>();
@@ -90,7 +95,7 @@ builder.Services.AddScoped<IMQTTHandler, ArduinoDeviceMessageHandler>();
 
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
-builder.Services.AddScoped<IFactory<DeviceEntity, ArduinoDeviceDto>, ArduinoDeviceFactory>();
+builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, DeviceFactory>();
 
 builder.Services.AddScoped<IFactory<IEnumerable<ICapabilityEntity>, DeviceType>, CapabilityFactory>();
 //Casos de uso

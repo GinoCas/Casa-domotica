@@ -12,7 +12,7 @@ namespace CasaBackend.Casa.Core.Entities
         public bool State { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public List<ICapabilityEntity> Capabilities { get; set; } = [];
+        public ICollection<ICapabilityEntity> Capabilities { get; set; } = [];
 
         public void AddCapability(ICapabilityEntity capability)
         {

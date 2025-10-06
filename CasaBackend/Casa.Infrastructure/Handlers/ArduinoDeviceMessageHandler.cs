@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
 
@@ -16,21 +16,18 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
     public class ArduinoDeviceMessageHandler : MQTTHandler<ArduinoMessageDto<ArduinoDeviceDto>>
     {
         private readonly IDeviceRepository<DeviceEntity> _deviceRepository;
-        private readonly IDeviceFactory _deviceFactory;
         private readonly IFactory<IEnumerable<ICapabilityEntity>, DeviceType> _capabilityFactory;
         private readonly IMapper _mapper;
         private readonly ILogger<ArduinoDeviceMessageHandler> _logger;
 
         public ArduinoDeviceMessageHandler(
            IDeviceRepository<DeviceEntity> deviceRepository,
-           IDeviceFactory deviceFactory,
            IFactory<IEnumerable<ICapabilityEntity>, DeviceType> capabilityFactory,
            IMapper mapper,
            ILogger<ArduinoDeviceMessageHandler> logger)
            : base("casa/devices", logger)
         {
             _deviceRepository = deviceRepository;
-            _deviceFactory = deviceFactory;
             _capabilityFactory = capabilityFactory;
             _mapper = mapper;
             _logger = logger;
@@ -45,34 +42,33 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
             if (result.IsSuccess)
             {
                 Console.WriteLine("El dispositivo existe, actualizando...");
-                var entity = result.Data;
-                _mapper.Map(dto, entity);
-                await _deviceRepository.UpdateDeviceAsync(entity);
+                _mapper.Map(dto, result.Data);
+                await _deviceRepository.UpdateDeviceAsync(result.Data);
                 return;
             }
             _logger.LogInformation("El dispositivo {DeviceId} no existe, creando nuevo...", dto.Id);
-            if (!Enum.TryParse<DeviceType>(dto.Type, out var deviceType))
+            var entity = _mapper.Map<DeviceEntity>(dto);
+            if (entity == null)
             {
-                _logger.LogError("Tipo de dispositivo desconocido: {Type}", dto.Type);
+                _logger.LogError("Error creando dispositivo {DeviceId}: {Errors}",
+                    dto.Id, string.Join(", ", ["El dispositivo no se pudo mappear."]));
                 return;
             }
-            Console.WriteLine($"TIPO: {deviceType}");
-            var capabilitiesResult = _capabilityFactory.Fabric(deviceType);
+            var capabilitiesResult = _capabilityFactory.Fabric(entity.DeviceType);
             if (!capabilitiesResult.IsSuccess)
             {
                 _logger.LogError("Error creando capabilities para el tipo de dispositivo {DeviceType}: {Errors}",
-                    deviceType, string.Join(", ", capabilitiesResult.Errors));
+                    entity.DeviceType, string.Join(", ", capabilitiesResult.Errors));
                 return;
             }
-            var baseCapabilities = capabilitiesResult.Data;
-            var factoryResult = _deviceFactory.Fabric(dto, baseCapabilities);
-            if (!factoryResult.IsSuccess)
+
+            foreach (var capability in capabilitiesResult.Data)
             {
-                _logger.LogError("Error creando dispositivo {DeviceId}: {Errors}",
-                    dto.Id, string.Join(", ", factoryResult.Errors));
-                return;
+                entity.AddCapability(capability);
+                _mapper.Map(dto, capability);
             }
-            await _deviceRepository.AddDeviceAsync(factoryResult.Data);
+
+            await _deviceRepository.AddDeviceAsync(entity);
         }
     }
 }

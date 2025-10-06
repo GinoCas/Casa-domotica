@@ -4,7 +4,7 @@ USE CasaDB;
 
 CREATE TABLE device(
 	devi_id INT NOT NULL IDENTITY(1,1),
-	devi_pin INT NOT NULL, 
+	devi_arduinoId INT NOT NULL,
 	devi_state BIT DEFAULT(0) NOT NULL,
 	devi_type VARCHAR(50),
 	devi_name VARCHAR(100),
@@ -200,3 +200,4 @@ DBCC CHECKIDENT ('automation_device', RESEED, 0);
 DBCC CHECKIDENT ('room_device', RESEED, 0);
 
 SELECT * FROM device;
+SELECT * FROM dimmable;

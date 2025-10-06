@@ -5,6 +5,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models.Capabilities
     public class VelocityModel : ICapabilityModel
     {
         [Column("velo_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Column("velo_deviceId")]
         public int DeviceId { get; set; }

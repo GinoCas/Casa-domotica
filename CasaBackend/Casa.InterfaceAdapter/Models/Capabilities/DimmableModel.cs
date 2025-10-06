@@ -5,6 +5,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models.Capabilities
     public class DimmableModel : ICapabilityModel
     {
         [Column("dimm_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Column("dimm_deviceId")]
         public int DeviceId { get; set; }

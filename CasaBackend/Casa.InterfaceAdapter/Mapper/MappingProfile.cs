@@ -16,7 +16,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<DeviceEntity, DeviceDto>();
             CreateMap<CommandDto, CommandEntity>();
             CreateMap<ArduinoDeviceDto, DeviceEntity>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.Type))
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.IsOn));
 
             CreateMap<DeviceEntity, DeviceModel>()
@@ -43,6 +44,18 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<ICapabilityModel, ICapabilityEntity>()
                 .Include<DimmableModel, DimmableEntity>()
                 .Include<VelocityModel, VelocityEntity>();
+
+            CreateMap<ICapabilityEntity, ICapabilityModel>()
+                .Include<DimmableEntity, DimmableModel>()
+                .Include<VelocityEntity, VelocityModel>();
+
+            CreateMap<ArduinoDeviceDto, DimmableEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Brightness, opt => opt.MapFrom(src => src.Brightness));
+
+            CreateMap<ArduinoDeviceDto, VelocityEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Speed));
 
             //Presentation
             /*CreateMap<DeviceEntity, DeviceViewModel>()
