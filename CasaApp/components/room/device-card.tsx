@@ -11,9 +11,11 @@ import { CapabilityType, Device, DeviceType } from "@/src/core/entities/Device";
 export function DeviceCard({
   device,
   handleToogleEnabled,
+  onCardPress,
 }: {
   device: Device;
   handleToogleEnabled: (device: Device, newState: boolean) => void;
+  onCardPress?: () => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(device.state);
   const toggleEnabled = async () => {
@@ -49,7 +51,7 @@ export function DeviceCard({
   };
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={onCardPress}>
       <View
         style={{
           flexDirection: "row",
@@ -121,7 +123,7 @@ export function DeviceCard({
           {isEnabled ? "On" : "Off"}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 const styles = StyleSheet.create({
