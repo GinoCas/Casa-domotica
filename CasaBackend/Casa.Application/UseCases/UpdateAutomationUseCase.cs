@@ -5,7 +5,7 @@ using CasaBackend.Casa.Application.Interfaces.Repositories;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
-using CasaBackend.Casa.InterfaceAdapter.Presenters;
+using CasaBackend.Casa.InterfaceAdapter.Presenters.Models;
 
 namespace CasaBackend.Casa.Application.UseCases
 {

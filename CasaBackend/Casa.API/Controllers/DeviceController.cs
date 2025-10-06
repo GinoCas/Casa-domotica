@@ -5,7 +5,7 @@ using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Infrastructure.Handlers;
 using CasaBackend.Casa.Infrastructure.Services;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
-using CasaBackend.Casa.InterfaceAdapter.Presenters;
+using CasaBackend.Casa.InterfaceAdapter.Presenters.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

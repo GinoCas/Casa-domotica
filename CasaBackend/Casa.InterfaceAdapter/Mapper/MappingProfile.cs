@@ -5,7 +5,7 @@ using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Models;
 using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
-using CasaBackend.Casa.InterfaceAdapter.Presenters;
+using CasaBackend.Casa.InterfaceAdapter.Presenters.Models;
 namespace CasaBackend.Casa.InterfaceAdapter.Mapper
 {
     public class MappingProfile : Profile
@@ -59,7 +59,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Speed));
 
             //Presentation
-            /*CreateMap<DeviceEntity, DeviceViewModel>()
+            CreateMap<DeviceEntity, DeviceViewModel>()
                 .ForMember(dest => dest.Capabilities, opt => opt.MapFrom(src => src.Capabilities));
 
             CreateMap<ICapabilityEntity, CapabilityViewModel>()
@@ -67,7 +67,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .Include<VelocityEntity, VelocityViewModel>();
 
             CreateMap<DimmableEntity, DimmableViewModel>();
-            CreateMap<VelocityEntity, VelocityViewModel>();*/
+            CreateMap<VelocityEntity, VelocityViewModel>();
 
             //Automations
             CreateMap<AutomationDeviceModel, AutomationDeviceEntity>().ReverseMap();

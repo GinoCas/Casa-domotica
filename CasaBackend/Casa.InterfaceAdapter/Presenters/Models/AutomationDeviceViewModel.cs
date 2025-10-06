@@ -1,4 +1,4 @@
-﻿namespace CasaBackend.Casa.InterfaceAdapter.Presenters
+﻿namespace CasaBackend.Casa.InterfaceAdapter.Presenters.Models
 {
     public class AutomationDeviceViewModel
     {

@@ -1,6 +1,7 @@
 using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Presenter;
 using CasaBackend.Casa.Core.Entities;
+using CasaBackend.Casa.InterfaceAdapter.Presenters.Models;
 
 namespace CasaBackend.Casa.InterfaceAdapter.Presenters
 {

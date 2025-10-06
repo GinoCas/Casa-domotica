@@ -23,6 +23,7 @@ using CasaBackend.Casa.InterfaceAdapter.DTOs;
 using CasaBackend.Casa.InterfaceAdapter.Mapper;
 using CasaBackend.Casa.InterfaceAdapter.Models.Capabilities;
 using CasaBackend.Casa.InterfaceAdapter.Presenters;
+using CasaBackend.Casa.InterfaceAdapter.Presenters.Models;
 using DotNetEnv;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
