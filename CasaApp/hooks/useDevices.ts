@@ -45,5 +45,43 @@ export default function useDevices() {
     setLoadingRoomDevices(false);
   }, [currentRoom, devices]);
 
-  return { roomDevices, loadingRoomDevices, unassignedDevices };
+  const updateDevice = async (
+    deviceId: number,
+    name: string,
+    description: string,
+  ) => {
+    const result = await deviceService.updateDevice(deviceId, name, description);
+    if (!result.isSuccess) {
+      console.log("Error on updating device", result.errors);
+      return;
+    }
+    const devicesResult = await deviceService.getDeviceList();
+    if (!devicesResult.isSuccess) {
+      console.log("Error on loading devices", devicesResult.errors);
+      return;
+    }
+    handleLoadDevices(devicesResult.data);
+  };
+
+  const addDeviceToRoom = async (roomId: number, deviceId: number) => {
+    const result = await deviceService.addDeviceToRoom(roomId, deviceId);
+    if (!result.isSuccess) {
+      console.log("Error on adding device to room", result.errors);
+      return;
+    }
+    const devicesResult = await deviceService.getDeviceList();
+    if (!devicesResult.isSuccess) {
+      console.log("Error on loading devices", devicesResult.errors);
+      return;
+    }
+    handleLoadDevices(devicesResult.data);
+  };
+
+  return {
+    roomDevices,
+    loadingRoomDevices,
+    unassignedDevices,
+    updateDevice,
+    addDeviceToRoom,
+  };
 }

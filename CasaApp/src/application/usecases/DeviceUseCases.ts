@@ -33,15 +33,39 @@ export class GetDeviceByIdUseCase {
   }
 }
 
+export class UpdateDeviceUseCase {
+  constructor(private deviceRepository: IDeviceRepository) {}
+
+  async execute(
+    deviceId: number,
+    name: string,
+    description: string,
+  ): Promise<Result<boolean>> {
+    return await this.deviceRepository.updateDevice(
+      deviceId,
+      name,
+      description,
+    );
+  }
+}
+
+export class AddDeviceToRoomUseCase {
+  constructor(private deviceRepository: IDeviceRepository) {}
+
+  async execute(roomId: number, deviceId: number): Promise<Result<boolean>> {
+    return await this.deviceRepository.addDeviceToRoom(roomId, deviceId);
+  }
+}
+
 export class SetDeviceStateUseCase {
-  constructor(private commandRepository: IDeviceCommandRepository) {}
+  constructor(private deviceCommandRepository: IDeviceCommandRepository) {}
 
   async execute(deviceId: number, state: boolean): Promise<Result<void>> {
     try {
       if (deviceId <= 0) {
         return Result.failure(["Device ID must be greater than 0"]);
       }
-      return await this.commandRepository.setState(deviceId, state);
+      return await this.deviceCommandRepository.setState(deviceId, state);
     } catch (error) {
       return Result.fromError(error as Error);
     }

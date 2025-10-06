@@ -60,4 +60,42 @@ export class ApiDeviceRepository
   async setSpeed(deviceId: number, speed: number): Promise<Result<boolean>> {
     return await this.executeCommand(deviceId, "SetSpeed", { speed });
   }
+
+  async updateDevice(
+    deviceId: number,
+    name: string,
+    description: string,
+  ): Promise<Result<boolean>> {
+    const result = await this.httpClient.put<boolean>(
+      `device/${deviceId}/update`,
+      {
+        name,
+        description,
+      },
+    );
+
+    if (!result.isSuccess) {
+      return result as Result<boolean>;
+    }
+
+    return Result.success(result.data);
+  }
+
+  async addDeviceToRoom(
+    roomId: number,
+    deviceId: number,
+  ): Promise<Result<boolean>> {
+    const result = await this.httpClient.post<boolean>(
+      `room/${roomId}/device`,
+      {
+        deviceId,
+      },
+    );
+
+    if (!result.isSuccess) {
+      return result as Result<boolean>;
+    }
+
+    return Result.success(result.data);
+  }
 }

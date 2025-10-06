@@ -8,6 +8,8 @@ import {
   SetDeviceStateUseCase,
   SetDeviceBrightnessUseCase,
   SetDeviceSpeedUseCase,
+  UpdateDeviceUseCase,
+  AddDeviceToRoomUseCase,
 } from "../application/usecases/DeviceUseCases";
 import { GetAllRoomsUseCase } from "../application/usecases/RoomUseCases";
 import { ApiAutomationRepository } from "../infrastructure/repositories/ApiAutomationRepository";
@@ -32,6 +34,8 @@ export class DependencyContainer {
   private setDeviceStateUseCase: SetDeviceStateUseCase;
   private setDeviceBrightnessUseCase: SetDeviceBrightnessUseCase;
   private setDeviceSpeedUseCase: SetDeviceSpeedUseCase;
+  private updateDeviceUseCase: UpdateDeviceUseCase;
+  private addDeviceToRoomUseCase: AddDeviceToRoomUseCase;
   private getAllRoomsUseCase: GetAllRoomsUseCase;
   private getAllAutomationsUseCase: GetAllAutomationsUseCase;
   private getAutomationByIdUseCase: GetAutomationByIdUseCase;
@@ -59,6 +63,10 @@ export class DependencyContainer {
       this.deviceRepository,
     );
     this.setDeviceSpeedUseCase = new SetDeviceSpeedUseCase(
+      this.deviceRepository,
+    );
+    this.updateDeviceUseCase = new UpdateDeviceUseCase(this.deviceRepository);
+    this.addDeviceToRoomUseCase = new AddDeviceToRoomUseCase(
       this.deviceRepository,
     );
     this.getAllRoomsUseCase = new GetAllRoomsUseCase(this.roomRepository);
@@ -105,6 +113,14 @@ export class DependencyContainer {
 
   public getSetDeviceSpeedUseCase(): SetDeviceSpeedUseCase {
     return this.setDeviceSpeedUseCase;
+  }
+
+  public getUpdateDeviceUseCase(): UpdateDeviceUseCase {
+    return this.updateDeviceUseCase;
+  }
+
+  public getAddDeviceToRoomUseCase(): AddDeviceToRoomUseCase {
+    return this.addDeviceToRoomUseCase;
   }
 
   // Getters para casos de uso de Room

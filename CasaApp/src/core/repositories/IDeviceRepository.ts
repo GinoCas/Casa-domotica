@@ -5,11 +5,12 @@ import { Device } from "../entities/Device";
 export interface IDeviceRepository {
   getAll(): Promise<Result<Device[]>>;
   getById(id: number): Promise<Result<Device>>;
-  executeCommand(
+  updateDevice(
     deviceId: number,
-    command: string,
-    parameters?: Record<string, any>,
-  ): Promise<Result<void>>;
+    name: string,
+    description: string,
+  ): Promise<Result<boolean>>;
+  addDeviceToRoom(roomId: number, deviceId: number): Promise<Result<boolean>>;
 }
 
 export interface IDeviceCommandRepository {
