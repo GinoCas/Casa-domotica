@@ -7,7 +7,7 @@ import { Text } from "react-native";
 
 export default function Home() {
   const { results, voice, cmdVoice } = useSpeechStore();
-  const { roomDevices, loadingRoomDevices } = useDevices();
+  const { roomDevices, loadingRoomDevices, unassignedDevices } = useDevices();
 
   return (
     <Container>
@@ -15,7 +15,11 @@ export default function Home() {
       <Text>Resultados: {results}</Text>
       <Text>{voice}</Text>
       <Text>{cmdVoice}</Text>
-      <RoomView devices={roomDevices} loadingRoomDevices={loadingRoomDevices} />
+      <RoomView
+        devices={roomDevices}
+        loadingRoomDevices={loadingRoomDevices}
+        unassignedDevices={unassignedDevices}
+      />
     </Container>
   );
 }
