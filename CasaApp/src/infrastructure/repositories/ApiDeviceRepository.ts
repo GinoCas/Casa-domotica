@@ -14,57 +14,34 @@ export class ApiDeviceRepository
   constructor(private httpClient: HttpClient) {}
 
   async getAll(): Promise<Result<Device[]>> {
-    const result = await this.httpClient.get<any[]>("device/list");
-
-    if (!result.isSuccess) {
-      return result as Result<Device[]>;
-    }
-
-    try {
-      const devices = result.data;
-
-      return Result.success(devices);
-    } catch (error) {
-      return Result.fromError(error as Error);
-    }
+    return await this.httpClient.get<Device[]>("device/list");
   }
 
   async getById(id: number): Promise<Result<Device>> {
-    const result = await this.httpClient.get<any>(`device/${id}`);
-
-    if (!result.isSuccess) {
-      return result as Result<Device>;
-    }
-
-    try {
-      const device = result.data;
-      return Result.success(device);
-    } catch (error) {
-      return Result.fromError(error as Error);
-    }
+    return await this.httpClient.get<Device>(`device/${id}`);
   }
 
   async executeCommand(
     deviceId: number,
     command: string,
     parameters?: Record<string, any>,
-  ): Promise<Result<void>> {
+  ): Promise<Result<boolean>> {
     const commandDto = {
       deviceId,
       commandName: command,
       parameters: parameters ?? {},
     };
 
-    const result = await this.httpClient.post<any>(
+    const result = await this.httpClient.post<boolean>(
       "device/execute",
       commandDto,
     );
 
     if (!result.isSuccess) {
-      return result as Result<void>;
+      return result as Result<boolean>;
     }
 
-    return Result.success(undefined);
+    return Result.success(result.data);
   }
 
   // Implementación de IDeviceCommandRepository
@@ -76,16 +53,11 @@ export class ApiDeviceRepository
   async setBrightness(
     deviceId: number,
     brightness: number,
-  ): Promise<Result<void>> {
-    const commandDto = CommandDtoFactory.createBrightnessCommand(
-      deviceId,
-      brightness,
-    );
-    return await this.httpClient.post<void>("device/execute", commandDto);
+  ): Promise<Result<boolean>> {
+    return await this.executeCommand(deviceId, "SetBrightness", { brightness });
   }
 
-  async setSpeed(deviceId: number, speed: number): Promise<Result<void>> {
-    const commandDto = CommandDtoFactory.createSpeedCommand(deviceId, speed);
-    return await this.httpClient.post<void>("device/execute", commandDto);
+  async setSpeed(deviceId: number, speed: number): Promise<Result<boolean>> {
+    return await this.executeCommand(deviceId, "SetSpeed", { speed });
   }
 }

@@ -13,7 +13,7 @@ interface DeviceStoreState {
   handleLoadDevices: (newDevices: Device[]) => void;
   getDeviceById: (deviceId: number) => Result<Device>;
   toggleDeviceState: (deviceId: number, newState: boolean) => Promise<void>;
-  setDeviceBrightness: (deviceId: number, brightness: number) => void;
+  setDeviceBrightness: (deviceId: number, brightness: number) => Promise<void>;
   syncChanges: () => Promise<Result<boolean>>;
 }
 
@@ -41,13 +41,13 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
     if (result.isSuccess) {
       // Solo actualizamos el estado local si el comando fue exitoso
       set((state) => {
-        const updatedDevices = state.devices.map((deviceWithState) =>
-          deviceWithState.device.id === deviceId
+        const updatedDevices = state.devices.map((device) =>
+          device.id === deviceId
             ? {
-                ...deviceWithState,
+                ...device,
                 state: newState,
               }
-            : deviceWithState,
+            : device,
         );
         return {
           ...state,
@@ -60,22 +60,20 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
     }
   },
   setDeviceBrightness: async (deviceId: number, brightness: number) => {
-    set((state) => {
-      const updatedDevices = state.devices.map((deviceWithState) =>
-        deviceWithState.device.id === deviceId
-          ? { ...deviceWithState, brightness }
-          : deviceWithState,
-      );
-      const change: PendingChange = {
-        function: deviceService.setBrightness(deviceId, brightness),
-        timestamp: Date.now(),
-      };
-      return {
-        ...state,
-        devices: updatedDevices,
-        pendingChanges: [...state.pendingChanges, change],
-      };
-    });
+    set((state) => ({
+      devices: state.devices.map((device) => {
+        if (device.id === deviceId) {
+          const newCapabilities = device.capabilities.map((c) => {
+            if (c.capabilityType === "Dimmable") {
+              return { ...c, brightness };
+            }
+            return c;
+          });
+          return { ...device, capabilities: newCapabilities };
+        }
+        return device;
+      }),
+    }));
   },
   syncChanges: async () => {
     const { pendingChanges } = get();

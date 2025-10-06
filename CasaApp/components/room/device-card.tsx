@@ -6,21 +6,23 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Device, DeviceType } from "@/src/core/entities/Device";
+import { CapabilityType, Device, DeviceType } from "@/src/core/entities/Device";
 
 export function DeviceCard({
   device,
-  onPressAction,
   handleToogleEnabled,
 }: {
   device: Device;
-  onPressAction?: () => void;
   handleToogleEnabled: (device: Device, newState: boolean) => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(device.state);
   const toggleEnabled = async () => {
     setIsEnabled(!isEnabled);
     handleToogleEnabled(device, isEnabled);
+  };
+
+  const getCapability = (type: CapabilityType) => {
+    return device.capabilities.find((c) => c.capabilityType === type);
   };
 
   const renderIcon = (deviceType: DeviceType) => {
@@ -56,7 +58,6 @@ export function DeviceCard({
         }}
       >
         <TouchableOpacity
-          onPress={onPressAction}
           style={{
             backgroundColor: "#fff",
             width: 45,
@@ -93,7 +94,7 @@ export function DeviceCard({
                   : GlobalStyles.disabledColor,
               }}
             >
-              {(device as any).voltage || "220V"}
+              {(getCapability("Dimmable") as any)?.voltage || "220V"}
             </Text>
             <FontAwesome6
               name="bolt-lightning"

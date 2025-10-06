@@ -30,7 +30,7 @@ export function RoomView({
   const [isModalOpen, setisModalOpen] = useState(false);
 
   const openBrightnessModal = (device: Device) => {
-    if (device.deviceType === "Led") {
+    if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
       const deviceResult = getDeviceById(device.id);
       if (deviceResult.isSuccess) {
         setSelectedDevice(deviceResult.data);
@@ -102,7 +102,6 @@ export function RoomView({
                 handleToogleEnabled={handleToggleEnabled}
                 key={item.id}
                 device={item}
-                onPressAction={() => openBrightnessModal(item)}
               />
             )}
           />

@@ -5,20 +5,16 @@ export interface BaseDevice {
   state: boolean;
 }
 
-export interface PowerConsumable {
-  voltage: number;
-  amperes: number;
-}
+export type CapabilityType = "Dimmable" | "Velocity" | "Color" | "Temperature";
 
-export interface IDimmable {
-  brightness: number;
-}
-
-export interface IVelocity {
-  speed: number;
-}
-
-export interface Device extends BaseDevice, PowerConsumable {
-  deviceType: DeviceType;
+export interface Capability {
+  capabilityType: CapabilityType;
   [key: string]: any;
+}
+
+export interface Device extends BaseDevice {
+  deviceType: DeviceType;
+  name: string;
+  description: string;
+  capabilities: Capability[];
 }
