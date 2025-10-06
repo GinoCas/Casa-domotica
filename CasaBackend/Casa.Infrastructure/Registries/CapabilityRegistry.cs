@@ -9,7 +9,7 @@ namespace CasaBackend.Casa.Infrastructure.Registries
         public Dictionary<DeviceType, List<Type>> Registry { get; } = new()
         {
             { DeviceType.Led, new List<Type> { typeof(DimmableEntity) } },
-            { DeviceType.Fan, new List<Type> { typeof(VelocityEntity), typeof(DimmableEntity) } }
+            { DeviceType.Fan, new List<Type> { typeof(VelocityEntity) } }
         };
     }
 }

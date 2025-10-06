@@ -37,8 +37,6 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
         {
             var dto = message.Data;
             var result = await _deviceRepository.GetByArduinoIdAsync(dto.ArduinoId);
-            Console.WriteLine($"Data:{result.Data}");
-            Console.WriteLine("Arduino ID:" + dto.ArduinoId);
 
             if (result.IsSuccess)
             {

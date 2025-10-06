@@ -162,7 +162,7 @@ void setup() {
 
   while(!client.connected()) {
     reconnectMQTT();
-  })
+  }
   // Ejemplo de dispositivos
   Device led1;
   led1.pin = 2;
