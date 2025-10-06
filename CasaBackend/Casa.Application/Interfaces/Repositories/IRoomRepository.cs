@@ -1,4 +1,4 @@
-﻿using CasaBackend.Casa.Core;
+using CasaBackend.Casa.Core;
 
 namespace CasaBackend.Casa.Application.Interfaces.Repositories
 {
@@ -6,5 +6,7 @@ namespace CasaBackend.Casa.Application.Interfaces.Repositories
     {
         Task<CoreResult<TEntity>> GetByRoomNameAsync(string name);
         Task<CoreResult<IEnumerable<TEntity>>> GetAllRoomsAsync();
+        Task<CoreResult<TEntity>> CreateRoomAsync(TEntity entity);
+        Task<CoreResult<int>> AddDeviceToRoomAsync(int roomId, int deviceId);
     }
 }

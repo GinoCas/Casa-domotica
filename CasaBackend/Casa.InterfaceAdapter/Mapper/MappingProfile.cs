@@ -35,20 +35,11 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Speed))
                 .ReverseMap();
-            //Rooms
-            CreateMap<RoomModel, RoomEntity>()
-                .ForMember(dest => dest.DevicesId, opt => opt.MapFrom(src => 
-                    src.RoomDevices.Select(rd => rd.DeviceId).ToList()));
-            CreateMap<RoomEntity, RoomModel>()
-                 .ForMember(dest => dest.RoomDevices, opt => opt.Ignore());
 
             CreateMap<ICapabilityModel, ICapabilityEntity>()
                 .Include<DimmableModel, DimmableEntity>()
-                .Include<VelocityModel, VelocityEntity>();
-
-            CreateMap<ICapabilityEntity, ICapabilityModel>()
-                .Include<DimmableEntity, DimmableModel>()
-                .Include<VelocityEntity, VelocityModel>();
+                .Include<VelocityModel, VelocityEntity>()
+                .ReverseMap();
 
             CreateMap<ArduinoDeviceDto, DimmableEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -57,6 +48,17 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<ArduinoDeviceDto, VelocityEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Speed, opt => opt.MapFrom(src => src.Speed));
+
+            //Rooms
+            CreateMap<RoomModel, RoomEntity>()
+                .ForMember(dest => dest.DevicesId, opt => opt.MapFrom(src => 
+                    src.RoomDevices.Select(rd => rd.DeviceId).ToList()));
+            CreateMap<RoomEntity, RoomModel>()
+                 .ForMember(dest => dest.RoomDevices, opt => opt.Ignore());
+
+            CreateMap<CreateRoomDto, RoomEntity>()
+                .ForMember(dest => dest.DevicesId, opt => opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             //Presentation
             CreateMap<DeviceEntity, DeviceViewModel>()

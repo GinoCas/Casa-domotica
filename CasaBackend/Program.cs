@@ -104,6 +104,8 @@ builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
 builder.Services.AddScoped<GetArduinoDevicesUseCase>();
 builder.Services.AddScoped<GetRoomUseCase<RoomEntity>>();
+builder.Services.AddScoped<CreateRoomUseCase<RoomEntity, CreateRoomDto>>();
+builder.Services.AddScoped<AddDeviceToRoomUseCase<RoomEntity>>();
 
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationViewModel>>();
 builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationDto>>();
