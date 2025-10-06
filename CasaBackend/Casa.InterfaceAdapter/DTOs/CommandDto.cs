@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace CasaBackend.Casa.InterfaceAdapter.DTOs
+﻿namespace CasaBackend.Casa.InterfaceAdapter.DTOs
 {
     public class CommandDto
     {

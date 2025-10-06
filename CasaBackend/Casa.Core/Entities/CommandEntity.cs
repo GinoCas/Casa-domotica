@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace CasaBackend.Casa.Core.Entities
+﻿namespace CasaBackend.Casa.Core.Entities
 {
     public class CommandEntity
     {

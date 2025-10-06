@@ -18,6 +18,7 @@ namespace CasaBackend.Casa.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DeviceModel>().ToTable("device");
+            modelBuilder.Entity<DeviceModel>().HasIndex(d => d.ArduinoId).IsUnique();
             modelBuilder.Entity<DimmableModel>()
                 .ToTable("dimmable")
                 .HasKey(d => d.Id);

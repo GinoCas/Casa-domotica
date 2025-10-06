@@ -1,5 +1,5 @@
 using CasaBackend.Casa.Application.Interfaces.Handlers;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace CasaBackend.Casa.Infrastructure.Handlers
 {
@@ -21,8 +21,7 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
             try
             {
                 Console.WriteLine($"JSON RECIBIDO:{payloadJson}");
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var dto = JsonSerializer.Deserialize<TDTO>(payloadJson, options);
+                var dto = JsonConvert.DeserializeObject<TDTO>(payloadJson);
 
                 if (dto != null)
                 {

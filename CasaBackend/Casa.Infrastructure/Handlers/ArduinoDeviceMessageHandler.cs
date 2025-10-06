@@ -36,8 +36,9 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
         protected override async Task ProcessMessageAsync(ArduinoMessageDto<ArduinoDeviceDto> message)
         {
             var dto = message.Data;
-            var result = await _deviceRepository.GetByDeviceIdAsync(dto.Id);
+            var result = await _deviceRepository.GetByArduinoIdAsync(dto.ArduinoId);
             Console.WriteLine($"Data:{result.Data}");
+            Console.WriteLine("Arduino ID:" + dto.ArduinoId);
 
             if (result.IsSuccess)
             {
@@ -46,12 +47,12 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
                 await _deviceRepository.UpdateDeviceAsync(result.Data);
                 return;
             }
-            _logger.LogInformation("El dispositivo {DeviceId} no existe, creando nuevo...", dto.Id);
+            _logger.LogInformation("El dispositivo {DeviceId} no existe, creando nuevo...", dto.ArduinoId);
             var entity = _mapper.Map<DeviceEntity>(dto);
             if (entity == null)
             {
                 _logger.LogError("Error creando dispositivo {DeviceId}: {Errors}",
-                    dto.Id, string.Join(", ", ["El dispositivo no se pudo mappear."]));
+                    dto.ArduinoId, string.Join(", ", ["El dispositivo no se pudo mappear."]));
                 return;
             }
             var capabilitiesResult = _capabilityFactory.Fabric(entity.DeviceType);
