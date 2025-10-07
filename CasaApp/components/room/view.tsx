@@ -3,7 +3,7 @@ import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
@@ -30,6 +30,7 @@ export function RoomView({
     setDeviceBrightness,
     toggleDeviceState,
     updateDevice,
+    isLoadingDevices,
   } = useDeviceStore();
   const { currentRoom, isLoadingRooms, rooms, addDeviceToRoom } =
     useRoomStore();
@@ -39,6 +40,10 @@ export function RoomView({
   const [isModalOpen, setisModalOpen] = useState(false);
 
   const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
+
+  const filteredDevices = useMemo(() => {
+    return devices.filter((d) => !unassignedDevices.includes(d));
+  }, [devices, unassignedDevices]);
 
   const openBrightnessModal = (device: Device) => {
     if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
@@ -65,7 +70,8 @@ export function RoomView({
     toggleDeviceState(device.id, !newState);
   };
 
-  if (isLoadingRooms || loadingRoomDevices) return <Loader size="large" />;
+  if (isLoadingRooms || loadingRoomDevices || isLoadingDevices)
+    return <Loader size="large" />;
 
   if (devices.length === 0)
     return (
@@ -75,32 +81,35 @@ export function RoomView({
     );
 
   const renderListHeader = () => {
-    if (currentRoom?.name !== "Todas" || unassignedDevices.length === 0) {
-      return null;
-    }
-
     return (
       <View>
-        <View style={styles.connectedDevices}>
-          <Text style={{ fontWeight: 600 }}>Dispositivos sin asignar</Text>
-          <Chip text={unassignedDevices.length} />
-        </View>
-        <View style={styles.devicesGrid}>
-          {unassignedDevices.map((device) => (
-            <View key={device.id} style={styles.deviceCardWrapper}>
-              <DeviceCard
-                handleToogleEnabled={handleToggleEnabled}
-                device={device}
-                onCardPress={() => handlePressDevice(device)}
-              />
+        {unassignedDevices.length !== 0 && currentRoom?.name === "Todas" && (
+          <>
+            <View style={styles.connectedDevices}>
+              <Text style={{ fontWeight: "600" }}>
+                Dispositivos sin asignar
+              </Text>
+              <Chip text={unassignedDevices.length} />
             </View>
-          ))}
-        </View>
-        <View style={styles.connectedDevices}>
-          <Text style={{ fontWeight: 600 }}>Dispositivos conectados</Text>
-          {/* //TODO: revisar TODO de la linea 103 */}
-          <Chip text={devices.length} />
-        </View>
+            <View style={styles.devicesGrid}>
+              {unassignedDevices.map((device) => (
+                <View key={device.id} style={styles.deviceCardWrapper}>
+                  <DeviceCard
+                    handleToogleEnabled={handleToggleEnabled}
+                    device={device}
+                    onCardPress={() => handlePressDevice(device)}
+                  />
+                </View>
+              ))}
+            </View>
+          </>
+        )}
+        {filteredDevices.length !== 0 && (
+          <View style={styles.connectedDevices}>
+            <Text style={{ fontWeight: "600" }}>Dispositivos conectados</Text>
+            <Chip text={filteredDevices.length} />
+          </View>
+        )}
       </View>
     );
   };
@@ -133,8 +142,7 @@ export function RoomView({
   return (
     <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
       <FlatList
-        //TODO: Esto estaba renderizando todos los dispositivos, no solo los asignados al room.
-        data={devices.filter((d) => !unassignedDevices.includes(d))}
+        data={filteredDevices}
         keyExtractor={(device) => device.id.toString()}
         numColumns={2}
         columnWrapperStyle={{
@@ -172,7 +180,10 @@ export function RoomView({
         currentDevice={selectedDevice}
         isOpen={isDeviceModalOpen}
         onSubmit={handleSubmitDevice}
-        onClose={() => setIsDeviceModalOpen(false)}
+        onClose={() => {
+          setIsDeviceModalOpen(false);
+          setSelectedDevice(undefined);
+        }}
       />
     </SafeAreaView>
   );

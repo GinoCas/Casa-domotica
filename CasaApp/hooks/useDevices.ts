@@ -11,16 +11,19 @@ export default function useDevices() {
 
   const { currentRoom, rooms } = useRoomStore();
 
-  const { devices, handleLoadDevices } = useDeviceStore();
+  const { devices, handleLoadDevices, changeLoadingDevices } = useDeviceStore();
 
   useEffect(() => {
     const loadDevices = async () => {
+      changeLoadingDevices(true);
       const devicesResult = await deviceService.getDeviceList();
       if (!devicesResult.isSuccess) {
         console.log("Error on loading devices", devicesResult.errors);
+        changeLoadingDevices(false);
         return;
       }
       handleLoadDevices(devicesResult.data);
+      changeLoadingDevices(false);
     };
     loadDevices();
   }, [handleLoadDevices]);

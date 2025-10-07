@@ -4,27 +4,25 @@ import { Result } from "@/src/shared/Result";
 import { Device } from "@/src/core/entities/Device";
 import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 
-interface PendingChange {
-  function: Promise<Result<any>>;
-  timestamp: number;
-}
 interface DeviceStoreState {
   devices: Device[];
-  pendingChanges: PendingChange[];
   handleLoadDevices: (newDevices: Device[]) => void;
+  isLoadingDevices: boolean;
+  changeLoadingDevices: (newState: boolean) => void;
   getDeviceById: (deviceId: number) => Result<Device>;
   toggleDeviceState: (deviceId: number, newState: boolean) => Promise<void>;
   setDeviceBrightness: (deviceId: number, brightness: number) => Promise<void>;
   updateDevice: (deviceId: number, dto: DeviceDto) => Promise<void>;
-  syncChanges: () => Promise<Result<boolean>>;
 }
 
 const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
   devices: [],
-  pendingChanges: [],
+  isLoadingDevices: false,
   handleLoadDevices: (newDevices: Device[]) => {
     set((state) => ({ ...state, devices: newDevices }));
   },
+  changeLoadingDevices: (newState) =>
+    set((state) => ({ ...state, isLoadingDevices: newState })),
   getDeviceById: (deviceId: number) => {
     const deviceWithState = get().devices.find(
       (item: Device) => item.id === deviceId,
@@ -78,10 +76,16 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
     }));
   },
   updateDevice: async (deviceId: number, dto: DeviceDto) => {
-    const result = await deviceService.updateDevice(deviceId, dto);
-    if (!result.isSuccess) {
-      console.log("Error on updating device", result.errors);
-      return;
+    try {
+      set({ isLoadingDevices: true });
+      const result = await deviceService.updateDevice(deviceId, dto);
+      if (!result.isSuccess) {
+        throw new Error(result.errors.join(","));
+      }
+    } catch (err) {
+      console.log("Error on updating device:" + err);
+    } finally {
+      set({ isLoadingDevices: false });
     }
     const devicesResult = await deviceService.getDeviceList();
     if (!devicesResult.isSuccess) {
@@ -89,31 +93,6 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
       return;
     }
     get().handleLoadDevices(devicesResult.data);
-  },
-  
-  syncChanges: async () => {
-    const { pendingChanges } = get();
-    if (pendingChanges.length === 0) return Result.success(true);
-
-    const changesToProcess = [...pendingChanges];
-    set((state) => ({ ...state, pendingChanges: [] }));
-
-    let errors: string[] = [];
-
-    const results = await Promise.all(
-      changesToProcess.map((change) => change.function),
-    );
-
-    results.forEach((result: Result<any>) => {
-      if (!result.isSuccess) {
-        errors = errors.concat(result.errors);
-      }
-    });
-
-    if (errors.length > 0) {
-      return Result.failure(errors);
-    }
-    return Result.success(true);
   },
 }));
 
