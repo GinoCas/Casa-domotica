@@ -7,10 +7,11 @@ import { Device } from "@/src/core/entities/Device";
 import useDevices from "@/hooks/useDevices";
 import useRooms from "@/hooks/useRooms";
 import useRoomStore from "@/stores/useRoomStore";
+import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 
 const DeviceModal = ({
   rooms,
-  roomId: initialRoomId
+  roomId: initialRoomId,
   currentDevice,
   isOpen,
   onClose,
@@ -27,15 +28,23 @@ const DeviceModal = ({
   const [roomId, setRoomId] = useState<number | undefined>(initialRoomId);
 
   useEffect(() => {
-    setName(currentDevice?.name);
-    setDescription(currentDevice?.description);
-    setRoomId(initialRoomId);
-  }, [currentDevice, initialRoomId]);
+    if (isOpen) {
+      setName(currentDevice?.name || "");
+      setDescription(currentDevice?.description || "");
+      setRoomId(initialRoomId);
+    }
+  }, [isOpen, currentDevice, initialRoomId]);
 
   const handleSave = () => {
     if (currentDevice) {
-      if (name !== currentDevice.name || description !== currentDevice.description) {
-        updateDevice(currentDevice.id, name!, description!);
+      if (
+        (name || description) &&
+        (name !== currentDevice.name ||
+          description !== currentDevice.description)
+      ) {
+        const dto = new DeviceDto(name!, description!);
+        console.log(dto);
+        updateDevice(currentDevice.id, dto);
       }
       if (roomId && roomId !== initialRoomId) {
         addDeviceToRoom(roomId, currentDevice.id);
@@ -65,9 +74,9 @@ const DeviceModal = ({
       <View style={styles.field}>
         <Text style={styles.label}>Habitación</Text>
         <Picker
-          selectedValue={currentRoom}
+          /*selectedValue={currentRoom}*/
           style={{ width: 150 }}
-          onValueChange={(itemValue: Room) => handleSetCurrentRoom(itemValue)}
+          onValueChange={(itemValue: Room) => setRoomId(itemValue.id)}
         >
           {rooms.map((room) => (
             <Picker.Item label={room.name} key={room.name} value={room} />

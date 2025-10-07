@@ -3,6 +3,7 @@ import useDeviceStore from "@/stores/useDeviceStore";
 import { deviceService } from "@/src/services/DeviceService";
 import { Device } from "@/src/core/entities/Device";
 import useRoomStore from "@/stores/useRoomStore";
+import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 
 export default function useDevices() {
   const [roomDevices, setRoomDevices] = useState<Device[]>([]);
@@ -45,12 +46,8 @@ export default function useDevices() {
     setLoadingRoomDevices(false);
   }, [currentRoom, devices]);
 
-  const updateDevice = async (
-    deviceId: number,
-    name: string,
-    description: string,
-  ) => {
-    const result = await deviceService.updateDevice(deviceId, name, description);
+  const updateDevice = async (deviceId: number, dto: DeviceDto) => {
+    const result = await deviceService.updateDevice(deviceId, dto);
     if (!result.isSuccess) {
       console.log("Error on updating device", result.errors);
       return;

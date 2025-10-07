@@ -110,7 +110,7 @@ export function DeviceCard({
           </View>
         </View>
       </View>
-      <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.deviceType}</Text>
+      <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.name}</Text>
       <View
         style={{
           flexDirection: "row",

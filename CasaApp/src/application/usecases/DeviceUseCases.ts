@@ -5,6 +5,7 @@ import {
   IDeviceCommandRepository,
 } from "../../core/repositories/IDeviceRepository";
 import { Result } from "../../shared/Result";
+import { DeviceDto } from "../dtos/DeviceDto";
 
 export class GetDeviceListUseCase {
   constructor(private deviceRepository: IDeviceRepository) {}
@@ -36,16 +37,8 @@ export class GetDeviceByIdUseCase {
 export class UpdateDeviceUseCase {
   constructor(private deviceRepository: IDeviceRepository) {}
 
-  async execute(
-    deviceId: number,
-    name: string,
-    description: string,
-  ): Promise<Result<boolean>> {
-    return await this.deviceRepository.updateDevice(
-      deviceId,
-      name,
-      description,
-    );
+  async execute(deviceId: number, dto: DeviceDto): Promise<Result<boolean>> {
+    return await this.deviceRepository.updateDevice(deviceId, dto);
   }
 }
 

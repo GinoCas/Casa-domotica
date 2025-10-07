@@ -2,6 +2,7 @@
 import { Device } from "../core/entities/Device";
 import { Result } from "../shared/Result";
 import { DependencyContainer } from "../shared/DependencyContainer";
+import { DeviceDto } from "../application/dtos/DeviceDto";
 
 export class DeviceService {
   private container = DependencyContainer.getInstance();
@@ -39,11 +40,10 @@ export class DeviceService {
 
   async updateDevice(
     deviceId: number,
-    name: string,
-    description: string,
+    dto: DeviceDto,
   ): Promise<Result<boolean>> {
     const useCase = this.container.getUpdateDeviceUseCase();
-    return await useCase.execute(deviceId, name, description);
+    return await useCase.execute(deviceId, dto);
   }
 
   async addDeviceToRoom(

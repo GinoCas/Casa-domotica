@@ -7,6 +7,7 @@ import { Device } from "../../core/entities/Device";
 import { Result } from "../../shared/Result";
 import { HttpClient } from "../api/HttpClient";
 import { CommandDtoFactory } from "../../application/dtos/CommandDto";
+import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 
 export class ApiDeviceRepository
   implements IDeviceRepository, IDeviceCommandRepository
@@ -63,16 +64,14 @@ export class ApiDeviceRepository
 
   async updateDevice(
     deviceId: number,
-    name: string,
-    description: string,
+    dto: DeviceDto,
   ): Promise<Result<boolean>> {
-    const result = await this.httpClient.put<boolean>(
+    console.log("DTO ENVIADO:", dto, " EN ID:", deviceId);
+    const result = await this.httpClient.post<boolean>(
       `device/${deviceId}/update`,
-      {
-        name,
-        description,
-      },
+      dto,
     );
+    console.log("Resultado:", result);
 
     if (!result.isSuccess) {
       return result as Result<boolean>;
