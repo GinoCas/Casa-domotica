@@ -9,12 +9,14 @@ const DeviceModal = ({
   rooms,
   currentDevice,
   isOpen,
+  roomId: initialRoomId,
   onSubmit,
   onClose,
 }: {
   rooms: Room[];
   currentDevice: Device | undefined;
   isOpen: boolean;
+  roomId: number | undefined;
   onClose: () => void;
   onSubmit: (
     name: string,
@@ -24,12 +26,13 @@ const DeviceModal = ({
 }) => {
   const [name, setName] = useState(currentDevice?.name);
   const [description, setDescription] = useState(currentDevice?.description);
-  const [roomId, setRoomId] = useState<number | undefined>(undefined);
+  const [roomId, setRoomId] = useState<number | undefined>(initialRoomId);
 
   useEffect(() => {
     setName(currentDevice?.name || "");
     setDescription(currentDevice?.description || "");
-  }, [currentDevice]);
+    setRoomId(initialRoomId);
+  }, [currentDevice, initialRoomId]);
 
   const handleSave = () => {
     onSubmit(name!, description!, roomId);

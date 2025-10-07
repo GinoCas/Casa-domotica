@@ -11,7 +11,12 @@ interface RoomState {
   changeCurrentRoom: (newRoom: Room) => void;
   changeLoadingRooms: (newState: boolean) => void;
   getRoomByName: (roomName: string) => Result<Room>;
-  addDeviceToRoom: (roomId: number, deviceId: number) => Promise<void>;
+  getRoomOfDeviceId: (deviceId: number) => Result<Room>;
+  addDeviceToRoom: (
+    roomId: number,
+    deviceId: number,
+    deviceRoomId: number | undefined,
+  ) => Promise<void>;
 }
 
 const useRoomStore = create<RoomState>()((set, get) => ({
@@ -34,11 +39,17 @@ const useRoomStore = create<RoomState>()((set, get) => ({
     }
     return Result.success(room);
   },
-  addDeviceToRoom: async (roomId, deviceId) => {
-    var currentDeviceRoom = get().rooms.find((room) =>
-      room.deviceIds.includes(deviceId),
-    );
-    if (currentDeviceRoom && currentDeviceRoom.id === roomId) {
+  getRoomOfDeviceId: (deviceId: number) => {
+    const room = get().rooms.find((room) => room.deviceIds.includes(deviceId));
+    if (!room) {
+      return Result.failure([
+        "No se encontro una habitacion para el dispositivo con ID:" + deviceId,
+      ]);
+    }
+    return Result.success(room);
+  },
+  addDeviceToRoom: async (roomId, deviceId, deviceRoomId) => {
+    if (deviceRoomId && deviceRoomId === roomId) {
       return;
     }
     try {

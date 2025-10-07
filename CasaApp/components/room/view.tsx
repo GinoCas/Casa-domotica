@@ -3,7 +3,7 @@ import { Chip } from "../ui/chip";
 import { DeviceCard } from "./device-card";
 import Loader from "../ui/Loader";
 import GlobalStyles from "@/Utils/globalStyles";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
@@ -13,6 +13,7 @@ import { Device } from "@/src/core/entities/Device";
 import useRoomStore from "@/stores/useRoomStore";
 import DeviceModal from "../device/device-modal";
 import { DeviceDto } from "@/src/application/dtos/DeviceDto";
+import { Room } from "@/src/core/entities/Room";
 
 interface RoomViewProps {
   devices: Device[];
@@ -32,11 +33,17 @@ export function RoomView({
     updateDevice,
     isLoadingDevices,
   } = useDeviceStore();
-  const { currentRoom, isLoadingRooms, rooms, addDeviceToRoom } =
-    useRoomStore();
+  const {
+    currentRoom,
+    isLoadingRooms,
+    rooms,
+    addDeviceToRoom,
+    getRoomOfDeviceId,
+  } = useRoomStore();
   const { changeSaveEnergyMode } = useModeStore();
 
   const [selectedDevice, setSelectedDevice] = useState<Device>();
+  const [selectedDeviceRoom, setSelectedDeviceRoom] = useState<Room>();
   const [isModalOpen, setisModalOpen] = useState(false);
 
   const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
@@ -80,6 +87,32 @@ export function RoomView({
       </Text>
     );
 
+  const handlePressDevice = (device: Device) => {
+    setSelectedDevice(device);
+    setSelectedDeviceRoom(getRoomOfDeviceId(device.id).data);
+    setIsDeviceModalOpen(true);
+  };
+
+  const handleSubmitDevice = (
+    name: string,
+    description: string,
+    roomId: number | undefined,
+  ) => {
+    if (!selectedDevice) {
+      return;
+    }
+    if (
+      name !== selectedDevice.name ||
+      description !== selectedDevice.description
+    ) {
+      const dto = new DeviceDto(name, description);
+      updateDevice(selectedDevice.id, dto);
+    }
+    if (roomId) {
+      addDeviceToRoom(roomId, selectedDevice.id, selectedDeviceRoom?.id);
+    }
+  };
+
   const renderListHeader = () => {
     return (
       <View>
@@ -112,31 +145,6 @@ export function RoomView({
         )}
       </View>
     );
-  };
-
-  const handlePressDevice = (device: Device) => {
-    setSelectedDevice(device);
-    setIsDeviceModalOpen(true);
-  };
-
-  const handleSubmitDevice = (
-    name: string,
-    description: string,
-    roomId: number | undefined,
-  ) => {
-    if (!selectedDevice) {
-      return;
-    }
-    if (
-      name !== selectedDevice.name ||
-      description !== selectedDevice.description
-    ) {
-      const dto = new DeviceDto(name, description);
-      updateDevice(selectedDevice.id, dto);
-    }
-    if (roomId) {
-      addDeviceToRoom(roomId, selectedDevice.id);
-    }
   };
 
   return (
@@ -178,11 +186,13 @@ export function RoomView({
       <DeviceModal
         rooms={rooms}
         currentDevice={selectedDevice}
+        roomId={selectedDeviceRoom ? selectedDeviceRoom.id : undefined}
         isOpen={isDeviceModalOpen}
         onSubmit={handleSubmitDevice}
         onClose={() => {
           setIsDeviceModalOpen(false);
           setSelectedDevice(undefined);
+          setSelectedDeviceRoom(undefined);
         }}
       />
     </SafeAreaView>
