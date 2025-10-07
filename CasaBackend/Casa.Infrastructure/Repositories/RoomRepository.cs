@@ -60,6 +60,13 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 return CoreResult<int>.Failure([$"La habitación con id {roomId} ya contiene el dispositivo con id {deviceId}."]);
             var device = await _dbContext.Devices.FindAsync(deviceId);
             if (device == null) return CoreResult<int>.Failure([$"El dispositivo con id {deviceId} no fue encontrado."]);
+            var deviceInRoom = await _dbContext.RoomDevices
+                .Where(rd => rd.DeviceId == deviceId && rd.RoomId != roomId)
+                .ToListAsync();
+            if (deviceInRoom.Count != 0)
+            {
+                _dbContext.RoomDevices.RemoveRange(deviceInRoom);
+            }
             var roomDevice = new RoomDeviceModel { RoomId = roomId, DeviceId = deviceId };
             await _dbContext.RoomDevices.AddAsync(roomDevice);
             await _dbContext.SaveChangesAsync();
