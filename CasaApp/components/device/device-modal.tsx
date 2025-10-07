@@ -4,7 +4,6 @@ import CustomModal from "../ui/modal";
 import { Picker } from "@react-native-picker/picker";
 import { Room } from "@/src/core/entities/Room";
 import { Device } from "@/src/core/entities/Device";
-import useRoomStore from "@/stores/useRoomStore";
 
 const DeviceModal = ({
   rooms,
@@ -58,13 +57,15 @@ const DeviceModal = ({
       <View style={styles.field}>
         <Text style={styles.label}>Habitación</Text>
         <Picker
-          /*selectedValue={currentRoom}*/
           style={{ width: 150 }}
-          onValueChange={(itemValue: Room) => setRoomId(itemValue.id)}
+          selectedValue={roomId}
+          onValueChange={(itemValue: number) => setRoomId(itemValue)}
         >
-          {rooms.map((room) => (
-            <Picker.Item label={room.name} key={room.name} value={room} />
-          ))}
+          {rooms
+            .filter((room) => room.name !== "Todas")
+            .map((room) => (
+              <Picker.Item label={room.name} key={room.name} value={room.id} />
+            ))}
         </Picker>
       </View>
       <View style={{ width: "100%" }}>
