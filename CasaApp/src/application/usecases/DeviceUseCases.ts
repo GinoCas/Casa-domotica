@@ -42,14 +42,6 @@ export class UpdateDeviceUseCase {
   }
 }
 
-export class AddDeviceToRoomUseCase {
-  constructor(private deviceRepository: IDeviceRepository) {}
-
-  async execute(roomId: number, deviceId: number): Promise<Result<boolean>> {
-    return await this.deviceRepository.addDeviceToRoom(roomId, deviceId);
-  }
-}
-
 export class SetDeviceStateUseCase {
   constructor(private deviceCommandRepository: IDeviceCommandRepository) {}
 

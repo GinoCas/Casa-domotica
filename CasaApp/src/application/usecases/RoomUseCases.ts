@@ -14,3 +14,11 @@ export class GetAllRoomsUseCase {
     }
   }
 }
+
+export class AddDeviceToRoomUseCase {
+  constructor(private roomRepository: IRoomRepository) {}
+
+  async execute(roomId: number, deviceId: number): Promise<Result<boolean>> {
+    return await this.roomRepository.addDeviceToRoom(roomId, deviceId);
+  }
+}

@@ -45,14 +45,6 @@ export class DeviceService {
     const useCase = this.container.getUpdateDeviceUseCase();
     return await useCase.execute(deviceId, dto);
   }
-
-  async addDeviceToRoom(
-    roomId: number,
-    deviceId: number,
-  ): Promise<Result<boolean>> {
-    const useCase = this.container.getAddDeviceToRoomUseCase();
-    return await useCase.execute(roomId, deviceId);
-  }
 }
 
 export const deviceService = new DeviceService();

@@ -79,22 +79,4 @@ export class ApiDeviceRepository
 
     return Result.success(result.data);
   }
-
-  async addDeviceToRoom(
-    roomId: number,
-    deviceId: number,
-  ): Promise<Result<boolean>> {
-    const result = await this.httpClient.post<boolean>(
-      `room/${roomId}/device`,
-      {
-        deviceId,
-      },
-    );
-
-    if (!result.isSuccess) {
-      return result as Result<boolean>;
-    }
-
-    return Result.success(result.data);
-  }
 }

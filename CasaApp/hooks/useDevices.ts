@@ -60,25 +60,10 @@ export default function useDevices() {
     handleLoadDevices(devicesResult.data);
   };
 
-  const addDeviceToRoom = async (roomId: number, deviceId: number) => {
-    const result = await deviceService.addDeviceToRoom(roomId, deviceId);
-    if (!result.isSuccess) {
-      console.log("Error on adding device to room", result.errors);
-      return;
-    }
-    const devicesResult = await deviceService.getDeviceList();
-    if (!devicesResult.isSuccess) {
-      console.log("Error on loading devices", devicesResult.errors);
-      return;
-    }
-    handleLoadDevices(devicesResult.data);
-  };
-
   return {
     roomDevices,
     loadingRoomDevices,
     unassignedDevices,
     updateDevice,
-    addDeviceToRoom,
   };
 }

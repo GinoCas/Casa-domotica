@@ -27,4 +27,22 @@ export class ApiRoomRepository implements IRoomRepository {
       return Result.fromError(error as Error);
     }
   }
+
+  async addDeviceToRoom(
+    roomId: number,
+    deviceId: number,
+  ): Promise<Result<boolean>> {
+    const result = await this.httpClient.post<boolean>(
+      `room/${roomId}/device`,
+      {
+        deviceId,
+      },
+    );
+
+    if (!result.isSuccess) {
+      return result as Result<boolean>;
+    }
+
+    return Result.success(result.data);
+  }
 }

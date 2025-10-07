@@ -11,19 +11,12 @@ export class RoomService {
     return await useCase.execute();
   }
 
-  async getRoomNames(): Promise<Result<string[]>> {
-    const useCase = this.container.getGetRoomNamesUseCase();
-    return await useCase.execute();
-  }
-
-  async getRoomByName(name: string): Promise<Result<Room>> {
-    const useCase = this.container.getGetRoomByNameUseCase();
-    return await useCase.execute(name);
-  }
-
-  async getDevicesByRoomName(roomName: string): Promise<Result<number[]>> {
-    const useCase = this.container.getGetDevicesByRoomNameUseCase();
-    return await useCase.execute(roomName);
+  async addDeviceToRoom(
+    roomId: number,
+    deviceId: number,
+  ): Promise<Result<boolean>> {
+    const useCase = this.container.getAddDeviceToRoomUseCase();
+    return await useCase.execute(roomId, deviceId);
   }
 }
 

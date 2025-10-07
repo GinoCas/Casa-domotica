@@ -4,4 +4,5 @@ import { Result } from "../../shared/Result";
 
 export interface IRoomRepository {
   getAll(): Promise<Result<Room[]>>;
+  addDeviceToRoom(roomId: number, deviceId: number): Promise<Result<boolean>>;
 }

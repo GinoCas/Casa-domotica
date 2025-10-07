@@ -9,9 +9,11 @@ import {
   SetDeviceBrightnessUseCase,
   SetDeviceSpeedUseCase,
   UpdateDeviceUseCase,
-  AddDeviceToRoomUseCase,
 } from "../application/usecases/DeviceUseCases";
-import { GetAllRoomsUseCase } from "../application/usecases/RoomUseCases";
+import {
+  GetAllRoomsUseCase,
+  AddDeviceToRoomUseCase,
+} from "../application/usecases/RoomUseCases";
 import { ApiAutomationRepository } from "../infrastructure/repositories/ApiAutomationRepository";
 import {
   CreateAutomationUseCase,
@@ -35,8 +37,8 @@ export class DependencyContainer {
   private setDeviceBrightnessUseCase: SetDeviceBrightnessUseCase;
   private setDeviceSpeedUseCase: SetDeviceSpeedUseCase;
   private updateDeviceUseCase: UpdateDeviceUseCase;
-  private addDeviceToRoomUseCase: AddDeviceToRoomUseCase;
   private getAllRoomsUseCase: GetAllRoomsUseCase;
+  private addDeviceToRoomUseCase: AddDeviceToRoomUseCase;
   private getAllAutomationsUseCase: GetAllAutomationsUseCase;
   private getAutomationByIdUseCase: GetAutomationByIdUseCase;
   private createAutomationUseCase: CreateAutomationUseCase;
@@ -66,10 +68,10 @@ export class DependencyContainer {
       this.deviceRepository,
     );
     this.updateDeviceUseCase = new UpdateDeviceUseCase(this.deviceRepository);
-    this.addDeviceToRoomUseCase = new AddDeviceToRoomUseCase(
-      this.deviceRepository,
-    );
     this.getAllRoomsUseCase = new GetAllRoomsUseCase(this.roomRepository);
+    this.addDeviceToRoomUseCase = new AddDeviceToRoomUseCase(
+      this.roomRepository,
+    );
     this.getAllAutomationsUseCase = new GetAllAutomationsUseCase(
       this.automationRepository,
     );
@@ -119,14 +121,14 @@ export class DependencyContainer {
     return this.updateDeviceUseCase;
   }
 
-  public getAddDeviceToRoomUseCase(): AddDeviceToRoomUseCase {
-    return this.addDeviceToRoomUseCase;
-  }
-
   // Getters para casos de uso de Room
 
   public getGetAllRoomsUseCase(): GetAllRoomsUseCase {
     return this.getAllRoomsUseCase;
+  }
+
+  public getAddDeviceToRoomUseCase(): AddDeviceToRoomUseCase {
+    return this.addDeviceToRoomUseCase;
   }
 
   // Getters para casos de uso de Automation
