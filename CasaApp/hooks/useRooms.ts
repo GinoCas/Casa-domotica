@@ -10,6 +10,7 @@ export default function useRooms() {
     changeLoadingRooms,
     isLoadingRooms,
     handleLoadRooms,
+    addDeviceToRoom,
   } = useRoomStore();
 
   useEffect(() => {
@@ -28,13 +29,11 @@ export default function useRooms() {
     getAllRooms();
   }, [changeCurrentRoom, changeLoadingRooms, handleLoadRooms]);
 
-  const addDeviceToRoom = async (roomId: number, deviceId: number) => {
-    const result = await roomService.addDeviceToRoom(roomId, deviceId);
-    if (!result.isSuccess) {
-      console.log("Error on adding device to room", result.errors);
-      return;
-    }
+  return {
+    rooms,
+    currentRoom,
+    isLoadingRooms,
+    changeCurrentRoom,
+    addDeviceToRoom,
   };
-
-  return { rooms, currentRoom, isLoadingRooms, changeCurrentRoom, addDeviceToRoom };
 }

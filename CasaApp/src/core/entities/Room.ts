@@ -33,10 +33,10 @@ export class Room {
 
   static createFromApiResponse(data: any): Room {
     return new Room(
-      data.id, 
-      data.name, 
-      data.description, 
-      data.deviceIds ?? data.devicesId ?? []
+      data.id,
+      data.name,
+      data.description,
+      data.deviceIds ?? data.devicesId ?? [],
     );
   }
 }

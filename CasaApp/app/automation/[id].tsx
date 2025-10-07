@@ -33,7 +33,6 @@ import {
   Option,
 } from "@/components/ui/multi-combo-group/types";
 import CustomModal from "@/components/ui/modal";
-import { filter, forEach } from "lodash";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();

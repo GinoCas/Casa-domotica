@@ -7,6 +7,7 @@ import { Device } from "@/src/core/entities/Device";
 import useDevices from "@/hooks/useDevices";
 import useRooms from "@/hooks/useRooms";
 import { DeviceDto } from "@/src/application/dtos/DeviceDto";
+import useRoomStore from "@/stores/useRoomStore";
 
 const DeviceModal = ({
   rooms,
@@ -22,7 +23,7 @@ const DeviceModal = ({
   onClose: () => void;
 }) => {
   const { updateDevice } = useDevices();
-  //const { addDeviceToRoom } = useRooms(); -> FIX: entra en un bucle infinito de llamadas a la API.
+  const { addDeviceToRoom } = useRoomStore();
   const [name, setName] = useState(currentDevice?.name);
   const [description, setDescription] = useState(currentDevice?.description);
   const [roomId, setRoomId] = useState<number | undefined>(initialRoomId);
@@ -44,10 +45,10 @@ const DeviceModal = ({
       ) {
         const dto = new DeviceDto(name!, description!);
         console.log(dto);
-        //updateDevice(currentDevice.id, dto);
+        updateDevice(currentDevice.id, dto);
       }
       if (roomId && roomId !== initialRoomId) {
-        //addDeviceToRoom(roomId, currentDevice.id);
+        addDeviceToRoom(roomId, currentDevice.id);
       }
     }
     onClose();

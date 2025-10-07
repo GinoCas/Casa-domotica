@@ -1,4 +1,5 @@
 import { Room } from "@/src/core/entities/Room";
+import { roomService } from "@/src/services/RoomService";
 import { Result } from "@/src/shared/Result";
 import { create } from "zustand";
 
@@ -10,6 +11,7 @@ interface RoomState {
   changeCurrentRoom: (newRoom: Room) => void;
   changeLoadingRooms: (newState: boolean) => void;
   getRoomByName: (roomName: string) => Result<Room>;
+  addDeviceToRoom: (roomId: number, deviceId: number) => Promise<void>;
 }
 
 const useRoomStore = create<RoomState>()((set, get) => ({
@@ -31,6 +33,20 @@ const useRoomStore = create<RoomState>()((set, get) => ({
       ]);
     }
     return Result.success(room);
+  },
+  addDeviceToRoom: async (roomId, deviceId) => {
+    const result = await roomService.addDeviceToRoom(roomId, deviceId);
+    if (result.isSuccess) {
+      set((state) => {
+        const updatedRooms = state.rooms.map((room) => {
+          if (room.id === roomId) {
+            return room.addDevice(deviceId);
+          }
+          return room;
+        });
+        return { rooms: updatedRooms };
+      });
+    }
   },
 }));
 
