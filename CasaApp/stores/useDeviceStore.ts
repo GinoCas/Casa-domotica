@@ -2,6 +2,7 @@ import { deviceService } from "@/src/services/DeviceService";
 import { create } from "zustand";
 import { Result } from "@/src/shared/Result";
 import { Device } from "@/src/core/entities/Device";
+import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 
 interface PendingChange {
   function: Promise<Result<any>>;
@@ -14,6 +15,7 @@ interface DeviceStoreState {
   getDeviceById: (deviceId: number) => Result<Device>;
   toggleDeviceState: (deviceId: number, newState: boolean) => Promise<void>;
   setDeviceBrightness: (deviceId: number, brightness: number) => Promise<void>;
+  updateDevice: (deviceId: number, dto: DeviceDto) => Promise<void>;
   syncChanges: () => Promise<Result<boolean>>;
 }
 
@@ -75,6 +77,20 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
       }),
     }));
   },
+  updateDevice: async (deviceId: number, dto: DeviceDto) => {
+    const result = await deviceService.updateDevice(deviceId, dto);
+    if (!result.isSuccess) {
+      console.log("Error on updating device", result.errors);
+      return;
+    }
+    const devicesResult = await deviceService.getDeviceList();
+    if (!devicesResult.isSuccess) {
+      console.log("Error on loading devices", devicesResult.errors);
+      return;
+    }
+    get().handleLoadDevices(devicesResult.data);
+  },
+  
   syncChanges: async () => {
     const { pendingChanges } = get();
     if (pendingChanges.length === 0) return Result.success(true);

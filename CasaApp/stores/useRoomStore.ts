@@ -35,17 +35,30 @@ const useRoomStore = create<RoomState>()((set, get) => ({
     return Result.success(room);
   },
   addDeviceToRoom: async (roomId, deviceId) => {
-    const result = await roomService.addDeviceToRoom(roomId, deviceId);
-    if (result.isSuccess) {
-      set((state) => {
-        const updatedRooms = state.rooms.map((room) => {
-          if (room.id === roomId) {
-            return room.addDevice(deviceId);
-          }
-          return room;
-        });
-        return { rooms: updatedRooms };
-      });
+    var currentDeviceRoom = get().rooms.find((room) =>
+      room.deviceIds.includes(deviceId),
+    );
+    if (currentDeviceRoom && currentDeviceRoom.id === roomId) {
+      return;
+    }
+    try {
+      set({ isLoadingRooms: true });
+      const result = await roomService.addDeviceToRoom(roomId, deviceId);
+      if (!result.isSuccess) {
+        throw new Error(result.errors.join(", "));
+      }
+      const roomResult = await roomService.getAllRooms();
+      if (!roomResult.isSuccess) {
+        throw new Error(result.errors.join(", "));
+      }
+      set({ rooms: roomResult.data });
+    } catch (error) {
+      console.error(
+        "Ocurrió un error al agregar el dispositivo a la habitacion:",
+        error,
+      );
+    } finally {
+      set({ isLoadingRooms: false });
     }
   },
 }));

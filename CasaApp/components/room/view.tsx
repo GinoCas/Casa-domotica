@@ -12,6 +12,7 @@ import useDeviceStore from "@/stores/useDeviceStore";
 import { Device } from "@/src/core/entities/Device";
 import useRoomStore from "@/stores/useRoomStore";
 import DeviceModal from "../device/device-modal";
+import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 
 interface RoomViewProps {
   devices: Device[];
@@ -24,9 +25,14 @@ export function RoomView({
   loadingRoomDevices,
   unassignedDevices,
 }: RoomViewProps) {
-  const { getDeviceById, setDeviceBrightness, toggleDeviceState } =
-    useDeviceStore();
-  const { currentRoom, isLoadingRooms, rooms } = useRoomStore();
+  const {
+    getDeviceById,
+    setDeviceBrightness,
+    toggleDeviceState,
+    updateDevice,
+  } = useDeviceStore();
+  const { currentRoom, isLoadingRooms, rooms, addDeviceToRoom } =
+    useRoomStore();
   const { changeSaveEnergyMode } = useModeStore();
 
   const [selectedDevice, setSelectedDevice] = useState<Device>();
@@ -104,6 +110,26 @@ export function RoomView({
     setIsDeviceModalOpen(true);
   };
 
+  const handleSubmitDevice = (
+    name: string,
+    description: string,
+    roomId: number | undefined,
+  ) => {
+    if (!selectedDevice) {
+      return;
+    }
+    if (
+      name !== selectedDevice.name ||
+      description !== selectedDevice.description
+    ) {
+      const dto = new DeviceDto(name, description);
+      updateDevice(selectedDevice.id, dto);
+    }
+    if (roomId) {
+      addDeviceToRoom(roomId, selectedDevice.id);
+    }
+  };
+
   return (
     <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
       <FlatList
@@ -145,6 +171,7 @@ export function RoomView({
         rooms={rooms}
         currentDevice={selectedDevice}
         isOpen={isDeviceModalOpen}
+        onSubmit={handleSubmitDevice}
         onClose={() => setIsDeviceModalOpen(false)}
       />
     </SafeAreaView>

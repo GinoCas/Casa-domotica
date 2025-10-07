@@ -4,53 +4,36 @@ import CustomModal from "../ui/modal";
 import { Picker } from "@react-native-picker/picker";
 import { Room } from "@/src/core/entities/Room";
 import { Device } from "@/src/core/entities/Device";
-import useDevices from "@/hooks/useDevices";
-import useRooms from "@/hooks/useRooms";
-import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 import useRoomStore from "@/stores/useRoomStore";
 
 const DeviceModal = ({
   rooms,
-  roomId: initialRoomId,
   currentDevice,
   isOpen,
+  onSubmit,
   onClose,
 }: {
   rooms: Room[];
   currentDevice: Device | undefined;
-  roomId: number | undefined;
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (
+    name: string,
+    description: string,
+    roomId: number | undefined,
+  ) => void;
 }) => {
-  const { updateDevice } = useDevices();
-  const { addDeviceToRoom } = useRoomStore();
   const [name, setName] = useState(currentDevice?.name);
   const [description, setDescription] = useState(currentDevice?.description);
-  const [roomId, setRoomId] = useState<number | undefined>(initialRoomId);
+  const [roomId, setRoomId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    if (isOpen) {
-      setName(currentDevice?.name || "");
-      setDescription(currentDevice?.description || "");
-      setRoomId(initialRoomId);
-    }
-  }, [isOpen, currentDevice, initialRoomId]);
+    setName(currentDevice?.name || "");
+    setDescription(currentDevice?.description || "");
+  }, [currentDevice]);
 
   const handleSave = () => {
-    if (currentDevice) {
-      if (
-        (name || description) &&
-        (name !== currentDevice.name ||
-          description !== currentDevice.description)
-      ) {
-        const dto = new DeviceDto(name!, description!);
-        console.log(dto);
-        updateDevice(currentDevice.id, dto);
-      }
-      if (roomId && roomId !== initialRoomId) {
-        addDeviceToRoom(roomId, currentDevice.id);
-      }
-    }
+    onSubmit(name!, description!, roomId);
     onClose();
   };
 
