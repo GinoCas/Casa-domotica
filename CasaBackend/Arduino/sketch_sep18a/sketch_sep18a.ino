@@ -46,6 +46,58 @@ const int mqttPort = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.println(String((char*)payload).substring(0, length));
+  StaticJsonDocument<256> doc;
+
+  DeserializationError error = deserializeJson(doc, payload, length);
+  if (error) {
+    Serial.print("❌ Error al parsear JSON: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  // Leer objeto "data"
+  JsonObject data = doc["Data"];
+  if (data.isNull()) {
+    Serial.println("❌ No se encontró 'data' en el JSON");
+    return;
+  }
+
+  int id = data["Id"] | 0;
+  bool state = data["State"] | false;
+  const char* type = data["Type"] | "";
+  int brightness = data["Brightness"] | -1;
+  int speed = data["Speed"] | -1;
+
+  if (id <= 0 || id > devices.size()) {
+    Serial.printf("⚠️ ID fuera de rango (%d)\n", id);
+    return;
+  }
+
+  Device& device = devices[id - 1];
+  device.state = state;
+
+  if (strcmp(type, "Led") == 0) {
+    if (brightness >= 0) {
+      device.props.led.brightness = brightness;
+      analogWrite(device.pin, device.state ? brightness : 0);
+      Serial.printf("💡 LED %d -> state=%d, brightness=%d\n", id, state, brightness);
+    }
+  } 
+  else if (strcmp(type, "Fan") == 0) {
+    if (speed >= 0) {
+      device.props.fan.speed = speed;
+      int pwm = map(speed, 0, 3, 0, 255);
+      analogWrite(device.pin, device.state ? pwm : 0);
+      Serial.printf("🌀 FAN %d -> state=%d, speed=%d\n", id, state, speed);
+    }
+  } 
+  else {
+    Serial.printf("⚠️ Tipo desconocido: %s\n", type);
+  }
+}
+
 void reconnectMQTT() {
   while (!client.connected()) {
     Serial.print("Conectando a MQTT...");
@@ -163,6 +215,8 @@ void setup() {
   while(!client.connected()) {
     reconnectMQTT();
   }
+  client.setCallback(callback);
+  client.subscribe("casa/devices/cmd");
   // Ejemplo de dispositivos
   Device led1;
   led1.pin = 2;
@@ -194,11 +248,6 @@ void loop() {
     reconnectMQTT();
   }
   client.loop();
-  int devId = 0;
-  for (const auto& device : devices) {
-    devId++;
-    publishDevice(devId, device);
-  }
 
   delay(5000);
 }
