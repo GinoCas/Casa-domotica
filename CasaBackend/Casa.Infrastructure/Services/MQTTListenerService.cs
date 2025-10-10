@@ -1,21 +1,27 @@
 using CasaBackend.Casa.Application.Interfaces.Handlers;
-using Microsoft.Extensions.DependencyInjection;
 using MQTTnet;
+using Newtonsoft.Json;
 using System.Text;
 
 namespace CasaBackend.Casa.Infrastructure.Services
 {
-    public class MQTTService : BackgroundService
+    public class MQTTListenerService : BackgroundService
     {
         private readonly IMqttClient _mqttClient;
         private readonly IConfiguration _configuration;
         private readonly IServiceProvider _serviceProvider;
 
-        public MQTTService(IConfiguration configuration, IServiceProvider serviceProvider)
+        public MQTTListenerService(IConfiguration configuration, IServiceProvider serviceProvider)
         {
             _configuration = configuration;
             _serviceProvider = serviceProvider;
             _mqttClient = new MqttClientFactory().CreateMqttClient();
+        }
+
+        public async Task PublishAsync<T>(string topic, T payload)
+        {
+            var jsonPayload = JsonConvert.SerializeObject(payload);
+            await PublishAsync(topic, jsonPayload);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

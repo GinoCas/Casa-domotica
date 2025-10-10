@@ -8,6 +8,7 @@ using CasaBackend.Casa.Application.Interfaces.Presenter;
 using CasaBackend.Casa.Application.Interfaces.Providers;
 using CasaBackend.Casa.Application.Interfaces.Registries;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
+using CasaBackend.Casa.Application.Interfaces.Services;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
@@ -114,7 +115,8 @@ builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 // Services
 builder.Services.AddScoped<CapabilityService>();
-builder.Services.AddHostedService<MQTTService>();
+builder.Services.AddHostedService<MQTTListenerService>();
+builder.Services.AddSingleton<IMQTTPublisher, MQTTPublisherService>();
 
 builder.Services.AddAutoMapper(cfg =>
 {

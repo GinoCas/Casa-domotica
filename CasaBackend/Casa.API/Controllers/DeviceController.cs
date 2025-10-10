@@ -1,4 +1,5 @@
 using CasaBackend.Casa.Application.Interfaces.Handlers;
+using CasaBackend.Casa.Application.Interfaces.Services;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
@@ -9,6 +10,9 @@ using CasaBackend.Casa.InterfaceAdapter.Presenters.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MQTTnet;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace CasaBackend.Casa.API.Controllers
 {
@@ -21,18 +25,21 @@ namespace CasaBackend.Casa.API.Controllers
         private readonly UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel> _updateDeviceUseCase;
 		private readonly IValidator<CommandDto> _commandValidator;
 		private readonly ILogger<DeviceController> _logger;
+        private readonly IMQTTPublisher _mqttPublisher;
 
         public DeviceController(
             DoDeviceCommandUseCase<CommandDto> doDeviceCommandUseCase,
             GetDeviceUseCase<DeviceEntity, DeviceViewModel> getDeviceUseCase,
             UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel> updateDeviceUseCase,
             IValidator<CommandDto> commandValidator,
+            IMQTTPublisher mqttPublisher,
             ILogger<DeviceController> logger)
         {
             _doDeviceCommandUseCase = doDeviceCommandUseCase;
             _getDeviceUseCase = getDeviceUseCase;
             _updateDeviceUseCase = updateDeviceUseCase;
             _commandValidator = commandValidator;
+            _mqttPublisher = mqttPublisher;
             _logger = logger;
         }
 
@@ -69,7 +76,18 @@ namespace CasaBackend.Casa.API.Controllers
         [HttpPost("/device/execute")]
         public async Task<IActionResult> ExecuteDeviceCommand(CommandDto command)
         {
-            _logger.LogInformation("Ejecutando comando {CommandName} para dispositivo {DeviceId}", 
+            var dto = new ArduinoMessageDto<ArduinoDeviceDto>
+            {
+                Data = new ArduinoDeviceDto
+                {
+                    ArduinoId = 1,
+                    State = true,
+                    Type = "Led",
+                    Brightness = 180
+                }
+            };
+            await _mqttPublisher.PublishAsync<ArduinoMessageDto<ArduinoDeviceDto>>("casa/devices/cmd", dto);
+            /*_logger.LogInformation("Ejecutando comando {CommandName} para dispositivo {DeviceId}", 
 				command.CommandName, command.DeviceId);
 			var result = await _doDeviceCommandUseCase.ExecuteAsync(command);
 			if (!result.IsSuccess)
@@ -80,7 +98,8 @@ namespace CasaBackend.Casa.API.Controllers
             }
             _logger.LogInformation("Comando {CommandName} ejecutado exitosamente para dispositivo {DeviceId}",
                         command.CommandName, command.DeviceId);
-            return Ok(result.ToJson());
+            return Ok(result.ToJson());*/
+            return Ok(dto);
         }
 	}
 }
