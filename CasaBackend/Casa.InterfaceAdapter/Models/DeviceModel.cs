@@ -7,8 +7,6 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
         [Column("devi_id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        [Column("devi_arduinoId")]
-        public int ArduinoId { get; set; }
         [Column("devi_state")]
         public bool State { get; set; }
         [Column("devi_name")]

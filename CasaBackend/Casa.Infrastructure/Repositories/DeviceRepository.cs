@@ -58,21 +58,6 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 : CoreResult<DeviceEntity>.Failure(fabricResult.Errors);
         }
 
-        public async Task<CoreResult<DeviceEntity>> GetByArduinoIdAsync(int arduinoId)
-        {
-            var model = await _dbContext.Devices.FirstOrDefaultAsync(d => d.ArduinoId == arduinoId);
-            if (model is null) return CoreResult<DeviceEntity>.Failure([$"El dispositivo con id de arduino {arduinoId} no se encontro."]);
-            var capabilities = await _capabilityService.GetCapabilitiesForDeviceAsync(model.Id);
-            var dto = new DeviceContextDto
-            {
-                DeviceModel = model,
-                Capabilities = capabilities
-            };
-            var fabricResult = _deviceFactory.Fabric(dto);
-            return fabricResult.IsSuccess
-                ? CoreResult<DeviceEntity>.Success(fabricResult.Data)
-                : CoreResult<DeviceEntity>.Failure(fabricResult.Errors);
-        }
         public async Task<CoreResult<IEnumerable<DeviceEntity>>> GetAllDevicesAsync()
         {
             var models = await _dbContext.Devices.ToListAsync();

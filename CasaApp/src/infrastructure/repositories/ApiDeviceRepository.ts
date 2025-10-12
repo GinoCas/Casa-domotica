@@ -6,8 +6,8 @@ import {
 import { Device } from "../../core/entities/Device";
 import { Result } from "../../shared/Result";
 import { HttpClient } from "../api/HttpClient";
-import { CommandDtoFactory } from "../../application/dtos/CommandDto";
 import { DeviceDto } from "@/src/application/dtos/DeviceDto";
+import { ArduinoDeviceDto } from "@/src/application/dtos/ArduinoDeviceDto";
 
 export class ApiDeviceRepository
   implements IDeviceRepository, IDeviceCommandRepository
@@ -46,9 +46,8 @@ export class ApiDeviceRepository
   }
 
   // Implementación de IDeviceCommandRepository
-  async setState(deviceId: number, state: boolean): Promise<Result<void>> {
-    const commandDto = CommandDtoFactory.createStateCommand(deviceId, state);
-    return await this.httpClient.post<void>("device/execute", commandDto);
+  async setState(deviceId: number, state: boolean): Promise<Result<boolean>> {
+    return await this.executeCommand(deviceId, "SetState", { state });
   }
 
   async setBrightness(
@@ -67,10 +66,21 @@ export class ApiDeviceRepository
     dto: DeviceDto,
   ): Promise<Result<boolean>> {
     console.log("DTO ENVIADO:", dto, " EN ID:", deviceId);
-    const result = await this.httpClient.post<boolean>(
+    const result = await this.httpClient.patch<boolean>(
       `device/${deviceId}/update`,
       dto,
     );
+    console.log("Resultado:", result);
+
+    if (!result.isSuccess) {
+      return result as Result<boolean>;
+    }
+
+    return Result.success(result.data);
+  }
+  async controlDevice(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
+    console.log("DTO ENVIADO:", dto, " EN ID:", dto.id);
+    const result = await this.httpClient.put<boolean>(`device/control`, dto);
     console.log("Resultado:", result);
 
     if (!result.isSuccess) {

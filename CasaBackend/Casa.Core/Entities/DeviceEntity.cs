@@ -8,7 +8,6 @@ namespace CasaBackend.Casa.Core.Entities
     public class DeviceEntity
     {
         public int Id { get; set; }
-        public int ArduinoId { get; set; }
         public DeviceType DeviceType { get; set; }
         public bool State { get; set; }
         public string Name { get; set; } = string.Empty;

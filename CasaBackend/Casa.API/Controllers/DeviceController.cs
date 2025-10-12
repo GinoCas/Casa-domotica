@@ -66,39 +66,21 @@ namespace CasaBackend.Casa.API.Controllers
             _logger.LogInformation("Dispositivo {DeviceId} encontrado exitosamente", id);
             return Ok(result.ToJson());
 		}
-        [HttpPost("/device/{id}/update")]
+        [HttpPatch("/device/{id}/update")]
         public async Task<IActionResult> UpdateDeviceById(int id, DeviceDto dto)
         {
             _logger.LogInformation("Obteniendo dispositivo con ID: {DeviceId}", id);
             var result = await _updateDeviceUseCase.ExecuteAsync(id, dto);
             return Ok(result.ToJson());
         }
-        [HttpPost("/device/execute")]
-        public async Task<IActionResult> ExecuteDeviceCommand(CommandDto command)
+        [HttpPut("/device/control")]
+        public async Task<IActionResult> ControlDevice(ArduinoDeviceDto dto)
         {
-            var dto = new ArduinoMessageDto<ArduinoDeviceDto>
+            var message = new ArduinoMessageDto<ArduinoDeviceDto>
             {
-                Data = new ArduinoDeviceDto
-                {
-                    ArduinoId = 1,
-                    State = true,
-                    Type = "Led",
-                    Brightness = 180
-                }
+                Data = dto
             };
-            await _mqttPublisher.PublishAsync<ArduinoMessageDto<ArduinoDeviceDto>>("casa/devices/cmd", dto);
-            /*_logger.LogInformation("Ejecutando comando {CommandName} para dispositivo {DeviceId}", 
-				command.CommandName, command.DeviceId);
-			var result = await _doDeviceCommandUseCase.ExecuteAsync(command);
-			if (!result.IsSuccess)
-			{
-                _logger.LogWarning("Error ejecutando comando {CommandName}: {Errors}",
-                        command.CommandName, string.Join(", ", result.Errors));
-				return BadRequest(result.ToJson());
-            }
-            _logger.LogInformation("Comando {CommandName} ejecutado exitosamente para dispositivo {DeviceId}",
-                        command.CommandName, command.DeviceId);
-            return Ok(result.ToJson());*/
+            await _mqttPublisher.PublishAsync("casa/devices/cmd", message);
             return Ok(dto);
         }
 	}

@@ -5,10 +5,8 @@ import { ApiRoomRepository } from "../infrastructure/repositories/ApiRoomReposit
 import {
   GetDeviceListUseCase,
   GetDeviceByIdUseCase,
-  SetDeviceStateUseCase,
-  SetDeviceBrightnessUseCase,
-  SetDeviceSpeedUseCase,
   UpdateDeviceUseCase,
+  ControlDeviceUseCase,
 } from "../application/usecases/DeviceUseCases";
 import {
   GetAllRoomsUseCase,
@@ -33,10 +31,8 @@ export class DependencyContainer {
   // Use cases
   private getDeviceListUseCase: GetDeviceListUseCase;
   private getDeviceByIdUseCase: GetDeviceByIdUseCase;
-  private setDeviceStateUseCase: SetDeviceStateUseCase;
-  private setDeviceBrightnessUseCase: SetDeviceBrightnessUseCase;
-  private setDeviceSpeedUseCase: SetDeviceSpeedUseCase;
   private updateDeviceUseCase: UpdateDeviceUseCase;
+  private controlDeviceUseCase: ControlDeviceUseCase;
   private getAllRoomsUseCase: GetAllRoomsUseCase;
   private addDeviceToRoomUseCase: AddDeviceToRoomUseCase;
   private getAllAutomationsUseCase: GetAllAutomationsUseCase;
@@ -58,16 +54,8 @@ export class DependencyContainer {
     // Inicialización de casos de uso
     this.getDeviceListUseCase = new GetDeviceListUseCase(this.deviceRepository);
     this.getDeviceByIdUseCase = new GetDeviceByIdUseCase(this.deviceRepository);
-    this.setDeviceStateUseCase = new SetDeviceStateUseCase(
-      this.deviceRepository,
-    );
-    this.setDeviceBrightnessUseCase = new SetDeviceBrightnessUseCase(
-      this.deviceRepository,
-    );
-    this.setDeviceSpeedUseCase = new SetDeviceSpeedUseCase(
-      this.deviceRepository,
-    );
     this.updateDeviceUseCase = new UpdateDeviceUseCase(this.deviceRepository);
+    this.controlDeviceUseCase = new ControlDeviceUseCase(this.deviceRepository);
     this.getAllRoomsUseCase = new GetAllRoomsUseCase(this.roomRepository);
     this.addDeviceToRoomUseCase = new AddDeviceToRoomUseCase(
       this.roomRepository,
@@ -105,20 +93,12 @@ export class DependencyContainer {
     return this.getDeviceByIdUseCase;
   }
 
-  public getSetDeviceStateUseCase(): SetDeviceStateUseCase {
-    return this.setDeviceStateUseCase;
-  }
-
-  public getSetDeviceBrightnessUseCase(): SetDeviceBrightnessUseCase {
-    return this.setDeviceBrightnessUseCase;
-  }
-
-  public getSetDeviceSpeedUseCase(): SetDeviceSpeedUseCase {
-    return this.setDeviceSpeedUseCase;
-  }
-
   public getUpdateDeviceUseCase(): UpdateDeviceUseCase {
     return this.updateDeviceUseCase;
+  }
+
+  public getControlDeviceUseCase(): ControlDeviceUseCase {
+    return this.controlDeviceUseCase;
   }
 
   // Getters para casos de uso de Room

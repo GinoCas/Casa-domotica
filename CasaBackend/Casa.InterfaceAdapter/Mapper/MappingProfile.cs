@@ -14,17 +14,14 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
         {
             //DTO
             CreateMap<DeviceDto, DeviceEntity>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.ArduinoId, opt => opt.Ignore());
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             CreateMap<CommandDto, CommandEntity>();
             CreateMap<ArduinoDeviceDto, DeviceEntity>()
-                .ForMember(dest => dest.ArduinoId, opt => opt.MapFrom(src => src.ArduinoId))
                 .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.Type))
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State));
 
             CreateMap<DeviceEntity, DeviceModel>()
-                .ForMember(dest => dest.ArduinoId, opt => opt.MapFrom(src => src.ArduinoId))
                 .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.DeviceType.ToString()))
                 .ReverseMap()
                 .ForMember(dest => dest.DeviceType, opt => opt.Ignore());

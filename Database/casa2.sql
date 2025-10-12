@@ -14,14 +14,12 @@ USE CasaDB;
 GO
 
 CREATE TABLE device(
-	devi_id INT NOT NULL IDENTITY(1,1),
-	devi_arduinoId INT NOT NULL,
+	devi_id INT NOT NULL,
 	devi_state BIT DEFAULT(0) NOT NULL,
 	devi_type VARCHAR(50),
 	devi_name VARCHAR(100),
 	devi_description VARCHAR(100),
 	PRIMARY KEY(devi_id),
-	UNIQUE(devi_arduinoId)
 );
 
 CREATE TABLE room(

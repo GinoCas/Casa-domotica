@@ -1,10 +1,8 @@
 // Casos de uso para Device
 import { Device } from "../../core/entities/Device";
-import {
-  IDeviceRepository,
-  IDeviceCommandRepository,
-} from "../../core/repositories/IDeviceRepository";
+import { IDeviceRepository } from "../../core/repositories/IDeviceRepository";
 import { Result } from "../../shared/Result";
+import { ArduinoDeviceDto } from "../dtos/ArduinoDeviceDto";
 import { DeviceDto } from "../dtos/DeviceDto";
 
 export class GetDeviceListUseCase {
@@ -42,51 +40,16 @@ export class UpdateDeviceUseCase {
   }
 }
 
-export class SetDeviceStateUseCase {
-  constructor(private deviceCommandRepository: IDeviceCommandRepository) {}
+export class ControlDeviceUseCase {
+  constructor(private deviceRepository: IDeviceRepository) {}
 
-  async execute(deviceId: number, state: boolean): Promise<Result<void>> {
+  async execute(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
     try {
-      if (deviceId <= 0) {
+      if (dto.id <= 0) {
         return Result.failure(["Device ID must be greater than 0"]);
       }
-      return await this.deviceCommandRepository.setState(deviceId, state);
-    } catch (error) {
-      return Result.fromError(error as Error);
-    }
-  }
-}
 
-export class SetDeviceBrightnessUseCase {
-  constructor(private commandRepository: IDeviceCommandRepository) {}
-
-  async execute(deviceId: number, brightness: number): Promise<Result<void>> {
-    try {
-      if (deviceId <= 0) {
-        return Result.failure(["Device ID must be greater than 0"]);
-      }
-      if (brightness < 0 || brightness > 100) {
-        return Result.failure(["Brightness must be between 0 and 100"]);
-      }
-      return await this.commandRepository.setBrightness(deviceId, brightness);
-    } catch (error) {
-      return Result.fromError(error as Error);
-    }
-  }
-}
-
-export class SetDeviceSpeedUseCase {
-  constructor(private commandRepository: IDeviceCommandRepository) {}
-
-  async execute(deviceId: number, speed: number): Promise<Result<void>> {
-    try {
-      if (deviceId <= 0) {
-        return Result.failure(["Device ID must be greater than 0"]);
-      }
-      if (speed < 0 || speed > 100) {
-        return Result.failure(["Speed must be between 0 and 100"]);
-      }
-      return await this.commandRepository.setSpeed(deviceId, speed);
+      return await this.deviceRepository.controlDevice(dto);
     } catch (error) {
       return Result.fromError(error as Error);
     }

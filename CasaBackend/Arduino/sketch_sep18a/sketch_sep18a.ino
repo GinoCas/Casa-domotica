@@ -46,6 +46,29 @@ const int mqttPort = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+void publishDevice(int devId, const Device& device) {
+  StaticJsonDocument<256> doc;
+  JsonObject obj = doc.createNestedObject("data");
+  obj["Id"] = devId;
+  obj["State"] = device.state;
+
+   switch (device.type) {
+    case DEVICE_LED:
+      obj["Type"] = "Led";
+      obj["Brightness"] = device.props.led.brightness;
+      break;
+    case DEVICE_FAN:
+      obj["Type"] = "Fan";
+      obj["Speed"] = device.props.fan.speed;
+      break;
+  }
+
+  String json;
+  serializeJson(doc, json);
+  client.publish("casa/devices", json.c_str());
+  Serial.println("Publicado cambio: " + json);
+}
+
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println(String((char*)payload).substring(0, length));
   StaticJsonDocument<256> doc;
@@ -57,23 +80,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
-  // Leer objeto "data"
   JsonObject data = doc["Data"];
-  if (data.isNull()) {
-    Serial.println("❌ No se encontró 'data' en el JSON");
-    return;
-  }
 
-  int id = data["Id"] | 0;
-  bool state = data["State"] | false;
+  int id = data["Id"];
+  bool state = data["State"];
   const char* type = data["Type"] | "";
   int brightness = data["Brightness"] | -1;
   int speed = data["Speed"] | -1;
-
-  if (id <= 0 || id > devices.size()) {
-    Serial.printf("⚠️ ID fuera de rango (%d)\n", id);
-    return;
-  }
 
   Device& device = devices[id - 1];
   device.state = state;
@@ -92,10 +105,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
       analogWrite(device.pin, device.state ? pwm : 0);
       Serial.printf("🌀 FAN %d -> state=%d, speed=%d\n", id, state, speed);
     }
-  } 
+  }
   else {
     Serial.printf("⚠️ Tipo desconocido: %s\n", type);
   }
+  publishDevice(id, device); 
 }
 
 void reconnectMQTT() {
@@ -178,29 +192,6 @@ void selectAndConnectWiFi() {
   } else {
     Serial.println("\n❌ No se pudo conectar a la red seleccionada.");
   }
-}
-
-void publishDevice(int devId, const Device& device) {
-  StaticJsonDocument<256> doc;
-  JsonObject obj = doc.createNestedObject("data");
-  obj["Id"] = devId;
-  obj["State"] = device.state;
-
-   switch (device.type) {
-    case DEVICE_LED:
-      obj["Type"] = "Led";
-      obj["Brightness"] = device.props.led.brightness;
-      break;
-    case DEVICE_FAN:
-      obj["Type"] = "Fan";
-      obj["Speed"] = device.props.fan.speed;
-      break;
-  }
-
-  String json;
-  serializeJson(doc, json);
-  client.publish("casa/devices", json.c_str());
-  Serial.println("Publicado cambio: " + json);
 }
 
 void setup() {

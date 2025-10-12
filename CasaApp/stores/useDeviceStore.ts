@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { Result } from "@/src/shared/Result";
 import { Device } from "@/src/core/entities/Device";
 import { DeviceDto } from "@/src/application/dtos/DeviceDto";
+import { ArduinoDeviceDto } from "@/src/application/dtos/ArduinoDeviceDto";
 
 interface DeviceStoreState {
   devices: Device[];
@@ -35,11 +36,10 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
     return Result.success(deviceWithState);
   },
   toggleDeviceState: async (deviceId: number, newState: boolean) => {
-    // Primero intentamos ejecutar el comando
-    const result = await deviceService.setDeviceState(deviceId, newState);
+    const dto = new ArduinoDeviceDto(deviceId, newState);
+    const result = await deviceService.controlDevice(dto);
 
     if (result.isSuccess) {
-      // Solo actualizamos el estado local si el comando fue exitoso
       set((state) => {
         const updatedDevices = state.devices.map((device) =>
           device.id === deviceId
@@ -55,7 +55,6 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
         };
       });
     } else {
-      // Podrías manejar el error aquí, por ejemplo, mostrando una notificación
       console.error("Error toggling device state:", result.errors);
     }
   },

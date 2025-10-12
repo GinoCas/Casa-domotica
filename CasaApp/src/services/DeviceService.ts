@@ -3,6 +3,7 @@ import { Device } from "../core/entities/Device";
 import { Result } from "../shared/Result";
 import { DependencyContainer } from "../shared/DependencyContainer";
 import { DeviceDto } from "../application/dtos/DeviceDto";
+import { ArduinoDeviceDto } from "../application/dtos/ArduinoDeviceDto";
 
 export class DeviceService {
   private container = DependencyContainer.getInstance();
@@ -17,33 +18,17 @@ export class DeviceService {
     return await useCase.execute(id);
   }
 
-  async setDeviceState(
-    deviceId: number,
-    state: boolean,
-  ): Promise<Result<void>> {
-    const useCase = this.container.getSetDeviceStateUseCase();
-    return await useCase.execute(deviceId, state);
-  }
-
-  async setBrightness(
-    deviceId: number,
-    brightness: number,
-  ): Promise<Result<void>> {
-    const useCase = this.container.getSetDeviceBrightnessUseCase();
-    return await useCase.execute(deviceId, brightness);
-  }
-
-  async setSpeed(deviceId: number, speed: number): Promise<Result<void>> {
-    const useCase = this.container.getSetDeviceSpeedUseCase();
-    return await useCase.execute(deviceId, speed);
-  }
-
   async updateDevice(
     deviceId: number,
     dto: DeviceDto,
   ): Promise<Result<boolean>> {
     const useCase = this.container.getUpdateDeviceUseCase();
     return await useCase.execute(deviceId, dto);
+  }
+
+  async controlDevice(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
+    const useCase = this.container.getControlDeviceUseCase();
+    return await useCase.execute(dto);
   }
 }
 
