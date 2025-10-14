@@ -14,9 +14,8 @@ export class HttpClient {
         const errorText = await response.text();
         return Result.failure([`HTTP ${response.status}: ${errorText}`]);
       }
-
-      const data = await response.json();
-      return data as Result<T>;
+      const json = await response.json();
+      return Result.success(json.data);
     } catch (error) {
       return Result.fromError(error as Error);
     }
@@ -48,13 +47,25 @@ export class HttpClient {
 
   async put<T>(endpoint: string, data?: any): Promise<Result<T>> {
     try {
+      console.log("Enviando en:", `${this.baseUrl}/${endpoint}`);
+      const cleanedData = data
+        ? JSON.parse(
+            JSON.stringify(data, (_, value) =>
+              value === undefined ? null : value,
+            ),
+          )
+        : undefined;
+      console.log(cleanedData);
+
       const response = await fetch(`${this.baseUrl}/${endpoint}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: data ? JSON.stringify(data) : undefined,
+        body: cleanedData ? JSON.stringify(cleanedData) : undefined,
       });
+
+      console.log("Recibido de:", this.baseUrl, " con respuesta:", response.ok);
       return await this.handleResponse<T>(response);
     } catch (error) {
       return Result.fromError(error as Error);

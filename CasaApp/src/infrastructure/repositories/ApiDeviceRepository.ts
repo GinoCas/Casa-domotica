@@ -1,18 +1,16 @@
 // Implementación concreta del repositorio de Device
-import {
-  IDeviceRepository,
-  IDeviceCommandRepository,
-} from "../../core/repositories/IDeviceRepository";
+import { IDeviceRepository } from "../../core/repositories/IDeviceRepository";
 import { Device } from "../../core/entities/Device";
 import { Result } from "../../shared/Result";
 import { HttpClient } from "../api/HttpClient";
 import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 import { ArduinoDeviceDto } from "@/src/application/dtos/ArduinoDeviceDto";
 
-export class ApiDeviceRepository
-  implements IDeviceRepository, IDeviceCommandRepository
-{
-  constructor(private httpClient: HttpClient) {}
+export class ApiDeviceRepository implements IDeviceRepository {
+  constructor(
+    private httpClient: HttpClient,
+    private localClient: HttpClient,
+  ) {}
 
   async getAll(): Promise<Result<Device[]>> {
     return await this.httpClient.get<Device[]>("device/list");
@@ -79,12 +77,16 @@ export class ApiDeviceRepository
     return Result.success(result.data);
   }
   async controlDevice(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
-    console.log("DTO ENVIADO:", dto, " EN ID:", dto.id);
-    const result = await this.httpClient.put<boolean>(`device/control`, dto);
+    console.log("DTO ENVIADO:", dto);
+    let result = await this.localClient.put<boolean>(`device`, dto);
+    if (!result.isSuccess) {
+      console.log("No se pudo enviar localmente:", result);
+      result = await this.httpClient.put<boolean>(`device/control`, dto);
+    }
     console.log("Resultado:", result);
 
     if (!result.isSuccess) {
-      return result as Result<boolean>;
+      return Result.failure(result.errors);
     }
 
     return Result.success(result.data);

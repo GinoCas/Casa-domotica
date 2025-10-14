@@ -1,9 +1,9 @@
 export class ArduinoDeviceDto {
   constructor(
-    public readonly id: number,
-    public readonly state: boolean,
-    public readonly type?: string,
-    public readonly brightness?: number,
-    public readonly speed?: number,
+    public readonly Id: number,
+    public readonly State: boolean,
+    public readonly Type?: string,
+    public readonly Brightness?: number,
+    public readonly Speed?: number,
   ) {}
 }

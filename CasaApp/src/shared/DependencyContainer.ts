@@ -24,6 +24,7 @@ import {
 export class DependencyContainer {
   private static instance: DependencyContainer;
   private httpClient: HttpClient;
+  private localClient: HttpClient;
   private deviceRepository: ApiDeviceRepository;
   private roomRepository: ApiRoomRepository;
   private automationRepository: ApiAutomationRepository;
@@ -44,10 +45,16 @@ export class DependencyContainer {
   private constructor() {
     // Configuración de la URL base desde las variables de entorno
     const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5155";
+    const localUrl = process.env.EXPO_PUBLIC_ARDUINO_LOCAL_IP || "";
 
     // Inicialización de dependencias
     this.httpClient = new HttpClient(apiUrl);
-    this.deviceRepository = new ApiDeviceRepository(this.httpClient);
+    this.localClient = new HttpClient(localUrl);
+    console.log("LOCAL:", localUrl);
+    this.deviceRepository = new ApiDeviceRepository(
+      this.httpClient,
+      this.localClient,
+    );
     this.roomRepository = new ApiRoomRepository(this.httpClient);
     this.automationRepository = new ApiAutomationRepository(this.httpClient);
 

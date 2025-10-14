@@ -43,7 +43,7 @@ WebServer server(80);
 // --- Funciones ---
 void publishDevice(int devId, const Device& device) {
   StaticJsonDocument<256> doc;
-  JsonObject obj = doc.createNestedObject("data");
+  JsonObject obj = doc.createNestedObject("Data");
   obj["Id"] = devId;
   obj["State"] = device.state;
 
@@ -68,7 +68,12 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
   if (id <= 0 || id > devices.size()) return;
   Device& device = devices[id - 1];
   device.state = state;
-
+  if(type == ""){
+    analogWrite(device.pin, device.state);
+    Serial.printf("💡 Device %d -> state=%d\n", id, state);
+    publishDevice(id, device);
+    return;
+  }
   if (strcmp(type, "Led") == 0) {
     device.props.led.brightness = brightness;
     analogWrite(device.pin, device.state ? brightness : 0);
@@ -92,15 +97,15 @@ void handlePutDevice() {
       server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
       return;
     }
-
+    Serial.println("Request Recibida");
     int id = doc["Id"];
     bool state = doc["State"];
-    const char* type = doc["Type"];
+    const char* type = doc["Type"] | "";
     int brightness = doc["Brightness"] | -1;
     int speed = doc["Speed"] | -1;
 
     applyDeviceChange(id, state, type, brightness, speed);
-    server.send(200, "application/json", "{\"status\":\"ok\"}");
+    server.send(200, "application/json", "{\"status\":\"true\"}");
   } else {
     server.send(400, "application/json", "{\"error\":\"no body\"}");
   }
@@ -108,6 +113,11 @@ void handlePutDevice() {
 
 void handleNotFound() {
   server.send(404, "application/json", "{\"error\":\"not found\"}");
+}
+
+
+void handleAlive() {
+  server.send(200, "text/plain", "OK");
 }
 
 // --- MQTT ---
@@ -203,9 +213,14 @@ void setup() {
 
   client.setServer(mqttServer, mqttPort);
   client.setCallback(callback);
+  
+  if (!client.connected()) {
+    reconnectMQTT();
+  }
 
   // --- Configurar servidor local ---
   server.on("/device", HTTP_PUT, handlePutDevice);
+  server.on("/", handleAlive);
   server.onNotFound(handleNotFound);
   server.begin();
   Serial.println("🌐 Servidor HTTP iniciado en puerto 80");
