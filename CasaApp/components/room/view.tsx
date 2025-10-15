@@ -77,16 +77,6 @@ export function RoomView({
     toggleDeviceState(device.id, !newState);
   };
 
-  if (isLoadingRooms || loadingRoomDevices || isLoadingDevices)
-    return <Loader size="large" />;
-
-  if (devices.length === 0)
-    return (
-      <Text style={{ textAlign: "center" }}>
-        No se encontraron dispositivos
-      </Text>
-    );
-
   const handlePressDevice = (device: Device) => {
     setSelectedDevice(device);
     setSelectedDeviceRoom(getRoomOfDeviceId(device.id).data);
@@ -146,6 +136,22 @@ export function RoomView({
       </View>
     );
   };
+
+  if (isLoadingRooms || loadingRoomDevices || isLoadingDevices)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Loader size="large" />
+      </View>
+    );
+
+  if (devices.length === 0)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ textAlign: "center" }}>
+          No se encontraron dispositivos
+        </Text>
+      </View>
+    );
 
   return (
     <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
