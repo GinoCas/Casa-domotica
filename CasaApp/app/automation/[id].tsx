@@ -265,7 +265,9 @@ export default function AutomationId() {
             </Text>
           </View>
           <View>
-            <WeekDayPicker onPressOption={(weekday) => console.log(weekday)} />
+            <WeekDayPicker
+              onSelectionChange={(weekDays) => console.log(weekDays)}
+            />
           </View>
 
           <View style={styles.devicesContainer}>
