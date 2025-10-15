@@ -90,6 +90,22 @@ INSERT INTO room (room_name) VALUES
 
 INSERT INTO automation (auto_state, auto_name, auto_description, auto_initTime, auto_endTime, auto_days)
 VALUES (1, 'Luces Nocturnas', 'Encender luces exteriores', '19:00', '23:59', 127);
+
+INSERT INTO device (devi_id, devi_state, devi_type, devi_name, devi_description) VALUES
+(1, 0, 'LED', 'Luz', 'Luz principal de la sala'),
+(2, 0, 'FAN', 'Ventilador', 'Ventilador de techo'),
+(3, 0, 'LED', 'Luz Patio', 'Luz exterior del patio'),
+(4, 0, 'FAN', 'Extractor Cocina', 'Ventilador extractor de cocina');
+
+INSERT INTO dimmable (dimm_deviceId, dimm_brightness) VALUES
+(1, 255),
+(3, 150);
+
+
+INSERT INTO velocity (velo_deviceId, velo_speed) VALUES
+(2, 2),
+(4, 3);
+
 -- Eliminar relaciones que dependen de otras tablas
 DELETE FROM automation_device;
 DELETE FROM room_device;
