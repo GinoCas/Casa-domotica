@@ -114,7 +114,9 @@ export const DeviceCard = React.memo(
             </View>
           </View>
         </View>
-        <Text style={{ fontSize: 16, fontWeight: 600 }}>{device.name}</Text>
+        <Text style={{ fontSize: 16, fontWeight: 600 }}>
+          {device?.name || `${device.id}-${device.deviceType}`}
+        </Text>
         <View
           style={{
             flexDirection: "row",
