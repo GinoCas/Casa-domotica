@@ -20,13 +20,12 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
         {
             try
             {
-                Console.WriteLine($"JSON RECIBIDO:{payloadJson}");
-                var dto = JsonConvert.DeserializeObject<TDTO>(payloadJson);
+                var message = JsonConvert.DeserializeObject<MqttMessage<TDTO>>(payloadJson);
 
-                if (dto != null)
+                if (message != null && message.Data != null)
                 {
-                    _messagesHistory.Add(dto);
-                    await ProcessMessageAsync(dto);
+                    _messagesHistory.Add(message.Data);
+                    await ProcessMessageAsync(message.Data);
                 }
                 else
                 {

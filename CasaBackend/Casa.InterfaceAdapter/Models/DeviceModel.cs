@@ -5,7 +5,6 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
     public class DeviceModel
     {
         [Column("devi_id")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Column("devi_state")]
         public bool State { get; set; }
