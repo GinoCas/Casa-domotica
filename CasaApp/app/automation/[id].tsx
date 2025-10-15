@@ -43,7 +43,7 @@ export default function AutomationId() {
     deleteAutomation,
   } = useAutomation();
 
-  const { devices } = useDeviceStore();
+  const { devices, getDeviceById } = useDeviceStore();
   const { rooms } = useRoomStore();
 
   const [currentAutomation, setCurrentAutomation] = useState<Automation>();
@@ -277,7 +277,9 @@ export default function AutomationId() {
               justifyContent: "space-between",
             }}
             renderItem={({ item }) => {
-              const device = devices[item.id];
+              const device = getDeviceById(item.id).data;
+              console.log("Device:", device);
+              console.log("Id:", item.id);
               return (
                 <DeviceCard
                   key={item.id}
