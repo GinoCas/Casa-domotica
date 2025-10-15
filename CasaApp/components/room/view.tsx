@@ -52,66 +52,74 @@ export function RoomView({
     return devices.filter((d) => !unassignedDevices.includes(d));
   }, [devices, unassignedDevices]);
 
-  const openBrightnessModal = (device: Device) => {
-    if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
-      const deviceResult = getDeviceById(device.id);
-      if (deviceResult.isSuccess) {
-        setSelectedDevice(deviceResult.data);
-        setisModalOpen(true);
-      }
-    }
-  };
-
-  const handleBrightnessChange = useCallback(
-    (value: number) =>
-      debounce((value) => {
-        if (selectedDevice) {
-          changeSaveEnergyMode(false);
-          setDeviceBrightness(selectedDevice.id, value);
+  const openBrightnessModal = useCallback(
+    (device: Device) => {
+      if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
+        const deviceResult = getDeviceById(device.id);
+        if (deviceResult.isSuccess) {
+          setSelectedDevice(deviceResult.data);
+          setisModalOpen(true);
         }
-      }, 300),
-    [selectedDevice, changeSaveEnergyMode, setDeviceBrightness],
+      }
+    },
+    [getDeviceById],
   );
 
-  const handleToggleEnabled = (device: Device, newState: boolean) => {
-    toggleDeviceState(device.id, !newState);
-  };
+  const debouncedBrightnessChange = useMemo(
+    () =>
+      debounce((deviceId: number, value: number) => {
+        changeSaveEnergyMode(false);
+        setDeviceBrightness(deviceId, value);
+      }, 300),
+    [changeSaveEnergyMode, setDeviceBrightness],
+  );
 
-  if (isLoadingRooms || loadingRoomDevices || isLoadingDevices)
-    return <Loader size="large" />;
-
-  if (devices.length === 0)
-    return (
-      <Text style={{ textAlign: "center" }}>
-        No se encontraron dispositivos
-      </Text>
-    );
-
-  const handlePressDevice = (device: Device) => {
-    setSelectedDevice(device);
-    setSelectedDeviceRoom(getRoomOfDeviceId(device.id).data);
-    setIsDeviceModalOpen(true);
-  };
-
-  const handleSubmitDevice = (
-    name: string,
-    description: string,
-    roomId: number | undefined,
-  ) => {
-    if (!selectedDevice) {
-      return;
-    }
-    if (
-      name !== selectedDevice.name ||
-      description !== selectedDevice.description
-    ) {
-      const dto = new DeviceDto(name, description);
-      updateDevice(selectedDevice.id, dto);
-    }
-    if (roomId) {
-      addDeviceToRoom(roomId, selectedDevice.id, selectedDeviceRoom?.id);
+  const handleBrightnessChange = (value: number) => {
+    if (selectedDevice) {
+      debouncedBrightnessChange(selectedDevice.id, value);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      debouncedBrightnessChange.cancel();
+    };
+  }, [debouncedBrightnessChange]);
+
+  const handleToggleEnabled = useCallback(
+    (device: Device, newState: boolean) => {
+      toggleDeviceState(device.id, !newState);
+    },
+    [toggleDeviceState],
+  );
+
+  const handlePressDevice = useCallback(
+    (device: Device) => {
+      setSelectedDevice(device);
+      setSelectedDeviceRoom(getRoomOfDeviceId(device.id).data);
+      setIsDeviceModalOpen(true);
+    },
+    [getRoomOfDeviceId],
+  );
+
+  const handleSubmitDevice = useCallback(
+    (name: string, description: string, roomId: number | undefined) => {
+      if (!selectedDevice) {
+        return;
+      }
+      if (
+        name !== selectedDevice.name ||
+        description !== selectedDevice.description
+      ) {
+        const dto = new DeviceDto(name, description);
+        updateDevice(selectedDevice.id, dto);
+      }
+      if (roomId) {
+        addDeviceToRoom(roomId, selectedDevice.id, selectedDeviceRoom?.id);
+      }
+    },
+    [selectedDevice, selectedDeviceRoom, updateDevice, addDeviceToRoom],
+  );
 
   const renderListHeader = () => {
     return (
@@ -147,6 +155,35 @@ export function RoomView({
     );
   };
 
+  const renderItem = useCallback(
+    ({ item }: { item: Device }) => (
+      <DeviceCard
+        handleToogleEnabled={handleToggleEnabled}
+        key={item.id}
+        device={item}
+        onBrightnessPress={() => openBrightnessModal(item)}
+        onCardPress={() => handlePressDevice(item)}
+      />
+    ),
+    [handleToggleEnabled, handlePressDevice, openBrightnessModal],
+  );
+
+  if (isLoadingRooms || loadingRoomDevices || isLoadingDevices)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Loader size="large" />
+      </View>
+    );
+
+  if (devices.length === 0)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ textAlign: "center" }}>
+          No se encontraron dispositivos
+        </Text>
+      </View>
+    );
+
   return (
     <SafeAreaView style={{ marginTop: 16, flex: 1 }}>
       <FlatList
@@ -157,14 +194,7 @@ export function RoomView({
           justifyContent: "space-between",
         }}
         ListHeaderComponent={renderListHeader}
-        renderItem={({ item }) => (
-          <DeviceCard
-            handleToogleEnabled={handleToggleEnabled}
-            key={item.id}
-            device={item}
-            onCardPress={() => handlePressDevice(item)}
-          />
-        )}
+        renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 20 }}
       />
       <CustomModal
