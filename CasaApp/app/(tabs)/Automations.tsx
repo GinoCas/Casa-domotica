@@ -6,16 +6,33 @@ import { Feather } from "@expo/vector-icons";
 import { FlatList, Text, View } from "react-native";
 import useAutomation from "@/hooks/useAutomations";
 import { useRouter } from "expo-router";
+import { useCallback } from "react";
+import { Automation } from "@/src/core/entities/Automation";
 
 export default function Home() {
-  const { automations, getAutomationById, createAutomation } = useAutomation();
+  const { automations } = useAutomation();
   const router = useRouter();
 
-  const handleAutomationPress = (automationId: number) => {
-    router.push({
-      pathname: `/automation/${automationId}`,
-    });
-  };
+  const handleAutomationPress = useCallback(
+    (automationId: number) => {
+      router.push({
+        pathname: `/automation/${automationId}`,
+      });
+    },
+    [router],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: Automation }) => (
+      <AutomationCard
+        onPress={() => handleAutomationPress(item.id)}
+        key={item.id}
+        automation={item}
+      />
+    ),
+    [handleAutomationPress],
+  );
+
   return (
     <Container>
       <Text style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
@@ -25,13 +42,7 @@ export default function Home() {
         <FlatList
           data={automations}
           keyExtractor={(automation) => automation.id.toString()}
-          renderItem={({ item }) => (
-            <AutomationCard
-              onPress={() => handleAutomationPress(item.id)}
-              key={item.id}
-              automation={item}
-            />
-          )}
+          renderItem={renderItem}
           contentContainerStyle={{ gap: 8 }}
         />
       </View>

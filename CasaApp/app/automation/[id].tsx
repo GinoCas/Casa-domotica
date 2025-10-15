@@ -269,26 +269,36 @@ export default function AutomationId() {
             <Chip text={currentAutomation.devices.length.toString() || "0"} />
           </View>
 
-          <FlatList
-            data={currentAutomation.devices}
-            keyExtractor={(device) => device.id.toString()}
-            numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: "space-between",
-            }}
-            renderItem={({ item }) => {
-              const device = getDeviceById(item.id).data;
-              console.log("Device:", device);
-              console.log("Id:", item.id);
-              return (
-                <DeviceCard
-                  key={item.id}
-                  device={device}
-                  handleToogleEnabled={handleToggleEnabled}
-                />
-              );
-            }}
-          />
+          {currentAutomation.devices.length === 0 ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text>No devices added yet.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={currentAutomation.devices}
+              keyExtractor={(device) => device.id.toString()}
+              numColumns={2}
+              columnWrapperStyle={{
+                justifyContent: "space-between",
+              }}
+              renderItem={({ item }) => {
+                const device = getDeviceById(item.id).data;
+                return (
+                  <DeviceCard
+                    key={item.id}
+                    device={device}
+                    handleToogleEnabled={handleToggleEnabled}
+                  />
+                );
+              }}
+            />
+          )}
           <View>
             <DottedButton
               label="Add Device"
