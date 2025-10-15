@@ -38,7 +38,7 @@ CREATE TABLE room_device(
 );
 
 CREATE TABLE automation(
-	auto_id INT NOT NULL IDENTITY(1,1),
+	auto_id INT NOT NULL,
 	auto_state BIT DEFAULT(0) NOT NULL,
 	auto_name VARCHAR(100) DEFAULT('New Automation'),
 	auto_description VARCHAR(100) DEFAULT('Description'),
@@ -88,8 +88,8 @@ INSERT INTO room (room_name) VALUES
 ('Cocina'),
 ('Comedor');
 
-INSERT INTO automation (auto_state, auto_name, auto_description, auto_initTime, auto_endTime, auto_days)
-VALUES (1, 'Luces Nocturnas', 'Encender luces exteriores', '19:00', '23:59', 127);
+INSERT INTO automation (auto_id, auto_state, auto_name, auto_description, auto_initTime, auto_endTime, auto_days)
+VALUES (1, 1, 'Luces Nocturnas', 'Encender luces exteriores', '19:00', '23:59', 127);
 
 INSERT INTO device (devi_id, devi_state, devi_type, devi_name, devi_description) VALUES
 (1, 0, 'Led', 'Luz', 'Luz principal de la sala'),
@@ -123,3 +123,6 @@ DELETE FROM device;
 SELECT * FROM device;
 SELECT * FROM velocity;
 SELECT * FROM dimmable;
+
+SELECT * FROM automation;
+SELECT * FROM automation_device;

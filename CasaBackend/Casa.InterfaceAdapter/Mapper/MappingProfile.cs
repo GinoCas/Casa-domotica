@@ -76,6 +76,18 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices))
                 .ReverseMap();
 
+            CreateMap<ArduinoAutomationDto, AutomationEntity>()
+                .ForMember(dest => dest.InitTime,
+                    opt => opt.MapFrom(src => new TimeSpan(src.StartHour, src.StartMinute, 0)))
+                .ForMember(dest => dest.EndTime,
+                    opt => opt.MapFrom(src => new TimeSpan(src.EndHour, src.EndMinute, 0)))
+                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices))
+                .ReverseMap()
+                .ForMember(dest => dest.StartHour, opt => opt.MapFrom(src => src.InitTime.Hours))
+                .ForMember(dest => dest.StartMinute, opt => opt.MapFrom(src => src.InitTime.Minutes))
+                .ForMember(dest => dest.EndHour, opt => opt.MapFrom(src => src.EndTime.Hours))
+                .ForMember(dest => dest.EndMinute, opt => opt.MapFrom(src => src.EndTime.Minutes));
+
             CreateMap<AutomationDto, AutomationEntity>()
                 .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices));
 

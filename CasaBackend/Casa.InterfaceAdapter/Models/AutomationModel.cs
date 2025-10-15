@@ -7,7 +7,6 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
     {
         [Column("auto_id")]
         public int Id { get; set; }
-
         [Column("auto_state")]
         public bool State { get; set; }
         [Column("auto_name")]
