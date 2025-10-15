@@ -3,6 +3,8 @@
 #include <ArduinoJson.h>
 #include <ArxContainer.h>
 #include <WebServer.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 enum DeviceType {
   DEVICE_LED,
@@ -27,11 +29,27 @@ struct Device {
   } props;
 };
 
+struct AutomationDevice {
+  int Id;
+  bool State;
+};
+
+struct Automation {
+  int startHour;
+  int startMinute;
+  int endHour;
+  int endMinute;
+  byte days;  // bitmask: Dom=1, Lun=2, Mar=4, Mie=8, Jue=16, Vie=32, Sab=64
+  bool state; // encender o apagar
+  arx::stdx::vector<AutomationDevice, 12> devices; // IDs de dispositivos afectados
+};
+
 // --- Listas de dispositivos y automatizaciones ---
 arx::stdx::vector<Device, 12> devices;
+arx::stdx::vector<Automation, 20> automations;
 
 // --- MQTT ---
-const char* mqttServer = "test.mosquitto.org";  // o tu broker externo
+const char* mqttServer = "test.mosquitto.org";
 const int mqttPort = 1883;
 
 WiFiClient espClient;
@@ -40,7 +58,14 @@ PubSubClient client(espClient);
 // --- Servidor HTTP ---
 WebServer server(80);
 
-// --- Funciones ---
+// --- Hora NTP ---
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", -3 * 3600, 60000); // GMT-3
+
+// ======================================================================
+// ========================== FUNCIONES BASE ============================
+// ======================================================================
+
 void publishDevice(int devId, const Device& device) {
   StaticJsonDocument<256> doc;
   JsonObject obj = doc.createNestedObject("Data");
@@ -68,12 +93,14 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
   if (id <= 0 || id > devices.size()) return;
   Device& device = devices[id - 1];
   device.state = state;
-  if(type == ""){
+
+  if (strcmp(type, "") == 0) {
     analogWrite(device.pin, device.state);
     Serial.printf("💡 Device %d -> state=%d\n", id, state);
     publishDevice(id, device);
     return;
   }
+
   if (strcmp(type, "Led") == 0) {
     device.props.led.brightness = brightness;
     analogWrite(device.pin, device.state ? brightness : 0);
@@ -88,55 +115,172 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
   publishDevice(id, device);
 }
 
-// --- Endpoint local PUT /device ---
-void handlePutDevice() {
-  if (server.hasArg("plain")) {
-    StaticJsonDocument<256> doc;
-    DeserializationError error = deserializeJson(doc, server.arg("plain"));
-    if (error) {
-      server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
-      return;
-    }
-    Serial.println("Request Recibida");
-    int id = doc["Id"];
-    bool state = doc["State"];
-    const char* type = doc["Type"] | "";
-    int brightness = doc["Brightness"] | -1;
-    int speed = doc["Speed"] | -1;
+// ======================================================================
+// =========================== AUTOMATIONS ==============================
+// ======================================================================
 
-    applyDeviceChange(id, state, type, brightness, speed);
-    server.send(200, "application/json", "{\"status\":\"true\"}");
-  } else {
-    server.send(400, "application/json", "{\"error\":\"no body\"}");
+bool isDayActive(byte bitmask, int weekday) {
+  // weekday: 0=Dom ... 6=Sab
+  return bitmask & (1 << weekday);
+}
+
+void checkAutomations() {
+  timeClient.update();
+  int hour = timeClient.getHours();
+  int minute = timeClient.getMinutes();
+  int day = timeClient.getDay(); // 0=Dom ... 6=Sab
+
+  int now = hour * 60 + minute;
+
+  for (auto& a : automations) {
+    if (!isDayActive(a.days, day)) continue;
+
+    int start = a.startHour * 60 + a.startMinute;
+    int end = a.endHour * 60 + a.endMinute;
+
+    bool shouldBeOn = (now >= start && now < end);
+
+    for (auto ad : a.devices) {
+      if (shouldBeOn) {
+        applyDeviceChange(ad.Id, ad.State, "", -1, -1);
+      } else {
+        applyDeviceChange(ad.Id, !ad.State, "", -1, -1);
+      }
+    }
   }
+}
+
+void publishAutomation(const Automation& a, int index) {
+  StaticJsonDocument<256> doc;
+  JsonObject obj = doc.createNestedObject("Automation");
+  obj["Id"] = index;
+  obj["StartHour"] = a.startHour;
+  obj["StartMinute"] = a.startMinute;
+  obj["EndHour"] = a.endHour;
+  obj["EndMinute"] = a.endMinute;
+  obj["Days"] = a.days;
+  obj["State"] = a.state;
+
+  JsonArray devs = obj.createNestedArray("Devices");
+  for (auto ad : a.devices) {
+    JsonObject d = devs.createNestedObject();
+    d["Id"] = ad.Id;
+    d["State"] = ad.State;
+  }
+
+  String json;
+  serializeJson(doc, json);
+  client.publish("casa/automations", json.c_str());
+  Serial.println("📡 Publicada automatización: " + json);
+}
+
+// ======================================================================
+// ========================= HTTP HANDLERS ==============================
+// ======================================================================
+
+void handlePutDevice() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"error\":\"no body\"}");
+    return;
+  }
+
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+  if (error) {
+    server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
+    return;
+  }
+
+  int id = doc["Id"];
+  bool state = doc["State"];
+  const char* type = doc["Type"] | "";
+  int brightness = doc["Brightness"] | -1;
+  int speed = doc["Speed"] | -1;
+
+  applyDeviceChange(id, state, type, brightness, speed);
+  server.send(200, "application/json", "{\"status\":\"true\"}");
+}
+
+// 🔹 Nuevo endpoint: /automation
+void handlePutAutomation() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"error\":\"no body\"}");
+    return;
+  }
+
+  StaticJsonDocument<512> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+  if (error) {
+    server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
+    return;
+  }
+
+  Automation a;
+  a.startHour = doc["StartHour"];
+  a.startMinute = doc["StartMinute"];
+  a.endHour = doc["EndHour"];
+  a.endMinute = doc["EndMinute"];
+  a.days = doc["Days"];
+  a.state = doc["State"];
+  for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
+    AutomationDevice dev;
+    dev.Id = ad["Id"];
+    dev.State = ad["State"];
+    a.devices.push_back(dev);
+  }
+
+  automations.push_back(a);
+  publishAutomation(a, automations.size());
+  server.send(200, "application/json", "{\"status\":\"automation added\"}");
+}
+
+void handleAlive() {
+  server.send(200, "text/plain", "OK");
 }
 
 void handleNotFound() {
   server.send(404, "application/json", "{\"error\":\"not found\"}");
 }
 
+// ======================================================================
+// ============================ MQTT ====================================
+// ======================================================================
 
-void handleAlive() {
-  server.send(200, "text/plain", "OK");
-}
-
-// --- MQTT ---
 void callback(char* topic, byte* payload, unsigned int length) {
-  StaticJsonDocument<256> doc;
+  StaticJsonDocument<512> doc;
   DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     Serial.println("❌ Error al parsear JSON MQTT");
     return;
   }
 
-  JsonObject data = doc["Data"];
-  int id = data["Id"];
-  bool state = data["State"];
-  const char* type = data["Type"] | "";
-  int brightness = data["Brightness"] | -1;
-  int speed = data["Speed"] | -1;
+  if (strcmp(topic, "casa/devices/cmd") == 0) {
+    int id = doc["Id"];
+    bool state = doc["State"];
+    const char* type = doc["Type"] | "";
+    int brightness = doc["Brightness"] | -1;
+    int speed = doc["Speed"] | -1;
+    applyDeviceChange(id, state, type, brightness, speed);
+  } 
+  else if (strcmp(topic, "casa/automations/cmd") == 0) {
+    Automation a;
+    a.startHour = doc["StartHour"];
+    a.startMinute = doc["StartMinute"];
+    a.endHour = doc["EndHour"];
+    a.endMinute = doc["EndMinute"];
+    a.days = doc["Days"];
+    a.state = doc["State"];
+    for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
+      AutomationDevice dev;
+      dev.Id = ad["Id"];
+      dev.State = ad["State"];
+      a.devices.push_back(dev);
+    }
 
-  applyDeviceChange(id, state, type, brightness, speed);
+    automations.push_back(a);
+    publishAutomation(a, automations.size());
+    Serial.println("📥 Nueva automatización agregada vía MQTT");
+  }
 }
 
 void reconnectMQTT() {
@@ -145,6 +289,7 @@ void reconnectMQTT() {
     if (client.connect("ESP32Client-LocalAPI")) {
       Serial.println("✅ Conectado!");
       client.subscribe("casa/devices/cmd");
+      client.subscribe("casa/automations/cmd");
     } else {
       Serial.print("Error: ");
       Serial.println(client.state());
@@ -153,7 +298,10 @@ void reconnectMQTT() {
   }
 }
 
-// --- WiFi ---
+// ======================================================================
+// ============================ WIFI ====================================
+// ======================================================================
+
 String readSerialLine() {
   String input = "";
   while (true) {
@@ -177,9 +325,8 @@ void selectAndConnectWiFi() {
     return;
   }
 
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i)
     Serial.printf("%d: %s (%d dBm)\n", i + 1, WiFi.SSID(i).c_str(), WiFi.RSSI(i));
-  }
 
   Serial.println("\n👉 Ingresa el número de la red:");
   int choice = -1;
@@ -189,9 +336,8 @@ void selectAndConnectWiFi() {
   }
 
   String ssid = WiFi.SSID(choice - 1);
-  String password = "";
   Serial.println("🔑 Ingresa la contraseña:");
-  password = readSerialLine();
+  String password = readSerialLine();
 
   WiFi.begin(ssid.c_str(), password.c_str());
   Serial.printf("Conectando a '%s'...\n", ssid.c_str());
@@ -204,53 +350,69 @@ void selectAndConnectWiFi() {
   Serial.println(WiFi.localIP());
 }
 
-// --- Setup ---
+// ======================================================================
+// ============================ SETUP/LOOP ==============================
+// ======================================================================
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
 
   selectAndConnectWiFi();
+  timeClient.begin();
 
   client.setServer(mqttServer, mqttPort);
   client.setCallback(callback);
-  
-  if (!client.connected()) {
-    reconnectMQTT();
-  }
+  reconnectMQTT();
 
-  // --- Configurar servidor local ---
   server.on("/device", HTTP_PUT, handlePutDevice);
+  server.on("/automation", HTTP_PUT, handlePutAutomation);
   server.on("/", handleAlive);
   server.onNotFound(handleNotFound);
   server.begin();
   Serial.println("🌐 Servidor HTTP iniciado en puerto 80");
 
-  // --- Crear dispositivos ---
+  // Crear dispositivos
   Device led1 = {2, true, DEVICE_LED, {.led = {128}}};
   Device fan1 = {4, false, DEVICE_FAN, {.fan = {2}}};
   devices.push_back(led1);
   devices.push_back(fan1);
 
-  // --- Publicar estados iniciales ---
-  int devId = 0;
-  for (const auto& device : devices) {
-    devId++;
-    publishDevice(devId, device);
-  }
+  // Publicar estado inicial
+  for (int i = 0; i < devices.size(); i++)
+    publishDevice(i + 1, devices[i]);
+  // Crear automation
+  Automation auto1;
+  auto1.startHour = 8;
+  auto1.startMinute = 0;
+  auto1.endHour = 18;
+  auto1.endMinute = 0;
+  auto1.days = 127;
+  auto1.state = true;
+
+  AutomationDevice dev1 = {1, true};
+  AutomationDevice dev2 = {2, true};
+  auto1.devices.push_back(dev1);
+  auto1.devices.push_back(dev2);
+  automations.push_back(auto1);
+  publishAutomation(auto1, automations.size());
 }
 
-// --- Loop ---
 void loop() {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("⚠️ WiFi desconectado, intentando reconectar...");
     selectAndConnectWiFi();
   }
-
-  if (!client.connected()) {
-    reconnectMQTT();
-  }
+  if (!client.connected()) reconnectMQTT();
 
   client.loop();
   server.handleClient();
+
+  static unsigned long lastAutoCheck = 0;
+  if (millis() - lastAutoCheck > 60000) {
+    checkAutomations();
+    lastAutoCheck = millis();
+  }
+
   delay(50);
 }
