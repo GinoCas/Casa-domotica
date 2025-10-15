@@ -316,12 +316,18 @@ export default function AutomationId() {
               onClose={() => setShowDeviceSelector(false)}
               title="Seleccionar dispositivos"
             >
-              <MultiComboGroup
-                options={groupedOptions}
-                onOptionChange={(options) => setSelectedDevices(options)}
-                onClose={handleConfirm}
-                value={selectedDevices}
-              />
+              {true ? (
+                <View style={{ padding: 20 }}>
+                  <Text>Related devices not found</Text>
+                </View>
+              ) : (
+                <MultiComboGroup
+                  options={groupedOptions}
+                  onOptionChange={(options) => setSelectedDevices(options)}
+                  onClose={handleConfirm}
+                  value={selectedDevices}
+                />
+              )}
             </CustomModal>
           </View>
         </View>
