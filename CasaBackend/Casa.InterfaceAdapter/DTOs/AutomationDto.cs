@@ -7,6 +7,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.DTOs
         public bool State { get; set; }
         public TimeSpan InitTime { get; set; }
         public TimeSpan EndTime { get; set; }
+        public byte Days { get; set; }
         public ICollection<AutomationDeviceDto> Devices { get; set; }
     }
 }

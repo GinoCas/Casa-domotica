@@ -55,7 +55,6 @@ export class HttpClient {
             ),
           )
         : undefined;
-      console.log(cleanedData);
 
       const response = await fetch(`${this.baseUrl}/${endpoint}`, {
         method: "PUT",

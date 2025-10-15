@@ -17,6 +17,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters
                 Description = entity.Description,
                 InitTime = entity.InitTime.ToString(),
                 EndTime = entity.EndTime.ToString(),
+                Days = entity.Days,
                 Devices = entity.Devices.Select(ad => new AutomationDeviceViewModel
                 {
                     Id = ad.DeviceId,

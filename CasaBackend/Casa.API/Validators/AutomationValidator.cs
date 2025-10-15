@@ -32,6 +32,9 @@ namespace CasaBackend.Casa.API.Validators
             RuleFor(x => x.EndTime)
                 .NotNull()
                 .WithMessage("La hora de finalizacion es obligatoria");
+            RuleFor(x => x.Days)
+                .NotNull()
+                .WithMessage("El campo de dias no puede ser nulo.");
         }
     }
 }

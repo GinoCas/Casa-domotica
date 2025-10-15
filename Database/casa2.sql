@@ -42,6 +42,7 @@ CREATE TABLE automation(
 	auto_state BIT DEFAULT(0) NOT NULL,
 	auto_name VARCHAR(100) DEFAULT('New Automation'),
 	auto_description VARCHAR(100) DEFAULT('Description'),
+	auto_days TINYINT NOT NULL DEFAULT 0, -- Bitmask: Domingo=1, Lunes=2, Martes=4, Miercoles=8, Jueves=16, Viernes=32, Sabado=64
 	auto_initTime TIME NOT NULL,
 	auto_endTime TIME NOT NULL,
 	PRIMARY KEY(auto_id)
@@ -83,14 +84,12 @@ INSERT INTO room (room_name) VALUES
 ('Habitacion Marron'),
 ('Patio'),
 ('Garage'),
-('Ba�o'),
+('Baño'),
 ('Cocina'),
 ('Comedor');
 
-INSERT INTO automation (auto_state, auto_name, auto_description, auto_initTime, auto_endTime)
-VALUES (1, 'Luces Nocturnas', 'Encender luces exteriores', '19:00', '23:59');
-
-
+INSERT INTO automation (auto_state, auto_name, auto_description, auto_initTime, auto_endTime, auto_days)
+VALUES (1, 'Luces Nocturnas', 'Encender luces exteriores', '19:00', '23:59', 127);
 -- Eliminar relaciones que dependen de otras tablas
 DELETE FROM automation_device;
 DELETE FROM room_device;

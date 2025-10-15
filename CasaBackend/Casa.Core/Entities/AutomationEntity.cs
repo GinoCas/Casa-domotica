@@ -8,6 +8,7 @@ namespace CasaBackend.Casa.Core.Entities
         public string Description { get; set; }
         public TimeSpan InitTime { get; set; }
         public TimeSpan EndTime { get; set; }
+        public byte Days { get; set; }
         public ICollection<AutomationDeviceEntity> Devices { get; set; } = new List<AutomationDeviceEntity>();
     }
 }

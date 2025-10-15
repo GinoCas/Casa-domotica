@@ -72,18 +72,20 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<VelocityEntity, VelocityViewModel>();
 
             //Automations
-            CreateMap<AutomationDeviceModel, AutomationDeviceEntity>().ReverseMap();
             CreateMap<AutomationModel, AutomationEntity>()
                 .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices))
                 .ReverseMap();
 
             CreateMap<AutomationDto, AutomationEntity>()
-                .ForMember(dest => dest.Devices, opt => opt.Ignore())
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-            CreateMap<AutomationDto, AutomationEntity>()
-                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices));
+
             CreateMap<AutomationEntity, AutomationViewModel>();
-            CreateMap<AutomationDeviceDto, AutomationDeviceEntity>().ReverseMap();
+
+            CreateMap<AutomationDeviceDto, AutomationDeviceEntity>()
+                .ForMember(dest => dest.DeviceId, opt => opt.MapFrom(src => src.Id));
+            CreateMap<AutomationDeviceEntity, AutomationDeviceModel>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

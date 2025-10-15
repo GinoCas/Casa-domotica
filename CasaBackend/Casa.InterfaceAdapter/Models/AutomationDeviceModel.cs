@@ -7,6 +7,7 @@ namespace Casa.InterfaceAdapter.Models
     public class AutomationDeviceModel
     {
         [Column("aude_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Column("aude_state")]
