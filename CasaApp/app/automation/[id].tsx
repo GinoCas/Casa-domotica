@@ -33,6 +33,7 @@ import {
   Option,
 } from "@/components/ui/multi-combo-group/types";
 import CustomModal from "@/components/ui/modal";
+import WeekDayPicker from "@/components/automations/weekday-picker";
 
 export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -263,6 +264,9 @@ export default function AutomationId() {
               <FontAwesome5 name="clock" size={16} color="black" />
             </Text>
           </View>
+          <View>
+            <WeekDayPicker onPressOption={(weekday) => console.log(weekday)} />
+          </View>
 
           <View style={styles.devicesContainer}>
             <Text style={{ fontWeight: "600" }}>Devices </Text>
@@ -316,7 +320,7 @@ export default function AutomationId() {
               onClose={() => setShowDeviceSelector(false)}
               title="Seleccionar dispositivos"
             >
-              {true ? (
+              {groupedOptions.length === 0 ? (
                 <View style={{ padding: 20 }}>
                   <Text>Related devices not found</Text>
                 </View>
