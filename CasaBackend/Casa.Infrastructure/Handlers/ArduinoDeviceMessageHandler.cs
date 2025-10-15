@@ -1,19 +1,14 @@
 using AutoMapper;
 using CasaBackend.Casa.Application.Interfaces.Factory;
 using CasaBackend.Casa.Application.Interfaces.Repositories;
-
 using CasaBackend.Casa.Core.Entities;
 using CasaBackend.Casa.Core.Entities.Capabilities;
 using CasaBackend.Casa.Core.Entities.ValueObjects;
-using CasaBackend.Casa.Infrastructure.Services;
 using CasaBackend.Casa.InterfaceAdapter.DTOs;
-using CasaBackend.Casa.InterfaceAdapter.Models;
-using Microsoft.Extensions.Logging;
-using System;
 
 namespace CasaBackend.Casa.Infrastructure.Handlers
 {
-    public class ArduinoDeviceMessageHandler : MQTTHandler<ArduinoMessageDto<ArduinoDeviceDto>>
+    public class ArduinoDeviceMessageHandler : MQTTHandler<ArduinoDeviceDto>
     {
         private readonly IDeviceRepository<DeviceEntity> _deviceRepository;
         private readonly IFactory<IEnumerable<ICapabilityEntity>, DeviceType> _capabilityFactory;
@@ -33,9 +28,8 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
             _logger = logger;
         }
 
-        protected override async Task ProcessMessageAsync(ArduinoMessageDto<ArduinoDeviceDto> message)
+        protected override async Task ProcessMessageAsync(ArduinoDeviceDto dto)
         {
-            var dto = message.Data;
             var result = await _deviceRepository.GetByDeviceIdAsync(dto.Id);
 
             if (result.IsSuccess)

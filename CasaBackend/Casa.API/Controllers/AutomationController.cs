@@ -1,3 +1,4 @@
+using CasaBackend.Casa.Application.Interfaces.Services;
 using CasaBackend.Casa.Application.UseCases;
 using CasaBackend.Casa.Core;
 using CasaBackend.Casa.Core.Entities;
@@ -16,6 +17,7 @@ namespace CasaBackend.Casa.API.Controllers
         CreateAutomationUseCase<AutomationEntity, AutomationDto> createAutomationUseCase,
         UpdateAutomationUseCase updateAutomationUseCase,
         EraseAutomationUseCase<AutomationEntity> eraseAutomationUseCase,
+        IMQTTPublisher mqttPublisher,
         IValidator<AutomationDto> automationValidator,
         ILogger<AutomationController> logger) : ControllerBase
     {
@@ -23,6 +25,7 @@ namespace CasaBackend.Casa.API.Controllers
         private readonly CreateAutomationUseCase<AutomationEntity, AutomationDto> _createAutomationUseCase = createAutomationUseCase;
         private readonly UpdateAutomationUseCase _updateAutomationUseCase = updateAutomationUseCase;
         private readonly EraseAutomationUseCase<AutomationEntity> _deleteAutomationUseCase = eraseAutomationUseCase;
+        private readonly IMQTTPublisher _mqttPublisher = mqttPublisher;
         private readonly IValidator<AutomationDto> _automationValidator = automationValidator;
         private readonly ILogger<AutomationController> _logger = logger;
 
@@ -95,6 +98,13 @@ namespace CasaBackend.Casa.API.Controllers
 
             _logger.LogInformation("Automation edited successfully with ID: {AutomationId}", id);
             return Ok(result.ToJson());
+        }
+
+        [HttpPut("/automation/control")]
+        public async Task<IActionResult> ControlAutomation(ArduinoAutomationDto dto)
+        {
+            await _mqttPublisher.PublishAsync("casa/automations/cmd", dto);
+            return Ok(dto);
         }
 
         [HttpDelete("/automation/erase/{id}")]

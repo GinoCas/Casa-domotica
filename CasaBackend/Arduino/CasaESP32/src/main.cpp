@@ -152,7 +152,7 @@ void checkAutomations() {
 
 void publishAutomation(const Automation& a, int index) {
   StaticJsonDocument<256> doc;
-  JsonObject obj = doc.createNestedObject("Automation");
+  JsonObject obj = doc.createNestedObject("Data");
   obj["Id"] = index;
   obj["StartHour"] = a.startHour;
   obj["StartMinute"] = a.startMinute;
