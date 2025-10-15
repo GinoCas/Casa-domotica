@@ -3,8 +3,14 @@
 #include <ArduinoJson.h>
 #include <ArxContainer.h>
 #include <WebServer.h>
-#include <NTPClient.h>
 #include <WiFiUdp.h>
+
+struct SimTime {
+  int hour;
+  int minute;
+  int day; // 0=Dom, 6=Sab
+  unsigned long lastUpdate;
+};
 
 enum DeviceType {
   DEVICE_LED,
@@ -52,19 +58,34 @@ arx::stdx::vector<Automation, 20> automations;
 const char* mqttServer = "test.mosquitto.org";
 const int mqttPort = 1883;
 
+// --- TIEMPO ---
+SimTime simTime = {8, 0, 0, 0};
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 // --- Servidor HTTP ---
 WebServer server(80);
 
-// --- Hora NTP ---
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org", -3 * 3600, 60000); // GMT-3
-
 // ======================================================================
 // ========================== FUNCIONES BASE ============================
 // ======================================================================
+
+void updateSimTime() {
+  unsigned long now = millis();
+  if (now - simTime.lastUpdate >= 1000) { // cada 1 segundo = 1 minuto simulado
+    simTime.lastUpdate = now;
+    simTime.minute++;
+    if (simTime.minute >= 60) {
+      simTime.minute = 0;
+      simTime.hour++;
+      if (simTime.hour >= 24) {
+        simTime.hour = 0;
+        simTime.day = (simTime.day + 1) % 7;
+      }
+    }
+  }
+}
 
 void publishDevice(int devId, const Device& device) {
   StaticJsonDocument<256> doc;
@@ -125,10 +146,10 @@ bool isDayActive(byte bitmask, int weekday) {
 }
 
 void checkAutomations() {
-  timeClient.update();
-  int hour = timeClient.getHours();
-  int minute = timeClient.getMinutes();
-  int day = timeClient.getDay(); // 0=Dom ... 6=Sab
+  updateSimTime();
+  int hour = simTime.hour;
+  int minute = simTime.minute;
+  int day = simTime.day; // 0=Dom ... 6=Sab
 
   int now = hour * 60 + minute;
 
@@ -359,7 +380,6 @@ void setup() {
   delay(1000);
 
   selectAndConnectWiFi();
-  timeClient.begin();
 
   client.setServer(mqttServer, mqttPort);
   client.setCallback(callback);
@@ -407,6 +427,7 @@ void loop() {
 
   client.loop();
   server.handleClient();
+  updateSimTime();
 
   static unsigned long lastAutoCheck = 0;
   if (millis() - lastAutoCheck > 60000) {
