@@ -51,7 +51,13 @@ export default function Home() {
         icon={
           <Feather name="plus" size={24} color={GlobalStyles.enabledColor} />
         }
-        onPress={() => handleAutomationPress(-1)}
+        onPress={() => {
+          if (automations.length === 20) {
+            alert("You have reached the maximum number of automations (20).");
+          } else {
+            handleAutomationPress(-1);
+          }
+        }}
       />
     </Container>
   );
