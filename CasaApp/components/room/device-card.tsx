@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Switch } from "../ui/switch";
 import GlobalStyles from "@/Utils/globalStyles";
@@ -7,6 +7,14 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { CapabilityType, Device, DeviceType } from "@/src/core/entities/Device";
+import { debounce } from "lodash";
+
+interface DeviceCardProps {
+  device: Device;
+  handleToogleEnabled: (device: Device, newState: boolean) => void;
+  onCardPress?: () => void;
+  onBrightnessPress?: () => void;
+}
 
 export const DeviceCard = React.memo(
   ({
@@ -14,17 +22,28 @@ export const DeviceCard = React.memo(
     handleToogleEnabled,
     onCardPress,
     onBrightnessPress,
-  }: {
-    device: Device;
-    handleToogleEnabled: (device: Device, newState: boolean) => void;
-    onCardPress?: () => void;
-    onBrightnessPress?: () => void;
-  }) => {
+  }: DeviceCardProps) => {
     const [isEnabled, setIsEnabled] = useState(device.state);
-    const toggleEnabled = async () => {
-      setIsEnabled(!isEnabled);
-      handleToogleEnabled(device, isEnabled);
+
+    const debouncedToggle = useMemo(
+      () =>
+        debounce((newIsEnabled: boolean) => {
+          handleToogleEnabled(device, !newIsEnabled);
+        }, 200),
+      [device, handleToogleEnabled],
+    );
+
+    const toggleEnabled = () => {
+      const newIsEnabled = !isEnabled;
+      setIsEnabled(newIsEnabled);
+      debouncedToggle(newIsEnabled);
     };
+
+    useEffect(() => {
+      return () => {
+        debouncedToggle.cancel();
+      };
+    }, [debouncedToggle]);
 
     const getCapability = (type: CapabilityType) => {
       return device.capabilities.find((c) => c.capabilityType === type);
