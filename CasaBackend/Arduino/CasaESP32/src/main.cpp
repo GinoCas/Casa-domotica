@@ -53,6 +53,9 @@ struct Automation {
 arx::stdx::vector<Device, 12> devices;
 arx::stdx::vector<Automation, 20> automations;
 
+bool saveEnergyMode = false;
+bool activityMode = false;
+
 // --- MQTT ---
 const char* mqttServer = "test.mosquitto.org";
 const int mqttPort = 1883;
@@ -139,6 +142,7 @@ bool isDayActive(byte bitmask, int weekday) {
 
 void checkAutomations() {
   updateSimTime();
+  if (activityMode) return;
   time_t now = mktime(&simTime);
 
   for (auto& a : automations) {
@@ -191,14 +195,25 @@ void publishAutomation(const Automation& a, int index) {
   Serial.println("📡 Publicada automatización: " + json);
 }
 
-void publishAutomationErase(int id) {
-  StaticJsonDocument<64> doc;
-  JsonObject obj = doc.createNestedObject("Data");
-  obj["Id"] = id;
-  String json;
-  serializeJson(doc, json);
-  client.publish("casa/automations/erase", json.c_str());
-  Serial.println("📡 Publicada eliminación de automatización: " + json);
+String publishAutomationErase(int id) {
+  StaticJsonDocument<128> doc;
+  doc["Id"] = id;
+  String output;
+  serializeJson(doc, output);
+  client.publish("casa/automations/erase", output.c_str());
+  Serial.println("📡 Publicada eliminación de automatización: " + output);
+  return output;
+}
+
+String publishMode(const String & name, bool state) {
+  StaticJsonDocument<128> doc;
+  doc["Name"] = name;
+  doc["State"] = state;
+  String output;
+  serializeJson(doc, output);
+  client.publish("casa/modes", output.c_str());
+  Serial.println("📡 Publicado modo: " + output);
+  return output;
 }
 
 // ======================================================================
@@ -277,6 +292,30 @@ void handlePutAutomation() {
   }
 }
 
+void handlePutMode() {
+  if (!server.hasArg("plain")) { server.send(400, "text/plain", "Bad Request"); return; }
+  StaticJsonDocument<256> doc;
+  DeserializationError err = deserializeJson(doc, server.arg("plain"));
+  if (err) { server.send(400, "text/plain", "Invalid JSON"); return; }
+  const char* name = doc["Name"] | "";
+  bool state = doc["State"];
+  String nm = String(name);
+  nm.toLowerCase();
+  if (nm == "activity") {
+    activityMode = state;
+    publishMode("Activity", activityMode);
+    server.send(200, "application/json", "{\"success\":true}");
+    return;
+  }
+  if (nm == "save-energy" || nm == "saveenergy" || nm == "save_energy") {
+    saveEnergyMode = state;
+    publishMode("SaveEnergy", saveEnergyMode);
+    server.send(200, "application/json", "{\"success\":true}");
+    return;
+  }
+  server.send(404, "text/plain", "Mode Not Found");
+}
+
 void handleAlive() {
   server.send(200, "text/plain", "OK");
 }
@@ -329,37 +368,67 @@ void callback(char* topic, byte* payload, unsigned int length) {
     applyDeviceChange(id, state, type, brightness, speed);
   } 
   else if (strcmp(topic, "casa/automations/cmd") == 0) {
-    int automationId = doc["Id"] | -1;
-
-    Automation a;
-    a.startHour = doc["StartHour"];
-    a.startMinute = doc["StartMinute"];
-    a.endHour = doc["EndHour"];
-    a.endMinute = doc["EndMinute"];
-    a.days = doc["Days"];
-    a.state = doc["State"];
-    a.lastTriggered = 0;
-    a.isCurrentlyActive = false;
-    for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
-      AutomationDevice dev;
-      dev.Id = ad["Id"];
-      dev.State = ad["State"];
-      a.devices.push_back(dev);
-    }
-
-    if (automationId == -1) {
-        automations.push_back(a);
-        publishAutomation(a, automations.size());
-        Serial.println("📥 Nueva automatización agregada vía MQTT");
+    const char* cmd = doc["Cmd"] | "";
+    if (strcmp(cmd, "erase") == 0 || strcmp(cmd, "delete") == 0) {
+      int automationId = doc["Id"] | -1;
+      int index = automationId - 1;
+      if (index >= 0 && index < automations.size()) {
+        automations.erase(automations.begin() + index);
+        publishAutomationErase(automationId);
+        Serial.println("📥 Automatización eliminada vía MQTT");
+      } else {
+        Serial.println("❌ Error: ID de automatización no encontrado para eliminar vía MQTT");
+      }
     } else {
-        int index = automationId - 1;
-        if (index >= 0 && index < automations.size()) {
-            automations[index] = a;
-            publishAutomation(automations[index], automationId);
-            Serial.println("📥 Automatización actualizada vía MQTT");
-        } else {
-            Serial.println("❌ Error: ID de automatización no encontrado para actualizar vía MQTT");
-        }
+      int automationId = doc["Id"] | -1;
+
+      Automation a;
+      a.startHour = doc["StartHour"];
+      a.startMinute = doc["StartMinute"];
+      a.endHour = doc["EndHour"];
+      a.endMinute = doc["EndMinute"];
+      a.days = doc["Days"];
+      a.state = doc["State"];
+      a.lastTriggered = 0;
+      a.isCurrentlyActive = false;
+      for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
+        AutomationDevice dev;
+        dev.Id = ad["Id"];
+        dev.State = ad["State"];
+        a.devices.push_back(dev);
+      }
+
+      if (automationId == -1) {
+          automations.push_back(a);
+          publishAutomation(a, automations.size());
+          Serial.println("📥 Nueva automatización agregada vía MQTT");
+      } else {
+          int index = automationId - 1;
+          if (index >= 0 && index < automations.size()) {
+              automations[index] = a;
+              publishAutomation(automations[index], automationId);
+              Serial.println("📥 Automatización actualizada vía MQTT");
+          } else {
+              Serial.println("❌ Error: ID de automatización no encontrado para actualizar vía MQTT");
+          }
+      }
+    }
+  }
+  else if (strcmp(topic, "casa/modes/cmd") == 0) {
+    const char* name = doc["Name"] | "";
+    bool state = doc["State"];
+    String nm = String(name);
+    nm.toLowerCase();
+    if (nm == "activity") {
+      activityMode = state;
+      publishMode("Activity", activityMode);
+      Serial.println("📥 Modo de actividad actualizado vía MQTT");
+    } else if (nm == "save-energy" || nm == "saveenergy" || nm == "save_energy") {
+      saveEnergyMode = state;
+      publishMode("SaveEnergy", saveEnergyMode);
+      Serial.println("📥 Modo de ahorro actualizado vía MQTT");
+    } else {
+      Serial.println("❌ Error: Modo inválido en MQTT");
     }
   }
 }
@@ -371,6 +440,7 @@ void reconnectMQTT() {
       Serial.println("✅ Conectado!");
       client.subscribe("casa/devices/cmd");
       client.subscribe("casa/automations/cmd");
+      client.subscribe("casa/modes/cmd");
     } else {
       Serial.print("Error: ");
       Serial.println(client.state());
@@ -456,6 +526,7 @@ void setup() {
 
   server.on("/device", HTTP_PUT, handlePutDevice);
   server.on("/automation", HTTP_PUT, handlePutAutomation);
+  server.on("/mode", HTTP_PUT, handlePutMode);
   server.on("/", handleAlive);
   server.onNotFound(handleNotFound);
   server.begin();

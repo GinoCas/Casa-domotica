@@ -21,6 +21,8 @@ import {
   UpdateAutomationUseCase,
   ControlAutomationUseCase,
 } from "../application/usecases/AutomationUseCases";
+import { ApiModeRepository } from "../infrastructure/repositories/ApiModeRepository";
+import { ControlModeUseCase } from "../application/usecases/ModeUseCases";
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -30,6 +32,7 @@ export class DependencyContainer {
   private deviceRepository: ApiDeviceRepository;
   private roomRepository: ApiRoomRepository;
   private automationRepository: ApiAutomationRepository;
+  private modeRepository: ApiModeRepository;
 
   private getDeviceListUseCase: GetDeviceListUseCase;
   private getDeviceByIdUseCase: GetDeviceByIdUseCase;
@@ -45,6 +48,7 @@ export class DependencyContainer {
   private deleteAutomationUseCase: DeleteAutomationUseCase;
   private updateAutomationUseCase: UpdateAutomationUseCase;
   private controlAutomationUseCase: ControlAutomationUseCase;
+  private controlModeUseCase: ControlModeUseCase;
 
   private constructor() {
     // Configuración de la URL base desde las variables de entorno
@@ -64,6 +68,7 @@ export class DependencyContainer {
       this.httpClient,
       this.localClient,
     );
+    this.modeRepository = new ApiModeRepository(this.httpClient, this.localClient);
 
     // Inicialización de casos de uso
     this.getDeviceListUseCase = new GetDeviceListUseCase(this.deviceRepository);
@@ -92,6 +97,7 @@ export class DependencyContainer {
     this.controlAutomationUseCase = new ControlAutomationUseCase(
       this.automationRepository,
     );
+    this.controlModeUseCase = new ControlModeUseCase(this.modeRepository);
   }
 
   public static getInstance(): DependencyContainer {
@@ -138,5 +144,38 @@ export class DependencyContainer {
   }
   public getControlAutomationUseCase(): ControlAutomationUseCase {
     return this.controlAutomationUseCase;
+  }
+
+  public getDependency<T>(token: string): T {
+    switch (token) {
+      case "getDeviceList":
+        return this.getDeviceListUseCase as T;
+      case "getDeviceById":
+        return this.getDeviceByIdUseCase as T;
+      case "updateDevice":
+        return this.updateDeviceUseCase as T;
+      case "controlDevice":
+        return this.controlDeviceUseCase as T;
+      case "getAllRooms":
+        return this.getAllRoomsUseCase as T;
+      case "addDeviceToRoom":
+        return this.addDeviceToRoomUseCase as T;
+      case "getAllAutomations":
+        return this.getAllAutomationsUseCase as T;
+      case "getAutomationById":
+        return this.getAutomationByIdUseCase as T;
+      case "createAutomation":
+        return this.createAutomationUseCase as T;
+      case "deleteAutomation":
+        return this.deleteAutomationUseCase as T;
+      case "updateAutomation":
+        return this.updateAutomationUseCase as T;
+      case "controlAutomation":
+        return this.controlAutomationUseCase as T;
+      case "controlMode":
+        return this.controlModeUseCase as T;
+      default:
+        throw new Error(`Dependency token not found: ${token}`);
+    }
   }
 }

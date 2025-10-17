@@ -15,6 +15,7 @@ namespace CasaBackend.Casa.Infrastructure
         public DbSet<RoomDeviceModel> RoomDevices { get; set; }
         public DbSet<AutomationModel> Automations { get; set; }
         public DbSet<AutomationDeviceModel> AutomationDevices { get; set; }
+        public DbSet<ModeModel> Modes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DeviceModel>().ToTable("device");
@@ -42,6 +43,8 @@ namespace CasaBackend.Casa.Infrastructure
 
             modelBuilder.Entity<AutomationDeviceModel>()
                 .ToTable("automation_device");
+
+            modelBuilder.Entity<ModeModel>().ToTable("mode");
         }
     }
 }

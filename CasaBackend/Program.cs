@@ -56,6 +56,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 //Repositorios
 builder.Services.AddScoped<IDeviceRepository<DeviceEntity>, DeviceRepository>();
 builder.Services.AddScoped<IAutomationRepository<AutomationEntity>, AutomationRepository>();
+builder.Services.AddScoped<IModeRepository<ModeEntity>, ModeRepository>();
 builder.Services.AddScoped<IRoomRepository<RoomEntity>, RoomRepository>();
 builder.Services.AddScoped<ICapabilityRepository<DimmableEntity>, CapabilityRepository<DimmableEntity, DimmableModel>>();
 builder.Services.AddScoped<ICapabilityRepository<VelocityEntity>, CapabilityRepository<VelocityEntity, VelocityModel>>();
@@ -95,6 +96,7 @@ builder.Services.AddScoped<ICommandHandler, CapabilityCommandHandler<VelocityEnt
 builder.Services.AddScoped<IMQTTHandler, ArduinoDeviceMessageHandler>();
 builder.Services.AddScoped<IMQTTHandler, ArduinoAutomationMessageHandler>();
 builder.Services.AddScoped<IMQTTHandler, ArduinoAutomationEraseMessageHandler>();
+builder.Services.AddScoped<IMQTTHandler, ArduinoModeMessageHandler>();
 
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();

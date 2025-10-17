@@ -77,6 +77,18 @@ CREATE TABLE velocity(
 	PRIMARY KEY(velo_id)
 );
 
+-- Mode table for Activity/SaveEnergy global states
+CREATE TABLE mode(
+	mode_id INT NOT NULL IDENTITY(1,1),
+	mode_name VARCHAR(100) NOT NULL,
+	mode_state BIT NOT NULL DEFAULT 0,
+	PRIMARY KEY(mode_id)
+);
+
+-- Seed initial modes
+INSERT INTO mode (mode_name, mode_state) VALUES ('Activity', 0);
+INSERT INTO mode (mode_name, mode_state) VALUES ('SaveEnergy', 0);
+
 INSERT INTO room (room_name) VALUES
 ('Todas'),
 ('Sala'),

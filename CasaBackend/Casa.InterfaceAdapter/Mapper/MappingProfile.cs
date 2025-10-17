@@ -98,6 +98,13 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<AutomationDeviceEntity, AutomationDeviceModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
+
+            // Modes
+            CreateMap<ModeModel, ModeEntity>().ReverseMap();
+            CreateMap<ArduinoModeDto, ModeEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State));
         }
     }
 }
