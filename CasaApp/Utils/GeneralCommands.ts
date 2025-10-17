@@ -1,8 +1,6 @@
-import { getRoomDevices } from "@/lib/roomController";
 import useDeviceStore from "@/stores/useDeviceStore";
-import { Device } from "@/types/Device";
-
-//const { devices, toggleDeviceState } = useDeviceStore();
+import useRoomStore from "@/stores/useRoomStore";
+import { Device } from "@/src/core/entities/Device";
 
 function getRandomDevices(arr: Device[], n: number): Device[] {
   if (n > arr.length)
@@ -14,31 +12,87 @@ function getRandomDevices(arr: Device[], n: number): Device[] {
 }
 
 export async function turnOnLedRandom() {
-  /*try {
-    const devicesList = devices;
-    const randomDevices = getRandomDevices(devices, 3);
-    devicesList.forEach((device) => {
-      const newState = randomDevices.includes(device);
-      toggleDeviceState(device.id, newState);
-    });
-  } catch {
-    console.log("Error al activar el modo actividad");
-    return;
-  }*/
+  try {
+    const { devices, toggleDeviceState } = useDeviceStore.getState();
+    const leds = devices.filter((d) => d.deviceType === "Led");
+    const randomDevices = getRandomDevices(leds, Math.min(3, leds.length));
+
+    await Promise.all(
+      randomDevices.map((device) => toggleDeviceState(device.id, true)),
+    );
+  } catch (err) {
+    console.log("Error al activar el modo actividad", err);
+  }
 }
 
 export async function turnOnAllLedsOfRoom(roomName: string) {
-  /*(await getRoomDevices(roomName)).data.forEach((device) => {
-    toggleDeviceState(device.id, true);
-  });*/
+  const { devices, toggleDeviceState } = useDeviceStore.getState();
+  const { getRoomByName } = useRoomStore.getState();
+
+  try {
+    let targetDevices: Device[] = [];
+
+    if (roomName.toLowerCase() === "todas") {
+      targetDevices = devices.filter((d) => d.deviceType === "Led");
+    } else {
+      const roomResult = getRoomByName(roomName);
+      if (!roomResult.isSuccess) {
+        console.log("Habitación no encontrada:", roomResult.errors.join(", "));
+        return;
+      }
+      const targetIds = roomResult.data.deviceIds;
+      targetDevices = devices.filter(
+        (d) => d.deviceType === "Led" && targetIds.includes(d.id),
+      );
+    }
+
+    for (const device of targetDevices) {
+      await toggleDeviceState(device.id, true);
+    }
+  } catch (err) {
+    console.log("Error al encender las luces de la habitación", err);
+  }
 }
 
 export async function turnOffAllLedsOfRoom(roomName: string) {
-  /*(await getRoomDevices(roomName)).data.forEach((device) => {
-    toggleDeviceState(device.id, false);
-  });*/
+  const { devices, toggleDeviceState } = useDeviceStore.getState();
+  const { getRoomByName } = useRoomStore.getState();
+
+  try {
+    let targetDevices: Device[] = [];
+
+    if (roomName.toLowerCase() === "todas") {
+      targetDevices = devices.filter((d) => d.deviceType === "Led");
+    } else {
+      const roomResult = getRoomByName(roomName);
+      if (!roomResult.isSuccess) {
+        console.log("Habitación no encontrada:", roomResult.errors.join(", "));
+        return;
+      }
+      const targetIds = roomResult.data.deviceIds;
+      targetDevices = devices.filter(
+        (d) => d.deviceType === "Led" && targetIds.includes(d.id),
+      );
+    }
+
+    for (const device of targetDevices) {
+      await toggleDeviceState(device.id, false);
+    }
+  } catch (err) {
+    console.log("Error al apagar las luces de la habitación", err);
+  }
 }
 
-export function toggleTv(state: boolean) {
-  //toggleDeviceState(6, state);
+export async function toggleTv(state: boolean) {
+  try {
+    const { devices, toggleDeviceState } = useDeviceStore.getState();
+    const tv = devices.find((d) => d.deviceType === "Tv");
+    if (!tv) {
+      console.log("No se encontró un dispositivo de TV registrado");
+      return;
+    }
+    await toggleDeviceState(tv.id, state);
+  } catch (err) {
+    console.log("Error al cambiar el estado de la TV", err);
+  }
 }

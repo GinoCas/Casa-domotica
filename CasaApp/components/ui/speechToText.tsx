@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import Voice from "@react-native-voice/voice";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   toggleTv,
   turnOffAllLedsOfRoom,
@@ -20,10 +20,15 @@ export default function SpeechToText() {
     handleLoadCmdVoice,
   } = useSpeechStore();
   const [partialResults, setPartialResults] = useState([]);
+  const [statusMessage, setStatusMessage] = useState("");
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const SILENCE_TIMEOUT_MS = 7000;
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
     Voice.onSpeechPartialResults = writeSpeech;
     Voice.onSpeechEnd = stopHearing;
+    Voice.onSpeechStart = onSpeechStart;
+    Voice.onSpeechError = onSpeechError;
     startHearing();
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
@@ -31,6 +36,7 @@ export default function SpeechToText() {
   });
 
   const startHearing = async () => {
+    setStatusMessage("Escuchando…");
     await Voice.start("es-ES");
     changeHearing(true);
   };
@@ -39,6 +45,8 @@ export default function SpeechToText() {
     await Voice.stop();
     changeSpeaking(false);
     changeHearing(false);
+    clearSilenceTimer();
+    setStatusMessage("");
   };
 
   const onSpeechResults = (result: any) => {
@@ -46,9 +54,54 @@ export default function SpeechToText() {
     handleVoiceCommands(result.value);
   };
 
+  const onSpeechStart = (e: any) => {
+    changeSpeaking(true);
+    setStatusMessage("Escuchando…");
+    clearSilenceTimer();
+  };
+
+  const onSpeechError = (e: any) => {
+    setStatusMessage(
+      "Error de reconocimiento: " + (e?.error?.message || "desconocido"),
+    );
+    try {
+      stopHearing();
+    } catch {}
+  };
+
   const writeSpeech = (result: any) => {
     setPartialResults(result.value);
     changeSpeaking(true);
+    setStatusMessage("");
+    clearSilenceTimer();
+  };
+
+  useEffect(() => {
+    if (isHearing && !isSpeaking) {
+      setStatusMessage("Esperando tu voz…");
+      startSilenceTimer();
+    } else {
+      clearSilenceTimer();
+    }
+  }, [isHearing, isSpeaking]);
+
+  const startSilenceTimer = () => {
+    clearSilenceTimer();
+    silenceTimerRef.current = setTimeout(() => {
+      if (isHearing && !isSpeaking) {
+        setStatusMessage("No detecté voz, cerrando el micrófono.");
+        try {
+          stopHearing();
+        } catch {}
+      }
+    }, SILENCE_TIMEOUT_MS);
+  };
+
+  const clearSilenceTimer = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
   };
 
   const verbs: { [key: string]: string } = {
@@ -247,6 +300,7 @@ export default function SpeechToText() {
       ) : (
         <Text>{results[0]}</Text>
       )}
+      <Text style={{ marginTop: 10, color: "gray" }}>{statusMessage}</Text>
     </View>
   );
 }
