@@ -191,6 +191,16 @@ void publishAutomation(const Automation& a, int index) {
   Serial.println("📡 Publicada automatización: " + json);
 }
 
+void publishAutomationErase(int id) {
+  StaticJsonDocument<64> doc;
+  JsonObject obj = doc.createNestedObject("Data");
+  obj["Id"] = id;
+  String json;
+  serializeJson(doc, json);
+  client.publish("casa/automations/erase", json.c_str());
+  Serial.println("📡 Publicada eliminación de automatización: " + json);
+}
+
 // ======================================================================
 // ========================= HTTP HANDLERS ==============================
 // ======================================================================
@@ -271,7 +281,29 @@ void handleAlive() {
   server.send(200, "text/plain", "OK");
 }
 
+void handleDeleteAutomation() {
+  String uri = server.uri();
+  if (!uri.startsWith("/automation/")) {
+    server.send(404, "application/json", "{\"error\":\"invalid path\"}");
+    return;
+  }
+  String idStr = uri.substring(String("/automation/").length());
+  int automationId = idStr.toInt();
+  int index = automationId - 1;
+  if (index >= 0 && index < automations.size()) {
+    automations.erase(automations.begin() + index);
+    publishAutomationErase(automationId);
+    server.send(200, "application/json", "{\"data\":true}");
+  } else {
+    server.send(404, "application/json", "{\"error\":\"automation not found\"}");
+  }
+}
+
 void handleNotFound() {
+  if (server.method() == HTTP_DELETE && server.uri().startsWith("/automation/")) {
+    handleDeleteAutomation();
+    return;
+  }
   server.send(404, "application/json", "{\"error\":\"not found\"}");
 }
 

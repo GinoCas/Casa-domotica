@@ -60,9 +60,16 @@ export class ApiAutomationRepository implements IAutomationRepository {
   }
 
   async delete(id: number): Promise<Result<boolean>> {
-    const result = await this.httpClient.delete<any>(`automation/erase/${id}`);
+    // Primero intentamos enviar al Arduino local
+    let result = await this.localClient.delete<boolean>(`automation/${id}`);
+
     if (!result.isSuccess) {
-      return result as Result<boolean>;
+      // Si falla (Arduino no accesible), enviamos al backend para que publique por MQTT
+      result = await this.httpClient.delete<any>(`automation/erase/${id}`);
+    }
+
+    if (!result.isSuccess) {
+      return Result.failure(result.errors);
     }
 
     return Result.success(true);

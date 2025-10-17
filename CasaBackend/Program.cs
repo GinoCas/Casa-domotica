@@ -94,6 +94,7 @@ builder.Services.AddScoped<ICommandHandler, CapabilityCommandHandler<VelocityEnt
 //Handlers - MQTT
 builder.Services.AddScoped<IMQTTHandler, ArduinoDeviceMessageHandler>();
 builder.Services.AddScoped<IMQTTHandler, ArduinoAutomationMessageHandler>();
+builder.Services.AddScoped<IMQTTHandler, ArduinoAutomationEraseMessageHandler>();
 
 //Fabricas
 builder.Services.AddScoped<IFactory<ICommandHandler, string>, CommandFactory>();
