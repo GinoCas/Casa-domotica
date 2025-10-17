@@ -87,7 +87,6 @@ export class ApiAutomationRepository implements IAutomationRepository {
 
   async control(dto: ArduinoAutomationDto): Promise<Result<boolean>> {
     // Primero intentamos enviar al Arduino local
-    console.log(dto);
     let result = await this.localClient.put<boolean>(`automation`, dto);
     if (!result.isSuccess) {
       // Si falla (Arduino no accesible), enviamos al backend para que publique por MQTT

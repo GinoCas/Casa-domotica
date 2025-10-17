@@ -12,6 +12,7 @@ export class Automation {
     public readonly endTime: string,
     public readonly devices: AutomationDevice[],
     public readonly state: boolean,
+    public readonly days: number,
   ) {
     this.devices = devices ?? [];
   }
@@ -28,6 +29,7 @@ export class Automation {
       this.endTime,
       [...this.devices, { id: deviceId, autoState: true }],
       this.state,
+      this.days,
     );
   }
 
@@ -40,6 +42,7 @@ export class Automation {
       this.endTime,
       this.devices.filter((d) => d.id !== deviceId),
       this.state,
+      this.days,
     );
   }
 
@@ -52,6 +55,7 @@ export class Automation {
       this.endTime,
       [...devices],
       this.state,
+      this.days,
     );
   }
   withName(name: string): Automation {
@@ -63,6 +67,7 @@ export class Automation {
       this.endTime,
       this.devices,
       this.state,
+      this.days,
     );
     return auto;
   }
@@ -76,6 +81,7 @@ export class Automation {
       this.endTime,
       this.devices,
       this.state,
+      this.days,
     );
   }
 
@@ -88,6 +94,7 @@ export class Automation {
       this.endTime,
       this.devices,
       this.state,
+      this.days,
     );
   }
 
@@ -100,6 +107,7 @@ export class Automation {
       endTime,
       this.devices,
       this.state,
+      this.days,
     );
   }
 
@@ -112,6 +120,20 @@ export class Automation {
       this.endTime,
       this.devices,
       state,
+      this.days,
+    );
+  }
+
+  withDays(days: number): Automation {
+    return new Automation(
+      this.id,
+      this.name,
+      this.description,
+      this.initTime,
+      this.endTime,
+      this.devices,
+      this.state,
+      days,
     );
   }
 
@@ -124,6 +146,7 @@ export class Automation {
       data.endTime,
       data.devices ?? [],
       data.state,
+      data.days ?? 0,
     );
   }
 }

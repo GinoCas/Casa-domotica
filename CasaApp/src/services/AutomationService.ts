@@ -2,6 +2,7 @@ import { Automation } from "../core/entities/Automation";
 import { Result } from "../shared/Result";
 import { DependencyContainer } from "../shared/DependencyContainer";
 import { ArduinoAutomationDto } from "../application/dtos/ArduinoAutomationDto";
+import { parseTimeString } from "@/Utils/parseTimeString";
 
 export class AutomationService {
   private container = DependencyContainer.getInstance();
@@ -63,8 +64,32 @@ export class AutomationService {
   }
 
   async updateAutomation(automation: Automation): Promise<Result<Automation>> {
-    const useCase = this.container.getUpdateAutomationUseCase();
-    return await useCase.execute(automation);
+    const { initTime, endTime, days, state, devices, id } = automation;
+
+    const initDate = parseTimeString(initTime);
+    const endDate = parseTimeString(endTime);
+
+    const dto = new ArduinoAutomationDto(
+      initDate.getHours(),
+      initDate.getMinutes(),
+      endDate.getHours(),
+      endDate.getMinutes(),
+      days,
+      state,
+      devices.map((d) => ({ Id: d.id, State: d.autoState })),
+      id,
+    );
+
+    const controlUseCase = this.container.getControlAutomationUseCase();
+    const controlResult = await controlUseCase.execute(dto);
+
+    if (!controlResult.isSuccess) {
+      return Result.failure(controlResult.errors);
+    }
+
+    // A diferencia de la creación, la actualización no devuelve la entidad completa.
+    // Devolvemos la automatización que recibimos, asumiendo que la actualización fue exitosa.
+    return Result.success(automation);
   }
 }
 

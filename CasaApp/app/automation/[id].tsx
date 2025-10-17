@@ -35,6 +35,8 @@ import {
 import CustomModal from "@/components/ui/modal";
 import WeekDayPicker from "@/components/automations/weekday-picker";
 
+const weekDaysOptions = [1, 2, 4, 8, 16, 32, 64];
+
 export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
@@ -120,6 +122,18 @@ export default function AutomationId() {
     if (!currentAutomation) return;
     deleteAutomation(currentAutomation.id);
     router.back();
+  };
+
+  const handleWeekDayChange = (weekDays: number[]) => {
+    if (!currentAutomation) return;
+    const daysValue = weekDays.reduce((acc, day) => acc + day, 0);
+    const updatedAutomation = currentAutomation.withDays(daysValue);
+    setCurrentAutomation(updatedAutomation);
+    updateAutomation(updatedAutomation);
+  };
+
+  const getWeekDaysFromValue = (value: number) => {
+    return weekDaysOptions.filter((day) => (value & day) === day);
   };
 
   const handleChangeText = (key: "name" | "description", value: string) => {
@@ -266,7 +280,8 @@ export default function AutomationId() {
           </View>
           <View>
             <WeekDayPicker
-              onSelectionChange={(weekDays) => console.log(weekDays)}
+              onSelectionChange={handleWeekDayChange}
+              initialValue={getWeekDaysFromValue(currentAutomation.days)}
             />
           </View>
 
