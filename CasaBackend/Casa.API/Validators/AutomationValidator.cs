@@ -16,8 +16,6 @@ namespace CasaBackend.Casa.API.Validators
                 .MaximumLength(100).WithMessage("El nombre no puede superar los 50 caracteres.");
 
             RuleFor(x => x.Description)
-                .NotEmpty()
-                .NotNull()
                 .MaximumLength(100).WithMessage("La descripción no puede superar los 200 caracteres.");
 
             RuleFor(x => x.State)
