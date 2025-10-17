@@ -25,6 +25,10 @@ export const DeviceCard = React.memo(
   }: DeviceCardProps) => {
     const [isEnabled, setIsEnabled] = useState(device.state);
 
+    useEffect(() => {
+      setIsEnabled(device.state);
+    }, [device.state]);
+
     const debouncedToggle = useMemo(
       () =>
         debounce((newIsEnabled: boolean) => {
