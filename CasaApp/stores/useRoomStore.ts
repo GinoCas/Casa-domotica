@@ -31,7 +31,9 @@ const useRoomStore = create<RoomState>()((set, get) => ({
     set((state) => ({ ...state, rooms: newRooms }));
   },
   getRoomByName: (name: string) => {
-    const room = get().rooms.find((item) => item.name === name);
+    const room = get().rooms.find(
+      (item) => item.name.toLowerCase() === name.toLowerCase(),
+    );
     if (room === undefined) {
       return Result.failure([
         "La habitacion con el nombre: " + name + " no fue encontrada",

@@ -45,7 +45,7 @@ export class ControlDeviceUseCase {
 
   async execute(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
     try {
-      if (dto.id <= 0) {
+      if (dto.Id <= 0) {
         return Result.failure(["Device ID must be greater than 0"]);
       }
 
