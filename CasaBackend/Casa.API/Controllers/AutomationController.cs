@@ -111,15 +111,9 @@ namespace CasaBackend.Casa.API.Controllers
         public async Task<IActionResult> EraseAutomation(int id)
         {
             _logger.LogInformation("Erasing automation with ID: {AutomationId}", id);
-            var result = await _deleteAutomationUseCase.ExecuteAsync(id);
-            if (!result.IsSuccess)
-            {
-                _logger.LogWarning("Error erasing automation: {Errors}",
-                    string.Join(", ", result.Errors));
-                return BadRequest(result.ToJson());
-            }
-            _logger.LogInformation("Automation erased successfully with ID: {AutomationId}", id);
-            return Ok(result.ToJson());
+            
+            await _mqttPublisher.PublishAsync("casa/automations/cmd", new { Cmd = "erase", Id = id });
+            return Ok(id);
         }
 
         private static async Task<CoreResult<DTO>> ValidateDtoAsync<DTO>(IValidator<DTO> validator, DTO dto)
