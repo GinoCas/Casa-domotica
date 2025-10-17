@@ -1,6 +1,7 @@
 import { Result } from "@/src/shared/Result";
 import { Automation } from "../entities/Automation";
 import { AutomationDto } from "@/src/application/dtos/AutomationDto";
+import { ArduinoAutomationDto } from "@/src/application/dtos/ArduinoAutomationDto";
 
 export interface IAutomationRepository {
   getAll(): Promise<Result<Automation[]>>;
@@ -8,4 +9,5 @@ export interface IAutomationRepository {
   create(automationDto: AutomationDto): Promise<Result<Automation>>;
   delete(id: number): Promise<Result<boolean>>;
   update(automation: Automation): Promise<Result<Automation>>;
+  control(automation: ArduinoAutomationDto): Promise<Result<boolean>>;
 }

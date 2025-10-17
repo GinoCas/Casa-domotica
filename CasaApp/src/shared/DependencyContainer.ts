@@ -19,28 +19,32 @@ import {
   GetAllAutomationsUseCase,
   GetAutomationByIdUseCase,
   UpdateAutomationUseCase,
+  ControlAutomationUseCase,
 } from "../application/usecases/AutomationUseCases";
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
+
   private httpClient: HttpClient;
   private localClient: HttpClient;
   private deviceRepository: ApiDeviceRepository;
   private roomRepository: ApiRoomRepository;
   private automationRepository: ApiAutomationRepository;
 
-  // Use cases
   private getDeviceListUseCase: GetDeviceListUseCase;
   private getDeviceByIdUseCase: GetDeviceByIdUseCase;
   private updateDeviceUseCase: UpdateDeviceUseCase;
   private controlDeviceUseCase: ControlDeviceUseCase;
+
   private getAllRoomsUseCase: GetAllRoomsUseCase;
   private addDeviceToRoomUseCase: AddDeviceToRoomUseCase;
+
   private getAllAutomationsUseCase: GetAllAutomationsUseCase;
   private getAutomationByIdUseCase: GetAutomationByIdUseCase;
   private createAutomationUseCase: CreateAutomationUseCase;
   private deleteAutomationUseCase: DeleteAutomationUseCase;
   private updateAutomationUseCase: UpdateAutomationUseCase;
+  private controlAutomationUseCase: ControlAutomationUseCase;
 
   private constructor() {
     // Configuración de la URL base desde las variables de entorno
@@ -56,7 +60,10 @@ export class DependencyContainer {
       this.localClient,
     );
     this.roomRepository = new ApiRoomRepository(this.httpClient);
-    this.automationRepository = new ApiAutomationRepository(this.httpClient);
+    this.automationRepository = new ApiAutomationRepository(
+      this.httpClient,
+      this.localClient,
+    );
 
     // Inicialización de casos de uso
     this.getDeviceListUseCase = new GetDeviceListUseCase(this.deviceRepository);
@@ -82,6 +89,9 @@ export class DependencyContainer {
     this.updateAutomationUseCase = new UpdateAutomationUseCase(
       this.automationRepository,
     );
+    this.controlAutomationUseCase = new ControlAutomationUseCase(
+      this.automationRepository,
+    );
   }
 
   public static getInstance(): DependencyContainer {
@@ -91,51 +101,42 @@ export class DependencyContainer {
     return DependencyContainer.instance;
   }
 
-  // Getters para casos de uso de Device
   public getGetDeviceListUseCase(): GetDeviceListUseCase {
     return this.getDeviceListUseCase;
   }
-
   public getGetDeviceByIdUseCase(): GetDeviceByIdUseCase {
     return this.getDeviceByIdUseCase;
   }
-
   public getUpdateDeviceUseCase(): UpdateDeviceUseCase {
     return this.updateDeviceUseCase;
   }
-
   public getControlDeviceUseCase(): ControlDeviceUseCase {
     return this.controlDeviceUseCase;
   }
 
-  // Getters para casos de uso de Room
-
   public getGetAllRoomsUseCase(): GetAllRoomsUseCase {
     return this.getAllRoomsUseCase;
   }
-
   public getAddDeviceToRoomUseCase(): AddDeviceToRoomUseCase {
     return this.addDeviceToRoomUseCase;
   }
 
-  // Getters para casos de uso de Automation
   public getGetAllAutomationsUseCase(): GetAllAutomationsUseCase {
     return this.getAllAutomationsUseCase;
   }
-
   public getGetAutomationByIdUseCase(): GetAutomationByIdUseCase {
     return this.getAutomationByIdUseCase;
   }
-
   public getCreateAutomationUseCase(): CreateAutomationUseCase {
     return this.createAutomationUseCase;
   }
-
   public getDeleteAutomationUseCase(): DeleteAutomationUseCase {
     return this.deleteAutomationUseCase;
   }
-
   public getUpdateAutomationUseCase(): UpdateAutomationUseCase {
     return this.updateAutomationUseCase;
+  }
+  public getControlAutomationUseCase(): ControlAutomationUseCase {
+    return this.controlAutomationUseCase;
   }
 }

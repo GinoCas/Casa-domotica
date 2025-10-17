@@ -2,6 +2,7 @@ import { Automation } from "@/src/core/entities/Automation";
 import { IAutomationRepository } from "@/src/core/repositories/IAutomationRepository";
 import { Result } from "@/src/shared/Result";
 import { AutomationDto } from "../dtos/AutomationDto";
+import { ArduinoAutomationDto } from "../dtos/ArduinoAutomationDto";
 
 export class GetAllAutomationsUseCase {
   constructor(private automationRepository: IAutomationRepository) {}
@@ -65,6 +66,18 @@ export class UpdateAutomationUseCase {
   async execute(automation: Automation): Promise<Result<Automation>> {
     try {
       return await this.automationRepository.update(automation);
+    } catch (error) {
+      return Result.fromError(error as Error);
+    }
+  }
+}
+
+export class ControlAutomationUseCase {
+  constructor(private automationRepository: IAutomationRepository) {}
+
+  async execute(dto: ArduinoAutomationDto): Promise<Result<boolean>> {
+    try {
+      return await this.automationRepository.control(dto);
     } catch (error) {
       return Result.fromError(error as Error);
     }
