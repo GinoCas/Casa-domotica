@@ -13,12 +13,22 @@ const globalStyles = GlobalStyles;
 export default function TabsLayout() {
   const { isHearing } = useSpeechStore();
   const [isModalOpen, setisModalOpen] = useState(false);
+  const [wasHearing, setWasHearing] = useState(false);
 
+  // Marca que hubo escucha una vez abierto el modal
   useEffect(() => {
-    if (!isHearing && isModalOpen) {
-      setisModalOpen(false);
+    if (isModalOpen && isHearing) {
+      setWasHearing(true);
     }
-  }, [isHearing, isModalOpen]);
+  }, [isModalOpen, isHearing]);
+
+  // Cierra el modal solo cuando terminó de escuchar después de haber empezado
+  useEffect(() => {
+    if (isModalOpen && wasHearing && !isHearing) {
+      setisModalOpen(false);
+      setWasHearing(false);
+    }
+  }, [isHearing, isModalOpen, wasHearing]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

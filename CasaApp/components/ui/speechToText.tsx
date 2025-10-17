@@ -20,9 +20,9 @@ export default function SpeechToText() {
     handleLoadCmdVoice,
   } = useSpeechStore();
   const [partialResults, setPartialResults] = useState([]);
-  const [statusMessage, setStatusMessage] = useState("");
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const SILENCE_TIMEOUT_MS = 7000;
+  // Inicializar listeners solo una vez
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
     Voice.onSpeechPartialResults = writeSpeech;
@@ -33,12 +33,12 @@ export default function SpeechToText() {
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
-  });
+  }, []);
 
   const startHearing = async () => {
-    setStatusMessage("Escuchando…");
     await Voice.start("es-ES");
     changeHearing(true);
+    changeSpeaking(false);
   };
 
   const stopHearing = async () => {
@@ -46,7 +46,6 @@ export default function SpeechToText() {
     changeSpeaking(false);
     changeHearing(false);
     clearSilenceTimer();
-    setStatusMessage("");
   };
 
   const onSpeechResults = (result: any) => {
@@ -56,14 +55,10 @@ export default function SpeechToText() {
 
   const onSpeechStart = (e: any) => {
     changeSpeaking(true);
-    setStatusMessage("Escuchando…");
     clearSilenceTimer();
   };
 
   const onSpeechError = (e: any) => {
-    setStatusMessage(
-      "Error de reconocimiento: " + (e?.error?.message || "desconocido"),
-    );
     try {
       stopHearing();
     } catch {}
@@ -72,13 +67,11 @@ export default function SpeechToText() {
   const writeSpeech = (result: any) => {
     setPartialResults(result.value);
     changeSpeaking(true);
-    setStatusMessage("");
     clearSilenceTimer();
   };
 
   useEffect(() => {
     if (isHearing && !isSpeaking) {
-      setStatusMessage("Esperando tu voz…");
       startSilenceTimer();
     } else {
       clearSilenceTimer();
@@ -89,7 +82,6 @@ export default function SpeechToText() {
     clearSilenceTimer();
     silenceTimerRef.current = setTimeout(() => {
       if (isHearing && !isSpeaking) {
-        setStatusMessage("No detecté voz, cerrando el micrófono.");
         try {
           stopHearing();
         } catch {}
@@ -289,18 +281,13 @@ export default function SpeechToText() {
 
   return (
     <View>
-      {isHearing ? (
-        !isSpeaking ? (
-          <Text style={{ marginTop: 10, color: "gray" }}>
-            ¿Puedes prender las luces de la cocina?
-          </Text>
-        ) : (
-          <Text>{partialResults[0]}</Text>
-        )
+      {!isSpeaking || partialResults[0] === undefined ? (
+        <Text style={{ marginTop: 10, color: "gray" }}>
+          ¿Puedes prender las luces de la cocina?
+        </Text>
       ) : (
-        <Text>{results[0]}</Text>
+        <Text>{partialResults[0]}</Text>
       )}
-      <Text style={{ marginTop: 10, color: "gray" }}>{statusMessage}</Text>
     </View>
   );
 }
