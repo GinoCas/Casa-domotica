@@ -35,6 +35,8 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
                     dto.Id, string.Join(", ", ["La automatización no se pudo mappear."]));
                 return;
             }
+            entity.Name = "Nueva Automatización";
+            entity.Description = "Descripción";
             await _repository.CreateAutomationAsync(entity);
         }
     }
