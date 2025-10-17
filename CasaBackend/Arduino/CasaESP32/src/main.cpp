@@ -4,13 +4,10 @@
 #include <ArxContainer.h>
 #include <WebServer.h>
 #include <WiFiUdp.h>
+#include <time.h>
 
-struct SimTime {
-  int hour;
-  int minute;
-  int day; // 0=Dom, 6=Sab
-  unsigned long lastUpdate;
-};
+struct tm simTime = { 0 };
+unsigned long lastSimTimeUpdate = 0;
 
 enum DeviceType {
   DEVICE_LED,
@@ -48,6 +45,8 @@ struct Automation {
   byte days;  // bitmask: Dom=1, Lun=2, Mar=4, Mie=8, Jue=16, Vie=32, Sab=64
   bool state; // encender o apagar
   arx::stdx::vector<AutomationDevice, 12> devices; // IDs de dispositivos afectados
+  time_t lastTriggered;
+  bool isCurrentlyActive;
 };
 
 // --- Listas de dispositivos y automatizaciones ---
@@ -59,7 +58,6 @@ const char* mqttServer = "test.mosquitto.org";
 const int mqttPort = 1883;
 
 // --- TIEMPO ---
-SimTime simTime = {8, 0, 0, 0};
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -73,17 +71,11 @@ WebServer server(80);
 
 void updateSimTime() {
   unsigned long now = millis();
-  if (now - simTime.lastUpdate >= 1000) { // cada 1 segundo = 1 minuto simulado
-    simTime.lastUpdate = now;
-    simTime.minute++;
-    if (simTime.minute >= 60) {
-      simTime.minute = 0;
-      simTime.hour++;
-      if (simTime.hour >= 24) {
-        simTime.hour = 0;
-        simTime.day = (simTime.day + 1) % 7;
-      }
-    }
+  if (now - lastSimTimeUpdate >= 100) { // 1 segundo real = 1 minuto simulado
+    lastSimTimeUpdate = now;
+    simTime.tm_hour++;
+    mktime(&simTime); // Normaliza la estructura tm (maneja desbordes)
+    Serial.printf("🕒 Hora simulada: %02d:%02d | Día: %d\n", simTime.tm_hour, simTime.tm_min, simTime.tm_wday);
   }
 }
 
@@ -147,25 +139,29 @@ bool isDayActive(byte bitmask, int weekday) {
 
 void checkAutomations() {
   updateSimTime();
-  int hour = simTime.hour;
-  int minute = simTime.minute;
-  int day = simTime.day; // 0=Dom ... 6=Sab
-
-  int now = hour * 60 + minute;
+  time_t now = mktime(&simTime);
 
   for (auto& a : automations) {
-    if (!isDayActive(a.days, day)) continue;
+    if (!isDayActive(a.days, simTime.tm_wday)) continue;
 
     int start = a.startHour * 60 + a.startMinute;
     int end = a.endHour * 60 + a.endMinute;
+    int currentTime = simTime.tm_hour * 60 + simTime.tm_min;
 
-    bool shouldBeOn = (now >= start && now < end);
+    bool shouldBeActive = (currentTime >= start && currentTime < end);
 
-    for (auto ad : a.devices) {
-      if (shouldBeOn) {
-        applyDeviceChange(ad.Id, ad.State, "", -1, -1);
-      } else {
-        applyDeviceChange(ad.Id, !ad.State, "", -1, -1);
+    if (shouldBeActive && !a.isCurrentlyActive) {
+      a.isCurrentlyActive = true;
+      a.lastTriggered = now;
+      Serial.printf("⚙️ Activando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
+      for (auto ad : a.devices) {
+        applyDeviceChange(ad.Id, a.state, "", -1, -1);
+      }
+    } else if (!shouldBeActive && a.isCurrentlyActive) {
+      a.isCurrentlyActive = false;
+      Serial.printf("⚙️ Desactivando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
+      for (auto ad : a.devices) {
+        applyDeviceChange(ad.Id, !a.state, "", -1, -1);
       }
     }
   }
@@ -243,6 +239,8 @@ void handlePutAutomation() {
   a.endMinute = doc["EndMinute"];
   a.days = doc["Days"];
   a.state = doc["State"];
+  a.lastTriggered = 0;
+  a.isCurrentlyActive = false;
   for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
     AutomationDevice dev;
     dev.Id = ad["Id"];
@@ -291,6 +289,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     a.endMinute = doc["EndMinute"];
     a.days = doc["Days"];
     a.state = doc["State"];
+    a.lastTriggered = 0;
+    a.isCurrentlyActive = false;
     for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
       AutomationDevice dev;
       dev.Id = ad["Id"];
@@ -379,6 +379,15 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
 
+  // Inicializar la hora simulada
+  simTime.tm_hour = 8;
+  simTime.tm_min = 0;
+  simTime.tm_sec = 0;
+  simTime.tm_mday = 1; // Día del mes (no es crítico para la simulación)
+  simTime.tm_mon = 0;  // Enero (no es crítico)
+  simTime.tm_year = 2024 - 1900; // Años desde 1900
+  mktime(&simTime); // Normaliza y calcula el día de la semana (tm_wday)
+
   selectAndConnectWiFi();
 
   client.setServer(mqttServer, mqttPort);
@@ -409,6 +418,8 @@ void setup() {
   auto1.endMinute = 0;
   auto1.days = 127;
   auto1.state = true;
+  auto1.lastTriggered = 0;
+  auto1.isCurrentlyActive = false;
 
   AutomationDevice dev1 = {1, true};
   AutomationDevice dev2 = {2, true};
@@ -430,7 +441,7 @@ void loop() {
   updateSimTime();
 
   static unsigned long lastAutoCheck = 0;
-  if (millis() - lastAutoCheck > 60000) {
+  if (millis() - lastAutoCheck > 1000) {
     checkAutomations();
     lastAutoCheck = millis();
   }
