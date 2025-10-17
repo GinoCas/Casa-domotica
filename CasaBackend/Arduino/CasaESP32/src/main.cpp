@@ -197,7 +197,8 @@ void publishAutomation(const Automation& a, int index) {
 
 String publishAutomationErase(int id) {
   StaticJsonDocument<128> doc;
-  doc["Id"] = id;
+  JsonObject obj = doc.createNestedObject("Data");
+  obj["Id"] = id;
   String output;
   serializeJson(doc, output);
   client.publish("casa/automations/erase", output.c_str());
@@ -207,8 +208,9 @@ String publishAutomationErase(int id) {
 
 String publishMode(const String & name, bool state) {
   StaticJsonDocument<128> doc;
-  doc["Name"] = name;
-  doc["State"] = state;
+  JsonObject obj = doc.createNestedObject("Data");
+  obj["Name"] = name;
+  obj["State"] = state;
   String output;
   serializeJson(doc, output);
   client.publish("casa/modes", output.c_str());
