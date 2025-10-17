@@ -71,11 +71,11 @@ WebServer server(80);
 
 void updateSimTime() {
   unsigned long now = millis();
-  if (now - lastSimTimeUpdate >= 100) { // 1 segundo real = 1 minuto simulado
+  if (now - lastSimTimeUpdate >= 1000) { // 1 segundo real = 1 minuto simulado
     lastSimTimeUpdate = now;
-    simTime.tm_hour++;
+    simTime.tm_min++;
     mktime(&simTime); // Normaliza la estructura tm (maneja desbordes)
-    Serial.printf("🕒 Hora simulada: %02d:%02d | Día: %d\n", simTime.tm_hour, simTime.tm_min, simTime.tm_wday);
+    //Serial.printf("🕒 Hora simulada: %02d:%02d | Día: %d\n", simTime.tm_hour, simTime.tm_min, simTime.tm_wday);
   }
 }
 
@@ -232,6 +232,8 @@ void handlePutAutomation() {
     return;
   }
 
+  int automationId = doc["Id"] | -1;
+
   Automation a;
   a.startHour = doc["StartHour"];
   a.startMinute = doc["StartMinute"];
@@ -241,6 +243,7 @@ void handlePutAutomation() {
   a.state = doc["State"];
   a.lastTriggered = 0;
   a.isCurrentlyActive = false;
+  
   for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
     AutomationDevice dev;
     dev.Id = ad["Id"];
@@ -248,9 +251,20 @@ void handlePutAutomation() {
     a.devices.push_back(dev);
   }
 
-  automations.push_back(a);
-  publishAutomation(a, automations.size());
-  server.send(200, "application/json", "{\"status\":\"automation added\"}");
+  if (automationId == -1) {
+    automations.push_back(a);
+    publishAutomation(a, automations.size());
+    server.send(200, "application/json", "{\"status\":\"automation added\"}");
+  } else {
+    int index = automationId - 1;
+    if (index >= 0 && index < automations.size()) {
+      automations[index] = a;
+      publishAutomation(automations[index], automationId);
+      server.send(200, "application/json", "{\"status\":\"automation updated\"}");
+    } else {
+      server.send(404, "application/json", "{\"error\":\"automation not found\"}");
+    }
+  }
 }
 
 void handleAlive() {
@@ -272,6 +286,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println("❌ Error al parsear JSON MQTT");
     return;
   }
+  Serial.println("COMANDO MQTT RECIBIDO.");
 
   if (strcmp(topic, "casa/devices/cmd") == 0) {
     int id = doc["Id"];
@@ -282,6 +297,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     applyDeviceChange(id, state, type, brightness, speed);
   } 
   else if (strcmp(topic, "casa/automations/cmd") == 0) {
+    int automationId = doc["Id"] | -1;
+
     Automation a;
     a.startHour = doc["StartHour"];
     a.startMinute = doc["StartMinute"];
@@ -298,9 +315,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
       a.devices.push_back(dev);
     }
 
-    automations.push_back(a);
-    publishAutomation(a, automations.size());
-    Serial.println("📥 Nueva automatización agregada vía MQTT");
+    if (automationId == -1) {
+        automations.push_back(a);
+        publishAutomation(a, automations.size());
+        Serial.println("📥 Nueva automatización agregada vía MQTT");
+    } else {
+        int index = automationId - 1;
+        if (index >= 0 && index < automations.size()) {
+            automations[index] = a;
+            publishAutomation(automations[index], automationId);
+            Serial.println("📥 Automatización actualizada vía MQTT");
+        } else {
+            Serial.println("❌ Error: ID de automatización no encontrado para actualizar vía MQTT");
+        }
+    }
   }
 }
 
