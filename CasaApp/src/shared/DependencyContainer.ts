@@ -22,7 +22,7 @@ import {
   ControlAutomationUseCase,
 } from "../application/usecases/AutomationUseCases";
 import { ApiModeRepository } from "../infrastructure/repositories/ApiModeRepository";
-import { ControlModeUseCase } from "../application/usecases/ModeUseCases";
+import { ControlModeUseCase, GetModesUseCase } from "../application/usecases/ModeUseCases";
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -49,6 +49,7 @@ export class DependencyContainer {
   private updateAutomationUseCase: UpdateAutomationUseCase;
   private controlAutomationUseCase: ControlAutomationUseCase;
   private controlModeUseCase: ControlModeUseCase;
+  private getModesUseCase: GetModesUseCase;
 
   private constructor() {
     // Configuración de la URL base desde las variables de entorno
@@ -98,6 +99,7 @@ export class DependencyContainer {
       this.automationRepository,
     );
     this.controlModeUseCase = new ControlModeUseCase(this.modeRepository);
+    this.getModesUseCase = new GetModesUseCase(this.modeRepository);
   }
 
   public static getInstance(): DependencyContainer {
@@ -174,6 +176,8 @@ export class DependencyContainer {
         return this.controlAutomationUseCase as T;
       case "controlMode":
         return this.controlModeUseCase as T;
+      case "getAllModes":
+        return this.getModesUseCase as T;
       default:
         throw new Error(`Dependency token not found: ${token}`);
     }

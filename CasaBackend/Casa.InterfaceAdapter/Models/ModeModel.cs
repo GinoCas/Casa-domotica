@@ -12,5 +12,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
 
         [Column("mode_state")]
         public bool State { get; set; }
+
+        [Column("mode_last_changed")]
+        public DateTime LastChanged { get; set; }
     }
 }

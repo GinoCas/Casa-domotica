@@ -2,6 +2,7 @@ import { IModeRepository } from "@/src/core/repositories/IModeRepository";
 import { HttpClient } from "../api/HttpClient";
 import { Result } from "@/src/shared/Result";
 import { ArduinoModeDto } from "@/src/application/dtos/ArduinoModeDto";
+import { Mode } from "@/src/core/entities/Mode";
 
 export class ApiModeRepository implements IModeRepository {
   constructor(
@@ -22,5 +23,14 @@ export class ApiModeRepository implements IModeRepository {
     }
 
     return Result.success(true);
+  }
+
+  async getAll(): Promise<Result<Mode[]>> {
+    const result = await this.httpClient.get<any[]>(`mode/list`);
+    if (!result.isSuccess) {
+      return Result.failure(result.errors);
+    }
+    const modes = (result.data ?? []).map((m) => Mode.fromApiResponse(m));
+    return Result.success(modes);
   }
 }

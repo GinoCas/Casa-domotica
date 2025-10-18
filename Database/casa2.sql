@@ -82,6 +82,7 @@ CREATE TABLE mode(
 	mode_id INT NOT NULL IDENTITY(1,1),
 	mode_name VARCHAR(100) NOT NULL,
 	mode_state BIT NOT NULL DEFAULT 0,
+	mode_last_changed DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),
 	PRIMARY KEY(mode_id)
 );
 

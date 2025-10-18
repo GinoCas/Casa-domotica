@@ -27,6 +27,7 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
                 _logger.LogInformation("El modo {modeName} existe, actualizando...", dto.Name);
                 var entity = getResult.Data;
                 entity.State = dto.State;
+                entity.LastChanged = DateTime.UtcNow;
                 await _repository.UpdateModeAsync(entity);
                 return;
             }
@@ -34,6 +35,7 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
             _logger.LogInformation("El modo {modeName} no existe, creando nuevo...", dto.Name);
             var newEntity = _mapper.Map<ModeEntity>(dto);
             newEntity.Name = string.IsNullOrWhiteSpace(dto.Name) ? "Nuevo Modo" : dto.Name;
+            newEntity.LastChanged = DateTime.UtcNow;
             await _repository.CreateModeAsync(newEntity);
         }
     }
