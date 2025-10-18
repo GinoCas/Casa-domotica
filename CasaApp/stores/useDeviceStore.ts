@@ -37,26 +37,23 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
     return Result.success(deviceWithState);
   },
   toggleDeviceState: async (deviceId: number, newState: boolean) => {
+    set((state) => ({
+      ...state,
+      devices: state.devices.map((device) =>
+        device.id === deviceId ? { ...device, state: newState } : device,
+      ),
+    }));
     const dto = new ArduinoDeviceDto(deviceId, newState);
     const result = await deviceService.controlDevice(dto);
 
-    if (result.isSuccess) {
-      set((state) => {
-        const updatedDevices = state.devices.map((device) =>
-          device.id === deviceId
-            ? {
-                ...device,
-                state: newState,
-              }
-            : device,
-        );
-        return {
-          ...state,
-          devices: updatedDevices,
-        };
-      });
-    } else {
+    if (!result.isSuccess) {
       console.error("Error toggling device state:", result.errors);
+      set((state) => ({
+        ...state,
+        devices: state.devices.map((device) =>
+          device.id === deviceId ? { ...device, state: !newState } : device,
+        ),
+      }));
     }
   },
   setDeviceBrightness: async (deviceId: number, brightness: number) => {
