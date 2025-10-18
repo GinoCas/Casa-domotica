@@ -431,6 +431,44 @@ void handlePutAutomation() {
   }
 }
 
+// NUEVO endpoint: /time para sincronizar la hora simulada
+void handlePutTime() {
+  if (!server.hasArg("plain")) {
+    server.send(400, "application/json", "{\"error\":\"no body\"}");
+    return;
+  }
+
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+  if (error) {
+    server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
+    return;
+  }
+
+  int hour = doc["Hour"] | -1;
+  int minute = doc["Minute"] | -1;
+  int second = doc["Second"] | 0;
+  int weekDay = doc["WeekDay"] | -1; // 0=Domingo .. 6=Sabado
+
+  if (hour < 0 || minute < 0 || weekDay < 0) {
+    server.send(400, "application/json", "{\"error\":\"missing fields\"}");
+    return;
+  }
+
+  simTime.tm_hour = hour;
+  simTime.tm_min = minute;
+  simTime.tm_sec = second;
+
+  int currentWday = simTime.tm_wday;
+  int deltaDays = (weekDay - currentWday + 7) % 7;
+  simTime.tm_mday += deltaDays;
+  mktime(&simTime);
+  lastSimTimeUpdate = millis();
+  Serial.printf("\xF0\x9F\x95\x92 Sincronizado: %02d:%02d:%02d | Día: %d\n", simTime.tm_hour, simTime.tm_min, simTime.tm_sec, simTime.tm_wday);
+
+  server.send(200, "application/json", "{\"data\":true}");
+}
+
 void handlePutMode() {
   if (!server.hasArg("plain")) { server.send(400, "text/plain", "Bad Request"); return; }
   StaticJsonDocument<256> doc;
@@ -679,10 +717,11 @@ void setup() {
   server.on("/device", HTTP_PUT, handlePutDevice);
   server.on("/automation", HTTP_PUT, handlePutAutomation);
   server.on("/mode", HTTP_PUT, handlePutMode);
+  server.on("/time", HTTP_PUT, handlePutTime);
   server.on("/", handleAlive);
   server.onNotFound(handleNotFound);
   server.begin();
-  Serial.println("🌐 Servidor HTTP iniciado en puerto 80");
+  Serial.println("\xF0\x9F\x8C\x90 Servidor HTTP iniciado en puerto 80");
 
   // Crear dispositivos
   Device led1 = {2, true, DEVICE_LED, {.led = {128}}};
