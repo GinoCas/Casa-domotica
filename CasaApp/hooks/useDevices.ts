@@ -48,6 +48,19 @@ export default function useDevices() {
     return () => clearInterval(interval);
   }, [handleLoadDevices, activityMode]);
 
+  useEffect(() => {
+    if (activityMode) return; // Evitar doble polling si está en modo actividad
+
+    const interval = setInterval(async () => {
+      const devicesResult = await deviceService.getDeviceList();
+      if (devicesResult.isSuccess) {
+        handleLoadDevices(devicesResult.data);
+      }
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [activityMode, handleLoadDevices]);
+
   // Al desactivar modo actividad: esperar hasta que lastChanged cambie y refrescar
   useEffect(() => {
     if (!activityMode && wasActiveRef.current) {
