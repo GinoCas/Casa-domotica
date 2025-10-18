@@ -8,6 +8,7 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { CapabilityType, Device, DeviceType } from "@/src/core/entities/Device";
 import { debounce } from "lodash";
+import useModeStore from "@/stores/useModeStore";
 
 interface DeviceCardProps {
   device: Device;
@@ -24,7 +25,9 @@ export const DeviceCard = React.memo(
     onBrightnessPress,
   }: DeviceCardProps) => {
     const [isEnabled, setIsEnabled] = useState(device.state);
+    const { activityMode } = useModeStore();
 
+    // Mantener el estado del switch sincronizado con el estado del dispositivo
     useEffect(() => {
       setIsEnabled(device.state);
     }, [device.state]);
@@ -32,12 +35,14 @@ export const DeviceCard = React.memo(
     const debouncedToggle = useMemo(
       () =>
         debounce((newIsEnabled: boolean) => {
-          handleToogleEnabled(device, !newIsEnabled);
+          if (activityMode) return; // Bloquea interacción en modo actividad
+          handleToogleEnabled(device, newIsEnabled);
         }, 200),
-      [device, handleToogleEnabled],
+      [device, handleToogleEnabled, activityMode],
     );
 
     const toggleEnabled = () => {
+      if (activityMode) return; // Bloquea interacción en modo actividad
       const newIsEnabled = !isEnabled;
       setIsEnabled(newIsEnabled);
       debouncedToggle(newIsEnabled);
@@ -77,7 +82,11 @@ export const DeviceCard = React.memo(
     };
 
     return (
-      <TouchableOpacity style={styles.card} onPress={onCardPress}>
+      <TouchableOpacity
+        style={[styles.card, activityMode && styles.disabledCard]}
+        onPress={onCardPress}
+        disabled={activityMode}
+      >
         <View
           style={{
             flexDirection: "row",
@@ -87,6 +96,7 @@ export const DeviceCard = React.memo(
         >
           <TouchableOpacity
             onPress={onBrightnessPress}
+            disabled={activityMode}
             style={{
               backgroundColor: "#fff",
               width: 45,
@@ -147,7 +157,11 @@ export const DeviceCard = React.memo(
             justifyContent: "space-between",
           }}
         >
-          <Switch isEnabled={isEnabled} toggleEnabled={toggleEnabled} />
+          <Switch
+            isEnabled={isEnabled}
+            toggleEnabled={toggleEnabled}
+            disabled={activityMode}
+          />
           <Text style={GlobalStyles.disabledText}>
             {isEnabled ? "On" : "Off"}
           </Text>
@@ -167,5 +181,8 @@ const styles = StyleSheet.create({
     gap: 10,
     backgroundColor: "#f4f4f4",
     borderRadius: 15,
+  },
+  disabledCard: {
+    opacity: 0.5,
   },
 });

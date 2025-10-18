@@ -14,6 +14,7 @@ interface DeviceStoreState {
   toggleDeviceState: (deviceId: number, newState: boolean) => Promise<void>;
   setDeviceBrightness: (deviceId: number, brightness: number) => Promise<void>;
   updateDevice: (deviceId: number, dto: DeviceDto) => Promise<void>;
+  refreshDevices: () => Promise<void>;
 }
 
 const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
@@ -92,6 +93,20 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
       return;
     }
     get().handleLoadDevices(devicesResult.data);
+  },
+  // Implementación de refresco manual (pull-to-refresh)
+  refreshDevices: async () => {
+    try {
+      set({ isLoadingDevices: true });
+      const devicesResult = await deviceService.getDeviceList();
+      if (!devicesResult.isSuccess) {
+        console.log("Error on loading devices", devicesResult.errors);
+        return;
+      }
+      set({ devices: devicesResult.data });
+    } finally {
+      set({ isLoadingDevices: false });
+    }
   },
 }));
 

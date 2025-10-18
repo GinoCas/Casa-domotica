@@ -1,10 +1,8 @@
-import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { Picker } from "@react-native-picker/picker";
 import { Room } from "@/src/core/entities/Room";
-import { turnOnLedRandom } from "@/Utils/GeneralCommands";
 import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
 import useRooms from "@/hooks/useRooms";
@@ -19,28 +17,6 @@ export default function AppHeader() {
   } = useModeStore();
 
   const { currentRoom, rooms, isLoadingRooms, changeCurrentRoom } = useRooms();
-
-  const toggleEnergySaveMode = () => {
-    changeSaveEnergyMode(!saveEnergyMode);
-    if (saveEnergyMode) return;
-    //UpdateAllLeds();
-  };
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (activityMode) {
-      turnOnLedRandom();
-      interval = setInterval(() => {
-        turnOnLedRandom();
-      }, 10000);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [activityMode]);
 
   return (
     <View style={styles.headerContainer}>
@@ -71,7 +47,7 @@ export default function AppHeader() {
       <View style={styles.actionsContainer}>
         <Pressable
           style={styles.iconButton}
-          onPress={() => toggleEnergySaveMode()}
+          onPress={() => changeSaveEnergyMode(!saveEnergyMode)}
         >
           <Feather
             name="battery-charging"

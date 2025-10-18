@@ -5,9 +5,11 @@ import { StyleSheet, Animated, Pressable } from "react-native";
 export function Switch({
   isEnabled,
   toggleEnabled,
+  disabled,
 }: {
   isEnabled: boolean;
   toggleEnabled: () => void;
+  disabled?: boolean;
 }) {
   const animation = useRef(new Animated.Value(isEnabled ? 26 : 2)).current;
 
@@ -29,7 +31,10 @@ export function Switch({
             : GlobalStyles.disabledColor,
         },
       ]}
-      onPress={toggleEnabled}
+      disabled={disabled}
+      onPress={() => {
+        if (!disabled) toggleEnabled();
+      }}
     >
       <Animated.View
         style={[styles.thumb, { transform: [{ translateX: animation }] }]}

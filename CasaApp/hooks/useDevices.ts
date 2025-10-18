@@ -3,6 +3,7 @@ import useDeviceStore from "@/stores/useDeviceStore";
 import { deviceService } from "@/src/services/DeviceService";
 import { Device } from "@/src/core/entities/Device";
 import useRoomStore from "@/stores/useRoomStore";
+import useModeStore from "@/stores/useModeStore";
 
 export default function useDevices() {
   const [roomDevices, setRoomDevices] = useState<Device[]>([]);
@@ -12,6 +13,7 @@ export default function useDevices() {
   const { currentRoom, rooms } = useRoomStore();
 
   const { devices, handleLoadDevices, changeLoadingDevices } = useDeviceStore();
+  const { activityMode } = useModeStore();
 
   useEffect(() => {
     const loadDevices = async () => {
@@ -27,6 +29,19 @@ export default function useDevices() {
     };
     loadDevices();
   }, [handleLoadDevices]);
+
+  // Polling condicionado por modo actividad: solo activo y cada 5s
+  useEffect(() => {
+    if (!activityMode) return;
+
+    const interval = setInterval(async () => {
+      const devicesResult = await deviceService.getDeviceList();
+      if (devicesResult.isSuccess) {
+        handleLoadDevices(devicesResult.data);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [handleLoadDevices, activityMode]);
 
   useEffect(() => {
     const allDeviceIdsInRooms = rooms.flatMap((room) => room.deviceIds);

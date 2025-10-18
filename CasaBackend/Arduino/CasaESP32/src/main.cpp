@@ -55,6 +55,11 @@ arx::stdx::vector<Automation, 20> automations;
 
 bool saveEnergyMode = false;
 bool activityMode = false;
+// --- Snapshot para modo SaveEnergy ---
+int ledPreSaveBrightness[12];
+// --- Estado del modo Activity ---
+unsigned long activityNextEventAt = 0;
+int activityCurrentDevice = -1;
 
 // --- MQTT ---
 const char* mqttServer = "test.mosquitto.org";
@@ -111,7 +116,7 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
   device.state = state;
 
   if (strcmp(type, "") == 0) {
-    analogWrite(device.pin, device.state);
+    analogWrite(device.pin, device.state ? 1 : 0);
     Serial.printf("💡 Device %d -> state=%d\n", id, state);
     publishDevice(id, device);
     return;
@@ -119,8 +124,13 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
 
   if (strcmp(type, "Led") == 0) {
     device.props.led.brightness = brightness;
-    analogWrite(device.pin, device.state ? brightness : 0);
-    Serial.printf("💡 LED %d -> state=%d, brightness=%d\n", id, state, brightness);
+    int outBrightness = device.state ? (saveEnergyMode ? min(brightness, 128) : brightness) : 0;
+    if (saveEnergyMode) {
+      // Actualizamos el snapshot para restaurar al salir del modo ahorro
+      ledPreSaveBrightness[id - 1] = brightness;
+    }
+    analogWrite(device.pin, outBrightness);
+    Serial.printf("💡 LED %d -> state=%d, brightness=%d (out=%d)\n", id, state, brightness, outBrightness);
   } else if (strcmp(type, "Fan") == 0) {
     device.props.fan.speed = speed;
     int pwm = map(speed, 0, 3, 0, 255);
@@ -218,6 +228,96 @@ String publishMode(const String & name, bool state) {
   return output;
 }
 
+void onSaveEnergyModeChanged(bool enabled) {
+  for (int i = 0; i < devices.size(); i++) {
+    Device &d = devices[i];
+    if (d.type == DEVICE_LED) {
+      if (enabled) {
+        if (ledPreSaveBrightness[i] == -1) {
+          ledPreSaveBrightness[i] = d.props.led.brightness;
+        }
+        int outB = d.props.led.brightness > 128 ? 128 : d.props.led.brightness;
+        analogWrite(d.pin, d.state ? outB : 0);
+      } else {
+        if (ledPreSaveBrightness[i] != -1) {
+          analogWrite(d.pin, d.state ? ledPreSaveBrightness[i] : 0);
+          d.props.led.brightness = ledPreSaveBrightness[i];
+          ledPreSaveBrightness[i] = -1;
+        }
+      }
+    }
+  }
+}
+
+void scheduleNextActivityEvent() {
+  activityNextEventAt = millis() + (unsigned long)random(8000, 20000);
+}
+
+void onActivityModeChanged(bool enabled) {
+  activityCurrentDevice = -1;
+  if (enabled) {
+    for (int i = 0; i < devices.size(); i++) {
+      Device &d = devices[i];
+      if (d.state) {
+        d.state = false;
+        analogWrite(d.pin, 0);
+      }
+    }
+    scheduleNextActivityEvent();
+  }
+}
+
+void handleActivityModeLoop() {
+  if (!activityMode) return;
+  unsigned long now = millis();
+  if (now >= activityNextEventAt) {
+    // Apagar el dispositivo anterior si estaba encendido y publicar el cambio
+    if (activityCurrentDevice >= 0 && activityCurrentDevice < devices.size()) {
+      Device &prev = devices[activityCurrentDevice];
+      if (prev.state) {
+        prev.state = false;
+        analogWrite(prev.pin, 0);
+        publishDevice(activityCurrentDevice + 1, prev);
+      }
+    }
+
+    if (devices.size() > 0) {
+      int idx = random(0, devices.size());
+      if (devices.size() > 1 && idx == activityCurrentDevice) {
+        idx = (idx + 1) % devices.size();
+      }
+      Device &d = devices[idx];
+      activityCurrentDevice = idx;
+
+      if (d.type == DEVICE_LED) {
+        int targetBrightness = d.props.led.brightness;
+        if (saveEnergyMode) {
+          // Guardar el brillo deseado para restaurar al salir del modo ahorro
+          ledPreSaveBrightness[idx] = targetBrightness;
+          int outBr = targetBrightness > 128 ? 128 : targetBrightness;
+          d.state = true;
+          analogWrite(d.pin, outBr);
+        } else {
+          d.state = true;
+          analogWrite(d.pin, targetBrightness);
+        }
+        publishDevice(idx + 1, d);
+      } else if (d.type == DEVICE_FAN) {
+        int pwm = map(d.props.fan.speed, 0, 3, 0, 255);
+        d.state = true;
+        analogWrite(d.pin, pwm);
+        publishDevice(idx + 1, d);
+      } else {
+        d.state = true;
+        analogWrite(d.pin, 1);
+        publishDevice(idx + 1, d);
+      }
+    }
+
+    scheduleNextActivityEvent();
+  }
+}
+
 // ======================================================================
 // ========================= HTTP HANDLERS ==============================
 // ======================================================================
@@ -305,12 +405,14 @@ void handlePutMode() {
   nm.toLowerCase();
   if (nm == "activity") {
     activityMode = state;
+    onActivityModeChanged(activityMode);
     publishMode("Activity", activityMode);
     server.send(200, "application/json", "{\"success\":true}");
     return;
   }
   if (nm == "save-energy" || nm == "saveenergy" || nm == "save_energy") {
     saveEnergyMode = state;
+    onSaveEnergyModeChanged(saveEnergyMode);
     publishMode("SaveEnergy", saveEnergyMode);
     server.send(200, "application/json", "{\"success\":true}");
     return;
@@ -423,10 +525,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     nm.toLowerCase();
     if (nm == "activity") {
       activityMode = state;
+      onActivityModeChanged(activityMode);
       publishMode("Activity", activityMode);
       Serial.println("📥 Modo de actividad actualizado vía MQTT");
     } else if (nm == "save-energy" || nm == "saveenergy" || nm == "save_energy") {
       saveEnergyMode = state;
+      onSaveEnergyModeChanged(saveEnergyMode);
       publishMode("SaveEnergy", saveEnergyMode);
       Serial.println("📥 Modo de ahorro actualizado vía MQTT");
     } else {
@@ -510,6 +614,9 @@ void selectAndConnectWiFi() {
 void setup() {
   Serial.begin(115200);
   delay(1000);
+  // Inicializar arrays y random para modos
+  for (int i = 0; i < 12; i++) { ledPreSaveBrightness[i] = -1; }
+  randomSeed(micros());
 
   // Inicializar la hora simulada
   simTime.tm_hour = 8;
@@ -578,6 +685,9 @@ void loop() {
     checkAutomations();
     lastAutoCheck = millis();
   }
+
+  // Modo actividad: prender dispositivos al azar con intervalos
+  handleActivityModeLoop();
 
   delay(50);
 }

@@ -32,6 +32,7 @@ export function RoomView({
     toggleDeviceState,
     updateDevice,
     isLoadingDevices,
+    refreshDevices,
   } = useDeviceStore();
   const {
     currentRoom,
@@ -88,7 +89,7 @@ export function RoomView({
 
   const handleToggleEnabled = useCallback(
     (device: Device, newState: boolean) => {
-      toggleDeviceState(device.id, !newState);
+      toggleDeviceState(device.id, newState);
     },
     [toggleDeviceState],
   );
@@ -120,6 +121,10 @@ export function RoomView({
     },
     [selectedDevice, selectedDeviceRoom, updateDevice, addDeviceToRoom],
   );
+
+  const handleRefresh = useCallback(async () => {
+    await refreshDevices();
+  }, [refreshDevices]);
 
   const renderListHeader = () => {
     return (
@@ -196,6 +201,8 @@ export function RoomView({
         ListHeaderComponent={renderListHeader}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 20 }}
+        refreshing={isLoadingDevices}
+        onRefresh={handleRefresh}
       />
       <CustomModal
         isOpen={isModalOpen}
