@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useDeviceStore from "@/stores/useDeviceStore";
 import { deviceService } from "@/src/services/DeviceService";
 import { Device } from "@/src/core/entities/Device";
@@ -12,8 +12,11 @@ export default function useDevices() {
 
   const { currentRoom, rooms } = useRoomStore();
 
-  const { devices, handleLoadDevices, changeLoadingDevices } = useDeviceStore();
+  const { devices, handleLoadDevices, changeLoadingDevices, refreshDevices } =
+    useDeviceStore();
   const { activityMode } = useModeStore();
+
+  const wasActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
     const loadDevices = async () => {
@@ -28,7 +31,7 @@ export default function useDevices() {
       changeLoadingDevices(false);
     };
     loadDevices();
-  }, [handleLoadDevices]);
+  }, [handleLoadDevices, changeLoadingDevices]);
 
   // Polling condicionado por modo actividad: solo activo y cada 5s
   useEffect(() => {
@@ -42,6 +45,24 @@ export default function useDevices() {
     }, 5000);
     return () => clearInterval(interval);
   }, [handleLoadDevices, activityMode]);
+
+  // Al desactivar modo actividad: esperar 2s y refrescar desde backend
+  useEffect(() => {
+    if (!activityMode && wasActiveRef.current) {
+      changeLoadingDevices(true); // Mostrar loader mientras esperamos
+      const timeout = setTimeout(async () => {
+        await refreshDevices(); // Refrescar estados ya propagados al backend
+      }, 2000);
+      wasActiveRef.current = false;
+      return () => {
+        clearTimeout(timeout);
+        changeLoadingDevices(false);
+      };
+    }
+    if (activityMode) {
+      wasActiveRef.current = true;
+    }
+  }, [activityMode, refreshDevices, changeLoadingDevices]);
 
   useEffect(() => {
     const allDeviceIdsInRooms = rooms.flatMap((room) => room.deviceIds);

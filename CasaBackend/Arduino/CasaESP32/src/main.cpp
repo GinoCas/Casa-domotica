@@ -57,6 +57,11 @@ bool saveEnergyMode = false;
 bool activityMode = false;
 // --- Snapshot para modo SaveEnergy ---
 int ledPreSaveBrightness[12];
+// --- Snapshot para modo Activity ---
+bool activitySnapshotValid = false;
+bool activityPreState[12];
+int activityPreLedBrightness[12];
+int activityPreFanSpeed[12];
 // --- Estado del modo Activity ---
 unsigned long activityNextEventAt = 0;
 int activityCurrentDevice = -1;
@@ -256,14 +261,46 @@ void scheduleNextActivityEvent() {
 void onActivityModeChanged(bool enabled) {
   activityCurrentDevice = -1;
   if (enabled) {
+    // Tomar snapshot de estados/parametros actuales
+    activitySnapshotValid = true;
     for (int i = 0; i < devices.size(); i++) {
       Device &d = devices[i];
+      activityPreState[i] = d.state;
+      if (d.type == DEVICE_LED) {
+        activityPreLedBrightness[i] = d.props.led.brightness;
+      } else if (d.type == DEVICE_FAN) {
+        activityPreFanSpeed[i] = d.props.fan.speed;
+      }
+      // Apagar dispositivos al entrar en modo actividad y publicar
       if (d.state) {
         d.state = false;
         analogWrite(d.pin, 0);
       }
+      publishDevice(i + 1, d);
     }
     scheduleNextActivityEvent();
+  } else {
+    // Restaurar estados/parametros previos al salir del modo actividad
+    if (activitySnapshotValid) {
+      for (int i = 0; i < devices.size(); i++) {
+        Device &d = devices[i];
+        bool prevState = activityPreState[i];
+        if (d.type == DEVICE_LED) {
+          int prevB = activityPreLedBrightness[i] >= 0 ? activityPreLedBrightness[i] : d.props.led.brightness;
+          applyDeviceChange(i + 1, prevState, "Led", prevB, -1);
+        } else if (d.type == DEVICE_FAN) {
+          int prevS = activityPreFanSpeed[i] >= 0 ? activityPreFanSpeed[i] : d.props.fan.speed;
+          applyDeviceChange(i + 1, prevState, "Fan", -1, prevS);
+        } else {
+          applyDeviceChange(i + 1, prevState, "", -1, -1);
+        }
+        // Limpiar snapshot
+        activityPreState[i] = false;
+        activityPreLedBrightness[i] = -1;
+        activityPreFanSpeed[i] = -1;
+      }
+    }
+    activitySnapshotValid = false;
   }
 }
 
@@ -615,7 +652,13 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   // Inicializar arrays y random para modos
-  for (int i = 0; i < 12; i++) { ledPreSaveBrightness[i] = -1; }
+  for (int i = 0; i < 12; i++) {
+    ledPreSaveBrightness[i] = -1;
+    activityPreState[i] = false;
+    activityPreLedBrightness[i] = -1;
+    activityPreFanSpeed[i] = -1;
+  }
+  activitySnapshotValid = false;
   randomSeed(micros());
 
   // Inicializar la hora simulada
