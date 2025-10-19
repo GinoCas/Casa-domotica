@@ -31,27 +31,12 @@ export const DeviceCard = React.memo(
       setIsEnabled(device.state);
     }, [device.state]);
 
-    const debouncedToggle = useMemo(
-      () =>
-        debounce((newIsEnabled: boolean) => {
-          if (activityMode) return;
-          handleToogleEnabled(device, newIsEnabled);
-        }, 200),
-      [device, handleToogleEnabled, activityMode],
-    );
-
     const toggleEnabled = () => {
       if (activityMode) return;
       const newIsEnabled = !isEnabled;
-      debouncedToggle(newIsEnabled);
+      handleToogleEnabled(device, newIsEnabled);
       setIsEnabled(newIsEnabled);
     };
-
-    useEffect(() => {
-      return () => {
-        debouncedToggle.cancel();
-      };
-    }, [debouncedToggle]);
 
     const getCapability = (type: CapabilityType) => {
       return device.capabilities.find((c) => c.capabilityType === type);

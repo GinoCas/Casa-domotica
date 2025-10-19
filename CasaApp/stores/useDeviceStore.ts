@@ -54,7 +54,7 @@ const useDeviceStore = create<DeviceStoreState>()(
         const device = state.devices[deviceId];
         if (device) {
           const capability = device.capabilities.find(
-            (c) => c.capabilityType === "Dimmable"
+            (c) => c.capabilityType === "Dimmable",
           );
           if (capability) {
             capability.brightness = brightness;
@@ -62,7 +62,7 @@ const useDeviceStore = create<DeviceStoreState>()(
         }
       });
     },
-  }))
+  })),
 );
 
 export default useDeviceStore;

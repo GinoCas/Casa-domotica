@@ -7,17 +7,15 @@ export async function toggleDevice(deviceId: number, newState: boolean) {
   const { setDeviceState } = useDeviceStore.getState();
 
   // Optimistic update with timing for performance visibility
-  const start = Date.now();
-  setDeviceState(deviceId, newState);
-  const updateMs = Date.now() - start;
-  console.log("setDeviceState took", updateMs, "ms");
-
   const result = await deviceService.controlDevice(
     new ArduinoDeviceDto(deviceId, newState),
   );
-  if (!result.isSuccess) {
-    // Revert on failure
-    setDeviceState(deviceId, !newState);
+  if (result.isSuccess) {
+    const start = Date.now();
+    setDeviceState(deviceId, newState);
+    const updateMs = Date.now() - start;
+    console.log("setDeviceState took", updateMs, "ms");
+  } else {
     console.error("Error toggling device state:", result.errors);
   }
 }

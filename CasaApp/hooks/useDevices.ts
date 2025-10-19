@@ -17,11 +17,13 @@ export default function useDevices() {
   // Optimización: usar selectores específicos para evitar re-renders innecesarios
   const devices = useDeviceStore((state) => state.devices);
   const handleLoadDevices = useDeviceStore((state) => state.handleLoadDevices);
-  const changeLoadingDevices = useDeviceStore((state) => state.changeLoadingDevices);
-  
+  const changeLoadingDevices = useDeviceStore(
+    (state) => state.changeLoadingDevices,
+  );
+
   // Memoizar la conversión de objeto a array solo cuando devices cambie
   const deviceList = useMemo(() => Object.values(devices), [devices]);
-  
+
   const { activityMode } = useModeStore();
 
   const wasActiveRef = useRef<boolean>(false);
