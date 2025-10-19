@@ -3,6 +3,7 @@
     public enum DeviceType
     {
         Led = 1,
-        Fan = 2
+        Fan = 2,
+        Tv = 3
     }
 }

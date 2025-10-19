@@ -360,14 +360,19 @@ void handleActivityModeLoop() {
 // ======================================================================
 
 void handlePutDevice() {
+  unsigned long start = millis();
   if (!server.hasArg("plain")) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(400, "application/json", "{\"error\":\"no body\"}");
     return;
-  }
+  } 
 
   StaticJsonDocument<256> doc;
   DeserializationError error = deserializeJson(doc, server.arg("plain"));
   if (error) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
     return;
   }
@@ -379,12 +384,19 @@ void handlePutDevice() {
   int speed = doc["Speed"] | -1;
 
   applyDeviceChange(id, state, type, brightness, speed);
+  unsigned long proc = millis() - start;
+  server.sendHeader("Connection", "keep-alive");
+  server.sendHeader("Keep-Alive", "timeout=5, max=50");
+  server.sendHeader("X-Proc-Time", String(proc));
   server.send(200, "application/json", "{\"status\":\"true\"}");
 }
 
 // 🔹 Nuevo endpoint: /automation
 void handlePutAutomation() {
+  unsigned long start = millis();
   if (!server.hasArg("plain")) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(400, "application/json", "{\"error\":\"no body\"}");
     return;
   }
@@ -392,6 +404,8 @@ void handlePutAutomation() {
   StaticJsonDocument<512> doc;
   DeserializationError error = deserializeJson(doc, server.arg("plain"));
   if (error) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
     return;
   }
@@ -418,14 +432,24 @@ void handlePutAutomation() {
   if (automationId == -1) {
     automations.push_back(a);
     publishAutomation(a, automations.size());
+    unsigned long proc = millis() - start;
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
+    server.sendHeader("X-Proc-Time", String(proc));
     server.send(200, "application/json", "{\"status\":\"automation added\"}");
   } else {
     int index = automationId - 1;
     if (index >= 0 && index < automations.size()) {
       automations[index] = a;
       publishAutomation(automations[index], automationId);
+      unsigned long proc = millis() - start;
+      server.sendHeader("Connection", "keep-alive");
+      server.sendHeader("Keep-Alive", "timeout=5, max=50");
+      server.sendHeader("X-Proc-Time", String(proc));
       server.send(200, "application/json", "{\"status\":\"automation updated\"}");
     } else {
+      server.sendHeader("Connection", "keep-alive");
+      server.sendHeader("Keep-Alive", "timeout=5, max=50");
       server.send(404, "application/json", "{\"error\":\"automation not found\"}");
     }
   }
@@ -433,7 +457,10 @@ void handlePutAutomation() {
 
 // NUEVO endpoint: /time para sincronizar la hora simulada
 void handlePutTime() {
+  unsigned long start = millis();
   if (!server.hasArg("plain")) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(400, "application/json", "{\"error\":\"no body\"}");
     return;
   }
@@ -441,6 +468,8 @@ void handlePutTime() {
   StaticJsonDocument<256> doc;
   DeserializationError error = deserializeJson(doc, server.arg("plain"));
   if (error) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
     return;
   }
@@ -451,6 +480,8 @@ void handlePutTime() {
   int weekDay = doc["WeekDay"] | -1; // 0=Domingo .. 6=Sabado
 
   if (hour < 0 || minute < 0 || weekDay < 0) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(400, "application/json", "{\"error\":\"missing fields\"}");
     return;
   }
@@ -466,14 +497,29 @@ void handlePutTime() {
   lastSimTimeUpdate = millis();
   Serial.printf("\xF0\x9F\x95\x92 Sincronizado: %02d:%02d:%02d | Día: %d\n", simTime.tm_hour, simTime.tm_min, simTime.tm_sec, simTime.tm_wday);
 
+  unsigned long proc = millis() - start;
+  server.sendHeader("Connection", "keep-alive");
+  server.sendHeader("Keep-Alive", "timeout=5, max=50");
+  server.sendHeader("X-Proc-Time", String(proc));
   server.send(200, "application/json", "{\"data\":true}");
 }
 
 void handlePutMode() {
-  if (!server.hasArg("plain")) { server.send(400, "text/plain", "Bad Request"); return; }
+  unsigned long start = millis();
+  if (!server.hasArg("plain")) { 
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
+    server.send(400, "text/plain", "Bad Request"); 
+    return; 
+  }
   StaticJsonDocument<256> doc;
   DeserializationError err = deserializeJson(doc, server.arg("plain"));
-  if (err) { server.send(400, "text/plain", "Invalid JSON"); return; }
+  if (err) { 
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
+    server.send(400, "text/plain", "Invalid JSON"); 
+    return; 
+  }
   const char* name = doc["Name"] | "";
   bool state = doc["State"];
   String nm = String(name);
@@ -482,6 +528,10 @@ void handlePutMode() {
     activityMode = state;
     onActivityModeChanged(activityMode);
     publishMode("Activity", activityMode);
+    unsigned long proc = millis() - start;
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
+    server.sendHeader("X-Proc-Time", String(proc));
     server.send(200, "application/json", "{\"success\":true}");
     return;
   }
@@ -489,19 +539,33 @@ void handlePutMode() {
     saveEnergyMode = state;
     onSaveEnergyModeChanged(saveEnergyMode);
     publishMode("SaveEnergy", saveEnergyMode);
+    unsigned long proc = millis() - start;
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
+    server.sendHeader("X-Proc-Time", String(proc));
     server.send(200, "application/json", "{\"success\":true}");
     return;
   }
+  server.sendHeader("Connection", "keep-alive");
+  server.sendHeader("Keep-Alive", "timeout=5, max=50");
   server.send(404, "text/plain", "Mode Not Found");
 }
 
 void handleAlive() {
+  unsigned long start = millis();
+  unsigned long proc = millis() - start;
+  server.sendHeader("Connection", "keep-alive");
+  server.sendHeader("Keep-Alive", "timeout=5, max=50");
+  server.sendHeader("X-Proc-Time", String(proc));
   server.send(200, "text/plain", "OK");
 }
 
 void handleDeleteAutomation() {
+  unsigned long start = millis();
   String uri = server.uri();
   if (!uri.startsWith("/automation/")) {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(404, "application/json", "{\"error\":\"invalid path\"}");
     return;
   }
@@ -511,8 +575,14 @@ void handleDeleteAutomation() {
   if (index >= 0 && index < automations.size()) {
     automations.erase(automations.begin() + index);
     publishAutomationErase(automationId);
+    unsigned long proc = millis() - start;
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
+    server.sendHeader("X-Proc-Time", String(proc));
     server.send(200, "application/json", "{\"data\":true}");
   } else {
+    server.sendHeader("Connection", "keep-alive");
+    server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.send(404, "application/json", "{\"error\":\"automation not found\"}");
   }
 }
@@ -615,18 +685,21 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnectMQTT() {
-  while (!client.connected()) {
-    Serial.print("Conectando a MQTT...");
-    if (client.connect("ESP32Client-LocalAPI")) {
-      Serial.println("✅ Conectado!");
-      client.subscribe("casa/devices/cmd");
-      client.subscribe("casa/automations/cmd");
-      client.subscribe("casa/modes/cmd");
-    } else {
-      Serial.print("Error: ");
-      Serial.println(client.state());
-      delay(2000);
-    }
+  if (client.connected()) return;
+  static unsigned long nextAttemptAt = 0;
+  unsigned long now = millis();
+  if (now < nextAttemptAt) return;
+  Serial.print("Conectando a MQTT...");
+  if (client.connect("ESP32Client-LocalAPI")) {
+    Serial.println("✅ Conectado!");
+    client.subscribe("casa/devices/cmd");
+    client.subscribe("casa/automations/cmd");
+    client.subscribe("casa/modes/cmd");
+    nextAttemptAt = 0;
+  } else {
+    Serial.print("Error: ");
+    Serial.println(client.state());
+    nextAttemptAt = now + 2000; // volver a intentar en ~2s
   }
 }
 
@@ -689,6 +762,8 @@ void selectAndConnectWiFi() {
 void setup() {
   Serial.begin(115200);
   delay(1000);
+  WiFi.setSleep(false);
+  WiFi.setAutoReconnect(true);
   // Inicializar arrays y random para modos
   for (int i = 0; i < 12; i++) {
     ledPreSaveBrightness[i] = -1;
@@ -711,6 +786,7 @@ void setup() {
   selectAndConnectWiFi();
 
   client.setServer(mqttServer, mqttPort);
+  espClient.setNoDelay(true);
   client.setCallback(callback);
   reconnectMQTT();
 
@@ -724,14 +800,21 @@ void setup() {
   Serial.println("\xF0\x9F\x8C\x90 Servidor HTTP iniciado en puerto 80");
 
   // Crear dispositivos
-  Device led1 = {2, true, DEVICE_LED, {.led = {128}}};
-  Device fan1 = {4, false, DEVICE_FAN, {.fan = {2}}};
-  devices.push_back(led1);
-  devices.push_back(fan1);
-
+  devices.push_back({2, true, DEVICE_LED, {.led = {255}}}); 
+  devices.push_back({4, true, DEVICE_LED, {.fan = {2}}}); 
+  devices.push_back({5, true, DEVICE_LED, {.led = {255}}}); 
+  devices.push_back({15, true, DEVICE_LED, {.led = {255}}}); 
+  devices.push_back({18, true, DEVICE_LED, {.led = {255}}}); 
+  devices.push_back({19, true, DEVICE_LED, {.led = {255}}}); 
+  devices.push_back({21, true, DEVICE_LED, {.led = {255}}}); 
+  devices.push_back({23, true, DEVICE_LED, {.led = {255}}}); 
+  devices.push_back({22, true, DEVICE_LED}); // TV
+  
   // Publicar estado inicial
-  for (int i = 0; i < devices.size(); i++)
-    publishDevice(i + 1, devices[i]);
+  for (int i = 0; i < devices.size(); i++) {
+    pinMode(devices[i].pin, OUTPUT);
+    publishDevice(i+1, devices[i]);
+  };
   // Crear automation
   Automation auto1;
   auto1.startHour = 8;
@@ -752,14 +835,18 @@ void setup() {
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("⚠️ WiFi desconectado, intentando reconectar...");
-    selectAndConnectWiFi();
-  }
-  if (!client.connected()) reconnectMQTT();
-
-  client.loop();
+  // Atender HTTP primero para máxima responsividad
   server.handleClient();
+  // Mantener MQTT operativo
+  client.loop();
+
+  // Reconexión WiFi no bloqueante
+  if (WiFi.status() != WL_CONNECTED) {
+    WiFi.reconnect();
+  }
+  // Reconexión MQTT no bloqueante
+  reconnectMQTT();
+
   updateSimTime();
 
   static unsigned long lastAutoCheck = 0;
@@ -771,5 +858,7 @@ void loop() {
   // Modo actividad: prender dispositivos al azar con intervalos
   handleActivityModeLoop();
 
-  delay(50);
+  // Evitar retrasos innecesarios, ceder CPU a WiFi
+  delay(0);
 }
+
