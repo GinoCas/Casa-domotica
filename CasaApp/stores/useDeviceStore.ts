@@ -37,14 +37,14 @@ const useDeviceStore = create<DeviceStoreState>()((set, get) => ({
     return Result.success(deviceWithState);
   },
   toggleDeviceState: async (deviceId: number, newState: boolean) => {
+    const dto = new ArduinoDeviceDto(deviceId, newState);
+    const result = await deviceService.controlDevice(dto);
     set((state) => ({
       ...state,
       devices: state.devices.map((device) =>
         device.id === deviceId ? { ...device, state: newState } : device,
       ),
     }));
-    const dto = new ArduinoDeviceDto(deviceId, newState);
-    const result = await deviceService.controlDevice(dto);
 
     if (!result.isSuccess) {
       console.error("Error toggling device state:", result.errors);

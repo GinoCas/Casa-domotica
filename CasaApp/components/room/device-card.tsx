@@ -27,7 +27,6 @@ export const DeviceCard = React.memo(
     const [isEnabled, setIsEnabled] = useState(device.state);
     const { activityMode } = useModeStore();
 
-    // Mantener el estado del switch sincronizado con el estado del dispositivo
     useEffect(() => {
       setIsEnabled(device.state);
     }, [device.state]);
@@ -35,17 +34,17 @@ export const DeviceCard = React.memo(
     const debouncedToggle = useMemo(
       () =>
         debounce((newIsEnabled: boolean) => {
-          if (activityMode) return; // Bloquea interacción en modo actividad
+          if (activityMode) return;
           handleToogleEnabled(device, newIsEnabled);
         }, 200),
       [device, handleToogleEnabled, activityMode],
     );
 
     const toggleEnabled = () => {
-      if (activityMode) return; // Bloquea interacción en modo actividad
+      if (activityMode) return;
       const newIsEnabled = !isEnabled;
-      setIsEnabled(newIsEnabled);
       debouncedToggle(newIsEnabled);
+      setIsEnabled(newIsEnabled);
     };
 
     useEffect(() => {
