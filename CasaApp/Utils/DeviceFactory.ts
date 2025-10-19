@@ -1,24 +1,42 @@
-import { Device, DeviceType, IDimmable, IVelocity } from "@/types/Device";
+import { Device, DeviceType } from "@/src/core/entities/Device";
+
+// Definir interfaces localmente ya que no existen en el core
+interface IDimmable {
+  brightness: number;
+}
+
+interface IVelocity {
+  speed: number;
+}
 
 export function createDevice(deviceType: DeviceType) {
   const baseDevice: Device = {
-    type: deviceType,
+    deviceType: deviceType,
     id: 0,
     state: false,
-    voltage: 0,
-    amperes: 0,
+    name: "",
+    description: "",
+    capabilities: [],
   };
+  
   switch (deviceType) {
     case "Led":
       return {
         ...baseDevice,
-        type: "Led",
-      } as Device & IDimmable;
+        deviceType: "Led",
+        capabilities: [{ capabilityType: "Dimmable", brightness: 0 }],
+      } as Device;
     case "Fan":
       return {
         ...baseDevice,
-        type: "Fan",
-      } as Device & IVelocity;
+        deviceType: "Fan", 
+        capabilities: [{ capabilityType: "Velocity", speed: 0 }],
+      } as Device;
+    case "Tv":
+      return {
+        ...baseDevice,
+        deviceType: "Tv",
+      } as Device;
   }
   return baseDevice;
 }

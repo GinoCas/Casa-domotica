@@ -22,7 +22,10 @@ import {
   ControlAutomationUseCase,
 } from "../application/usecases/AutomationUseCases";
 import { ApiModeRepository } from "../infrastructure/repositories/ApiModeRepository";
-import { ControlModeUseCase, GetModesUseCase } from "../application/usecases/ModeUseCases";
+import {
+  ControlModeUseCase,
+  GetModesUseCase,
+} from "../application/usecases/ModeUseCases";
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -69,7 +72,10 @@ export class DependencyContainer {
       this.httpClient,
       this.localClient,
     );
-    this.modeRepository = new ApiModeRepository(this.httpClient, this.localClient);
+    this.modeRepository = new ApiModeRepository(
+      this.httpClient,
+      this.localClient,
+    );
 
     // Inicialización de casos de uso
     this.getDeviceListUseCase = new GetDeviceListUseCase(this.deviceRepository);

@@ -14,6 +14,11 @@ import useRoomStore from "@/stores/useRoomStore";
 import DeviceModal from "../device/device-modal";
 import { DeviceDto } from "@/src/application/dtos/DeviceDto";
 import { Room } from "@/src/core/entities/Room";
+import {
+  toggleDevice,
+  updateDevice,
+  refreshDevices,
+} from "@/src/services/DeviceActions";
 
 interface RoomViewProps {
   devices: Device[];
@@ -26,14 +31,9 @@ export function RoomView({
   loadingRoomDevices,
   unassignedDevices,
 }: RoomViewProps) {
-  const {
-    getDeviceById,
-    setDeviceBrightness,
-    toggleDeviceState,
-    updateDevice,
-    isLoadingDevices,
-    refreshDevices,
-  } = useDeviceStore();
+  const getDeviceById = useDeviceStore((s) => s.getDeviceById);
+  const setDeviceBrightness = useDeviceStore((s) => s.setDeviceBrightness);
+  const isLoadingDevices = useDeviceStore((s) => s.isLoadingDevices);
   const {
     currentRoom,
     isLoadingRooms,
@@ -89,9 +89,9 @@ export function RoomView({
 
   const handleToggleEnabled = useCallback(
     (device: Device, newState: boolean) => {
-      toggleDeviceState(device.id, newState);
+      toggleDevice(device.id, newState);
     },
-    [toggleDeviceState],
+    [],
   );
 
   const handlePressDevice = useCallback(
@@ -119,12 +119,12 @@ export function RoomView({
         addDeviceToRoom(roomId, selectedDevice.id, selectedDeviceRoom?.id);
       }
     },
-    [selectedDevice, selectedDeviceRoom, updateDevice, addDeviceToRoom],
+    [selectedDevice, selectedDeviceRoom, addDeviceToRoom],
   );
 
   const handleRefresh = useCallback(async () => {
     await refreshDevices();
-  }, [refreshDevices]);
+  }, []);
 
   const renderListHeader = () => {
     return (
@@ -220,6 +220,7 @@ export function RoomView({
           onValueChange={handleBrightnessChange}
         />
       </CustomModal>
+
       <DeviceModal
         rooms={rooms}
         currentDevice={selectedDevice}

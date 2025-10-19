@@ -3,9 +3,10 @@ import useAutomationStore from "@/stores/useAutomationStore";
 import useDeviceStore from "@/stores/useDeviceStore";
 import useModeStore from "@/stores/useModeStore";
 import { useEffect } from "react";
+import { toggleDevice } from "@/src/services/DeviceActions";
 
 function triggerAutomation(auto: Automation, end: boolean) {
-  const { getDeviceById, toggleDeviceState } = useDeviceStore.getState();
+  const { getDeviceById } = useDeviceStore.getState();
   auto.devices.forEach((automationDevice) => {
     const deviceResult = getDeviceById(automationDevice.id);
 
@@ -17,7 +18,7 @@ function triggerAutomation(auto: Automation, end: boolean) {
       if (end && device.state === false) {
         return;
       }
-      toggleDeviceState(automationDevice.id, targetState);
+      toggleDevice(automationDevice.id, targetState);
     }
   });
 }

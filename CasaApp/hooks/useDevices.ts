@@ -1,20 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useDeviceStore from "@/stores/useDeviceStore";
 import { deviceService } from "@/src/services/DeviceService";
-import { Device } from "@/src/core/entities/Device";
 import useRoomStore from "@/stores/useRoomStore";
 import useModeStore from "@/stores/useModeStore";
 import { modeService } from "@/src/services/ModeService";
+import { refreshDevices as refreshDevicesAction } from "@/src/services/DeviceActions";
+import { Device } from "@/src/core/entities/Device";
 
 export default function useDevices() {
   const [roomDevices, setRoomDevices] = useState<Device[]>([]);
-  const [loadingRoomDevices, setLoadingRoomDevices] = useState<boolean>(false);
   const [unassignedDevices, setUnassignedDevices] = useState<Device[]>([]);
+  const [loadingRoomDevices, setLoadingRoomDevices] = useState(true);
 
   const { currentRoom, rooms } = useRoomStore();
 
-  const { devices, handleLoadDevices, changeLoadingDevices, refreshDevices } =
-    useDeviceStore();
+  // Optimización: usar selectores específicos para evitar re-renders innecesarios
+  const devices = useDeviceStore((state) => state.devices);
+  const handleLoadDevices = useDeviceStore((state) => state.handleLoadDevices);
+  const changeLoadingDevices = useDeviceStore((state) => state.changeLoadingDevices);
+  
+  // Memoizar la conversión de objeto a array solo cuando devices cambie
+  const deviceList = useMemo(() => Object.values(devices), [devices]);
+  
   const { activityMode } = useModeStore();
 
   const wasActiveRef = useRef<boolean>(false);
@@ -72,14 +79,12 @@ export default function useDevices() {
         if (stopped) return;
         const modesResult = await modeService.getModes();
         if (modesResult.isSuccess) {
-          const activity = modesResult.data.find(
-            (m) => m.name === "Activity",
-          );
+          const activity = modesResult.data.find((m) => m.name === "Activity");
           if (activity) {
             const lastTs = new Date(activity.lastChanged).getTime();
             const disabledTs = activityDisabledAtRef.current ?? 0;
             if (!Number.isNaN(lastTs) && lastTs >= disabledTs) {
-              await refreshDevices(); // Refrescar estados ya propagados al backend
+              await refreshDevicesAction(); // Refrescar estados ya propagados al backend
               clearInterval(interval);
               changeLoadingDevices(false);
               stopped = true;
@@ -91,7 +96,7 @@ export default function useDevices() {
       const timeout = setTimeout(async () => {
         if (!stopped) {
           clearInterval(interval);
-          await refreshDevices();
+          await refreshDevicesAction();
           changeLoadingDevices(false);
           stopped = true;
         }
@@ -107,27 +112,34 @@ export default function useDevices() {
     if (activityMode) {
       wasActiveRef.current = true;
     }
-  }, [activityMode, refreshDevices, changeLoadingDevices]);
+  }, [activityMode, changeLoadingDevices]);
 
-  useEffect(() => {
+  // Optimización: memoizar el cálculo de dispositivos no asignados
+  const unassignedDevicesMemo = useMemo(() => {
     const allDeviceIdsInRooms = rooms.flatMap((room) => room.deviceIds);
-    const unassigned = devices.filter(
+    return deviceList.filter(
       (device) => !allDeviceIdsInRooms.includes(device.id),
     );
-    setUnassignedDevices(unassigned);
-  }, [devices, rooms]);
+  }, [deviceList, rooms]);
+
+  useEffect(() => {
+    setUnassignedDevices(unassignedDevicesMemo);
+  }, [unassignedDevicesMemo]);
+
+  // Optimización: memoizar el cálculo de dispositivos de la habitación
+  const roomDevicesMemo = useMemo(() => {
+    if (currentRoom?.name === "Todas") {
+      return deviceList;
+    } else {
+      return deviceList.filter((d) => currentRoom?.deviceIds.includes(d.id));
+    }
+  }, [currentRoom, deviceList]);
 
   useEffect(() => {
     setLoadingRoomDevices(true);
-    if (currentRoom?.name === "Todas") {
-      setRoomDevices(devices);
-    } else {
-      setRoomDevices(
-        devices.filter((d) => currentRoom?.deviceIds.includes(d.id)),
-      );
-    }
+    setRoomDevices(roomDevicesMemo);
     setLoadingRoomDevices(false);
-  }, [currentRoom, devices]);
+  }, [roomDevicesMemo]);
 
   return {
     roomDevices,

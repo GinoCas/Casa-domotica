@@ -47,7 +47,9 @@ export class HttpClient {
 
   async put<T>(endpoint: string, data?: any): Promise<Result<T>> {
     try {
-      console.log("Enviando en:", `${this.baseUrl}/${endpoint}`);
+      const url = `${this.baseUrl}/${endpoint}`;
+      const start = Date.now();
+      console.log("Enviando en:", url);
       const cleanedData = data
         ? JSON.parse(
             JSON.stringify(data, (_, value) =>
@@ -56,7 +58,7 @@ export class HttpClient {
           )
         : undefined;
 
-      const response = await fetch(`${this.baseUrl}/${endpoint}`, {
+      const response = await fetch(url, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +66,17 @@ export class HttpClient {
         body: cleanedData ? JSON.stringify(cleanedData) : undefined,
       });
 
-      console.log("Recibido de:", this.baseUrl, " con respuesta:", response.ok);
+      const elapsed = Date.now() - start;
+      const procHeader = response.headers?.get("X-Proc-Time");
+      console.log(
+        "Recibido de:",
+        this.baseUrl,
+        " con respuesta:",
+        response.ok,
+        "latencia:",
+        `${elapsed}ms`,
+        procHeader ? `proc:${procHeader}ms` : "proc:n/a",
+      );
       return await this.handleResponse<T>(response);
     } catch (error) {
       return Result.fromError(error as Error);

@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/multi-combo-group/types";
 import CustomModal from "@/components/ui/modal";
 import WeekDayPicker from "@/components/automations/weekday-picker";
+import { useMemo } from "react";
 
 const weekDaysOptions = [1, 2, 4, 8, 16, 32, 64];
 
@@ -46,7 +47,9 @@ export default function AutomationId() {
     deleteAutomation,
   } = useAutomation();
 
-  const { devices, getDeviceById } = useDeviceStore();
+  const devices = useDeviceStore((s) => s.devices);
+  const deviceList = useMemo(() => Object.values(devices), [devices]);
+  const getDeviceById = useDeviceStore((s) => s.getDeviceById);
   const { rooms } = useRoomStore();
 
   const [currentAutomation, setCurrentAutomation] = useState<Automation>();
@@ -147,12 +150,12 @@ export default function AutomationId() {
 
   useEffect(() => {
     const prepareGroupedOptions = async () => {
-      if (rooms.length === 0 || !devices || devices.length === 0) return;
+      if (rooms.length === 0 || !devices || Object.keys(devices).length === 0) return;
 
       const options: GroupedOptions[] = [];
 
       for (const room of rooms) {
-        const roomDevices = devices.filter((device) =>
+        const roomDevices = deviceList.filter((device) =>
           room.deviceIds.includes(device.id),
         );
         if (roomDevices.length > 0) {
@@ -177,7 +180,7 @@ export default function AutomationId() {
     }
     const getSelectedDevices = () => {
       let newSelectedOptions: Option[] = [];
-      const matchedDevices = devices.filter((d) =>
+      const matchedDevices = deviceList.filter((d) =>
         currentAutomation.devices.some((ad) => ad.id === d.id),
       );
       matchedDevices.forEach((d) => {
