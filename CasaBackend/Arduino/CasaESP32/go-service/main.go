@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -185,43 +187,201 @@ func checkAutomations() {
 // HTTP
 func parseBody(r *http.Request, v any) error { defer r.Body.Close(); return json.NewDecoder(r.Body).Decode(v) }
 func handlePutDevice(w http.ResponseWriter, r *http.Request) {
-	var raw any; if err:=parseBody(r,&raw); err!=nil { http.Error(w, "invalid JSON", 400); return }
+	start := time.Now()
+	bRaw, _ := io.ReadAll(r.Body)
+	log.Printf("[HTTP] %s %s from %s body=%s", r.Method, r.URL.Path, r.RemoteAddr, string(bRaw))
+	r.Body = io.NopCloser(bytes.NewReader(bRaw))
+
+	var raw any
+	if err := parseBody(r, &raw); err != nil {
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		http.Error(w, "invalid JSON", 400)
+		return
+	}
 	b, _ := json.Marshal(raw)
-	if strings.HasPrefix(string(b), "[") { var arr []ArduinoDeviceDto; _=json.Unmarshal(b,&arr); for _,it:=range arr { var br, sp *int; if it.Brightness!=nil { br=it.Brightness }; if it.Speed!=nil { sp=it.Speed }; applyDeviceChange(it.Id, it.State, it.Type, br, sp) }; publishDevices() } else { var it ArduinoDeviceDto; _=json.Unmarshal(b,&it); var br, sp *int; if it.Brightness!=nil { br=it.Brightness }; if it.Speed!=nil { sp=it.Speed }; applyDeviceChange(it.Id, it.State, it.Type, br, sp) }
-	w.Header().Set("Content-Type","application/json"); w.Write([]byte(`{"status":"true"}`))
+	if len(b) > 0 && b[0] == '[' {
+		var arr []ArduinoDeviceDto
+		_ = json.Unmarshal(b, &arr)
+		for _, it := range arr {
+			var br, sp *int
+			if it.Brightness != nil { br = it.Brightness }
+			if it.Speed != nil { sp = it.Speed }
+			applyDeviceChange(it.Id, it.State, it.Type, br, sp)
+		}
+		publishDevices()
+	} else {
+		var it ArduinoDeviceDto
+		_ = json.Unmarshal(b, &it)
+		var br, sp *int
+		if it.Brightness != nil { br = it.Brightness }
+		if it.Speed != nil { sp = it.Speed }
+		applyDeviceChange(it.Id, it.State, it.Type, br, sp)
+	}
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Keep-Alive", "timeout=5, max=50")
+	w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"status":"true"}`))
 }
+
 func handlePutAutomation(w http.ResponseWriter, r *http.Request) {
-	var dto ArduinoAutomationDto; if err:=parseBody(r,&dto); err!=nil { http.Error(w, "invalid JSON", 400); return }
+	start := time.Now()
+	bRaw, _ := io.ReadAll(r.Body)
+	log.Printf("[HTTP] %s %s from %s body=%s", r.Method, r.URL.Path, r.RemoteAddr, string(bRaw))
+	r.Body = io.NopCloser(bytes.NewReader(bRaw))
+
+	var dto ArduinoAutomationDto
+	if err := parseBody(r, &dto); err != nil {
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		http.Error(w, "invalid JSON", 400)
+		return
+	}
 	id := dto.Id
 	mu.Lock()
-	if id==-1 { automations = append(automations, Automation{ StartHour:dto.StartHour, StartMinute:dto.StartMinute, EndHour:dto.EndHour, EndMinute:dto.EndMinute, Days:dto.Days, State:dto.State, Devices:dto.Devices }); id=len(automations); publishAutomation(automations[id-1], id); mu.Unlock(); w.Write([]byte(`{"status":"automation added"}`)); return }
-	if id>0 && id<=len(automations) { automations[id-1] = Automation{ StartHour:dto.StartHour, StartMinute:dto.StartMinute, EndHour:dto.EndHour, EndMinute:dto.EndMinute, Days:dto.Days, State:dto.State, Devices:dto.Devices }; publishAutomation(automations[id-1], id); mu.Unlock(); w.Write([]byte(`{"status":"automation updated"}`)); return }
-	mu.Unlock(); http.Error(w, "automation not found", 404)
-}
-func handleDeleteAutomation(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/automation/"), "/"); id, _ := strconv.Atoi(parts[0]);
-	mu.Lock(); defer mu.Unlock()
-	idx := id-1; if idx>=0 && idx<len(automations) { automations = append(automations[:idx], automations[idx+1:]...); publishAutomationErase(id); w.Write([]byte(`{"data":true}`)); return }
+	if id == -1 {
+		automations = append(automations, Automation{StartHour: dto.StartHour, StartMinute: dto.StartMinute, EndHour: dto.EndHour, EndMinute: dto.EndMinute, Days: dto.Days, State: dto.State, Devices: dto.Devices})
+		id = len(automations)
+		publishAutomation(automations[id-1], id)
+		mu.Unlock()
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status":"automation added"}`))
+		return
+	}
+	if id > 0 && id <= len(automations) {
+		automations[id-1] = Automation{StartHour: dto.StartHour, StartMinute: dto.StartMinute, EndHour: dto.EndHour, EndMinute: dto.EndMinute, Days: dto.Days, State: dto.State, Devices: dto.Devices}
+		publishAutomation(automations[id-1], id)
+		mu.Unlock()
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status":"automation updated"}`))
+		return
+	}
+	mu.Unlock()
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Keep-Alive", "timeout=5, max=50")
+	w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
 	http.Error(w, "automation not found", 404)
 }
+
+func handleDeleteAutomation(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	log.Printf("[HTTP] %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
+	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/automation/"), "/")
+	id, _ := strconv.Atoi(parts[0])
+	mu.Lock()
+	defer mu.Unlock()
+	idx := id - 1
+	if idx >= 0 && idx < len(automations) {
+		automations = append(automations[:idx], automations[idx+1:]...)
+		publishAutomationErase(id)
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"data":true}`))
+		return
+	}
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Keep-Alive", "timeout=5, max=50")
+	w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+	http.Error(w, "automation not found", 404)
+}
+
 func handlePutTime(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	bRaw, _ := io.ReadAll(r.Body)
+	log.Printf("[HTTP] %s %s from %s body=%s", r.Method, r.URL.Path, r.RemoteAddr, string(bRaw))
+	r.Body = io.NopCloser(bytes.NewReader(bRaw))
+
 	var body struct{ Hour, Minute, Second, WeekDay int }
-	if err:=parseBody(r,&body); err!=nil || body.Hour<0 || body.Minute<0 || body.WeekDay<0 { http.Error(w, "missing fields", 400); return }
+	if err := parseBody(r, &body); err != nil || body.Hour < 0 || body.Minute < 0 || body.WeekDay < 0 {
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		http.Error(w, "missing fields", 400)
+		return
+	}
 	sim.Hour, sim.Minute, sim.Second = body.Hour, body.Minute, body.Second
 	sim.Weekday = body.WeekDay
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Keep-Alive", "timeout=5, max=50")
+	w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"data":true}`))
 }
+
 func handlePutMode(w http.ResponseWriter, r *http.Request) {
-	var dto ArduinoModeDto; if err:=parseBody(r,&dto); err!=nil { http.Error(w, "Invalid JSON", 400); return }
+	start := time.Now()
+	bRaw, _ := io.ReadAll(r.Body)
+	log.Printf("[HTTP] %s %s from %s body=%s", r.Method, r.URL.Path, r.RemoteAddr, string(bRaw))
+	r.Body = io.NopCloser(bytes.NewReader(bRaw))
+
+	var dto ArduinoModeDto
+	if err := parseBody(r, &dto); err != nil {
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		http.Error(w, "Invalid JSON", 400)
+		return
+	}
 	nm := strings.ToLower(dto.Name)
-	if nm=="activity" { activityMode=dto.State; onActivityModeChanged(activityMode); publishMode("Activity", activityMode); w.Write([]byte(`{"success":true}`)); return }
-	if nm=="save-energy" || nm=="saveenergy" || nm=="save_energy" { saveEnergyMode=dto.State; onSaveEnergyModeChanged(saveEnergyMode); publishMode("SaveEnergy", saveEnergyMode); w.Write([]byte(`{"success":true}`)); return }
+	if nm == "activity" {
+		activityMode = dto.State
+		onActivityModeChanged(activityMode)
+		publishMode("Activity", activityMode)
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"success":true}`))
+		return
+	}
+	if nm == "save-energy" || nm == "saveenergy" || nm == "save_energy" {
+		saveEnergyMode = dto.State
+		onSaveEnergyModeChanged(saveEnergyMode)
+		publishMode("SaveEnergy", saveEnergyMode)
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5, max=50")
+		w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"success":true}`))
+		return
+	}
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Keep-Alive", "timeout=5, max=50")
+	w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
 	http.Error(w, "Mode Not Found", 404)
 }
-func handleAlive(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) }
-func handleNotFound(w http.ResponseWriter, r *http.Request) { if r.Method==http.MethodDelete && strings.HasPrefix(r.URL.Path, "/automation/") { handleDeleteAutomation(w,r); return }; http.Error(w, "not found", 404) }
 
-// MQTT comandos
+func handleAlive(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	log.Printf("[HTTP] %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Keep-Alive", "timeout=5, max=50")
+	w.Header().Set("X-Proc-Time", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+	w.Write([]byte("OK"))
+}
+
+func handleNotFound(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[HTTP] %s %s from %s -> 404", r.Method, r.URL.Path, r.RemoteAddr)
+	if r.Method == http.MethodDelete && strings.HasPrefix(r.URL.Path, "/automation/") {
+		handleDeleteAutomation(w, r)
+		return
+	}
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Keep-Alive", "timeout=5, max=50")
+	http.Error(w, "not found", 404)
+}
+
 func onMQTTMessage(c mqtt.Client, m mqtt.Message) {
 	var raw any; if err:=json.Unmarshal(m.Payload(), &raw); err!=nil { return }
 	b, _ := json.Marshal(raw)
