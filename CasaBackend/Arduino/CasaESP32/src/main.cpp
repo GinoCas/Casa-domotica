@@ -11,7 +11,8 @@ unsigned long lastSimTimeUpdate = 0;
 
 enum DeviceType {
   DEVICE_LED,
-  DEVICE_FAN
+  DEVICE_FAN,
+  DEVICE_TV
 };
 
 struct Led {
@@ -109,6 +110,9 @@ void publishDevices() {
         obj["Type"] = "Fan";
         obj["Speed"] = d.props.fan.speed;
         break;
+      case DEVICE_TV:
+        obj["Type"] = "Tv";
+        break;
       default:
         obj["Type"] = "";
         break;
@@ -125,26 +129,33 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
   Device& device = devices[id - 1];
   device.state = state;
 
-  if (strcmp(type, "") == 0) {
-    digitalWrite(device.pin, device.state ? HIGH : LOW);
-    Serial.printf("\xF0\x9F\x92\xA1 Device %d -> state=%d\n", id, state);
+  bool isLed = (strcmp(type, "Led") == 0) || (strcmp(type, "") == 0 && device.type == DEVICE_LED);
+  bool isFan = (strcmp(type, "Fan") == 0) || (strcmp(type, "") == 0 && device.type == DEVICE_FAN);
+
+  if (isLed) {
+    int br = (brightness >= 0) ? brightness : device.props.led.brightness;
+    if (brightness >= 0) device.props.led.brightness = brightness;
+    int outBrightness = device.state ? (saveEnergyMode ? (br > 128 ? 128 : br) : br) : 0;
+    if (saveEnergyMode && device.state) {
+      ledPreSaveBrightness[id - 1] = br;
+    }
+    analogWrite(device.pin, outBrightness);
+    Serial.printf("\xF0\x9F\x92\xA1 LED %d -> state=%d, brightness=%d (out=%d)\n", id, state, br, outBrightness);
     return;
   }
 
-  if (strcmp(type, "Led") == 0) {
-    device.props.led.brightness = brightness;
-    int outBrightness = device.state ? (saveEnergyMode ? min(brightness, 128) : brightness) : 0;
-    if (saveEnergyMode) {
-      ledPreSaveBrightness[id - 1] = brightness;
-    }
-    analogWrite(device.pin, outBrightness);
-    Serial.printf("\xF0\x9F\x92\xA1 LED %d -> state=%d, brightness=%d (out=%d)\n", id, state, brightness, outBrightness);
-  } else if (strcmp(type, "Fan") == 0) {
-    device.props.fan.speed = speed;
-    int pwm = map(speed, 0, 3, 0, 255);
+  if (isFan) {
+    int sp = (speed >= 0) ? speed : device.props.fan.speed;
+    if (speed >= 0) device.props.fan.speed = speed;
+    int pwm = map(sp, 0, 3, 0, 255);
     analogWrite(device.pin, device.state ? pwm : 0);
-    Serial.printf("\xF0\x9F\xAA\x80 FAN %d -> state=%d, speed=%d\n", id, state, speed);
+    Serial.printf("\xF0\x9F\xAA\x80 FAN %d -> state=%d, speed=%d\n", id, state, sp);
+    return;
   }
+
+  // Default: dispositivos simples (TV, etc.)
+  digitalWrite(device.pin, device.state ? HIGH : LOW);
+  Serial.printf("\xF0\x9F\x92\xA1 Device %d -> state=%d\n", id, state);
 }
 
 // ======================================================================
@@ -839,18 +850,28 @@ void setup() {
 
   // Crear dispositivos
   devices.push_back({2, true, DEVICE_LED, {.led = {255}}}); 
-  devices.push_back({4, true, DEVICE_LED, {.fan = {2}}}); 
+  devices.push_back({4, true, DEVICE_FAN, {.fan = {2}}}); 
   devices.push_back({5, true, DEVICE_LED, {.led = {255}}}); 
   devices.push_back({15, true, DEVICE_LED, {.led = {255}}}); 
   devices.push_back({18, true, DEVICE_LED, {.led = {255}}}); 
   devices.push_back({19, true, DEVICE_LED, {.led = {255}}}); 
   devices.push_back({21, true, DEVICE_LED, {.led = {255}}}); 
   devices.push_back({23, true, DEVICE_LED, {.led = {255}}}); 
-  devices.push_back({22, true, DEVICE_LED}); // TV
-  // Publicar estado inicial
+  devices.push_back({22, true, DEVICE_TV}); // TV
+
   for (int i = 0; i < devices.size(); i++) {
     pinMode(devices[i].pin, OUTPUT);
   }
+
+  for (int i = 0; i < devices.size(); i++) {
+    Device &d = devices[i];
+    const char* t = (d.type == DEVICE_LED) ? "Led" : (d.type == DEVICE_FAN ? "Fan" : "");
+    int b = (d.type == DEVICE_LED) ? d.props.led.brightness : -1;
+    int s = (d.type == DEVICE_FAN) ? d.props.fan.speed : -1;
+    applyDeviceChange(i + 1, d.state, t, b, s);
+  }
+  
+  // Publicar estado inicial
   publishDevices();
   Automation auto1;
   auto1.startHour = 8;
