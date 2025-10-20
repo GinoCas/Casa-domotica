@@ -1,6 +1,7 @@
 using CasaBackend.Casa.Application.Interfaces.Handlers;
 using MQTTnet;
 using Newtonsoft.Json;
+using System;
 using System.Text;
 
 namespace CasaBackend.Casa.Infrastructure.Services
@@ -37,13 +38,40 @@ namespace CasaBackend.Casa.Infrastructure.Services
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(mqttBroker, mqttPort)
                 .WithClientId("CasaBackend.API")
+                .WithCleanSession(false)
+                .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
                 .Build();
 
             _mqttClient.ApplicationMessageReceivedAsync += HandleMessageAsync;
+            _mqttClient.DisconnectedAsync += async e =>
+            {
+                Console.WriteLine($"MQTT desconectado: {e.Reason}. Intentando reconexión...");
+                await Task.CompletedTask;
+            };
 
-            await _mqttClient.ConnectAsync(options, stoppingToken);
+            // Bucle de mantenimiento de conexión con reintentos y resuscripción
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                if (!_mqttClient.IsConnected)
+                {
+                    try
+                    {
+                        await _mqttClient.ConnectAsync(options, stoppingToken);
+                        await SubscribeHandlersAsync();
+                        Console.WriteLine("Conectado a MQTT y resuscrito a los topics.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error conectando a MQTT: {ex.Message}");
+                    }
+                }
 
-            // Create a scope to get the topics from the handlers
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            }
+        }
+
+        private async Task SubscribeHandlersAsync()
+        {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var handlers = scope.ServiceProvider.GetServices<IMQTTHandler>();

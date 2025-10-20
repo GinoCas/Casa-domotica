@@ -15,6 +15,11 @@ namespace CasaBackend.Casa.Infrastructure.Services
         {
             _configuration = configuration;
             _mqttClient = new MqttClientFactory().CreateMqttClient();
+            _mqttClient.DisconnectedAsync += async e =>
+            {
+                _isConnected = false;
+                await Task.CompletedTask;
+            };
         }
 
         public async Task ConnectAsync()
@@ -32,6 +37,8 @@ namespace CasaBackend.Casa.Infrastructure.Services
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(mqttBroker, mqttPort)
                 .WithClientId($"CasaBackend.Publisher.{Guid.NewGuid()}")
+                .WithCleanSession(false)
+                .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
                 .Build();
 
             await _mqttClient.ConnectAsync(options);
@@ -46,7 +53,7 @@ namespace CasaBackend.Casa.Infrastructure.Services
 
         public async Task PublishAsync(string topic, string payload)
         {
-            if (!_isConnected)
+            if (!_mqttClient.IsConnected)
                 await ConnectAsync();
 
             var message = new MqttApplicationMessageBuilder()
