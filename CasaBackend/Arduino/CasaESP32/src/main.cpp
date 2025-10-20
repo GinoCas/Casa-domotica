@@ -372,7 +372,7 @@ void handlePutDevice() {
     return;
   } 
 
-  StaticJsonDocument<256> doc;
+  StaticJsonDocument<512> doc;
   DeserializationError error = deserializeJson(doc, server.arg("plain"));
   if (error) {
     server.sendHeader("Connection", "keep-alive");
@@ -381,13 +381,27 @@ void handlePutDevice() {
     return;
   }
 
-  int id = doc["Id"];
-  bool state = doc["State"];
-  const char* type = doc["Type"] | "";
-  int brightness = doc["Brightness"] | -1;
-  int speed = doc["Speed"] | -1;
+  if (doc.is<JsonArray>()) {
+    for (JsonVariant item : doc.as<JsonArray>()) {
+      int id = item["Id"] | -1;
+      if (id == -1) continue;
+      bool state = item["State"];
+      const char* type = item["Type"] | "";
+      int brightness = item["Brightness"] | -1;
+      int speed = item["Speed"] | -1;
+      applyDeviceChange(id, state, type, brightness, speed);
+    }
+  } else {
+    int id = doc["Id"] | -1;
+    if (id != -1) {
+      bool state = doc["State"];
+      const char* type = doc["Type"] | "";
+      int brightness = doc["Brightness"] | -1;
+      int speed = doc["Speed"] | -1;
+      applyDeviceChange(id, state, type, brightness, speed);
+    }
+  }
 
-  applyDeviceChange(id, state, type, brightness, speed);
   unsigned long proc = millis() - start;
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Keep-Alive", "timeout=5, max=50");

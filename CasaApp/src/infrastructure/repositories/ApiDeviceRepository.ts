@@ -78,10 +78,11 @@ export class ApiDeviceRepository implements IDeviceRepository {
   }
   async controlDevice(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
     console.log("DTO ENVIADO:", dto);
-    let result = await this.localClient.put<boolean>(`device`, dto);
+    const payload = [dto];
+    let result = await this.localClient.put<boolean>(`device`, payload);
     if (!result.isSuccess) {
       console.log("No se pudo enviar localmente:", result);
-      result = await this.httpClient.put<boolean>(`device/control`, dto);
+      result = await this.httpClient.put<boolean>(`device/control`, payload);
     }
     console.log("Resultado:", result);
 
@@ -89,6 +90,6 @@ export class ApiDeviceRepository implements IDeviceRepository {
       return Result.failure(result.errors);
     }
 
-    return Result.success(result.data);
+    return Result.success(true);
   }
 }
