@@ -10,3 +10,4 @@
 CasaBackend/appsettings.json
 CasaBackend/.env
 MQTT/mqtt/config.env
+CasaBackend/Arduino/CasaESP32/.vscode/settings.json

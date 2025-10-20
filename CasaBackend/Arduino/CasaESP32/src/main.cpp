@@ -92,23 +92,28 @@ void updateSimTime() {
   }
 }
 
-void publishDevice(int devId, const Device& device) {
-  StaticJsonDocument<256> doc;
-  JsonObject obj = doc.createNestedObject("Data");
-  obj["Id"] = devId;
-  obj["State"] = device.state;
-
-  switch (device.type) {
-    case DEVICE_LED:
-      obj["Type"] = "Led";
-      obj["Brightness"] = device.props.led.brightness;
-      break;
-    case DEVICE_FAN:
-      obj["Type"] = "Fan";
-      obj["Speed"] = device.props.fan.speed;
-      break;
+void publishDevices(const arx::stdx::vector<Device, 12>& devicesToPublish) {
+  StaticJsonDocument<1024> doc;
+  JsonArray arr = doc.createNestedArray("Data");
+  for (size_t i = 0; i < devicesToPublish.size(); i++) {
+    const Device &d = devices[i];
+    JsonObject obj = arr.createNestedObject();
+    obj["Id"] = i + 1;
+    obj["State"] = d.state;
+    switch (d.type) {
+      case DEVICE_LED:
+        obj["Type"] = "Led";
+        obj["Brightness"] = d.props.led.brightness;
+        break;
+      case DEVICE_FAN:
+        obj["Type"] = "Fan";
+        obj["Speed"] = d.props.fan.speed;
+        break;
+      default:
+        obj["Type"] = "";
+        break;
+    }
   }
-
   String json;
   serializeJson(doc, json);
   client.publish("casa/devices", json.c_str());
@@ -121,9 +126,9 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
   device.state = state;
 
   if (strcmp(type, "") == 0) {
-    analogWrite(device.pin, device.state ? 1 : 0);
-    Serial.printf("💡 Device %d -> state=%d\n", id, state);
-    publishDevice(id, device);
+    digitalWrite(device.pin, device.state ? HIGH : LOW);
+    Serial.printf("\xF0\x9F\x92\xA1 Device %d -> state=%d\n", id, state);
+    publishDevices({device});
     return;
   }
 
@@ -131,19 +136,18 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
     device.props.led.brightness = brightness;
     int outBrightness = device.state ? (saveEnergyMode ? min(brightness, 128) : brightness) : 0;
     if (saveEnergyMode) {
-      // Actualizamos el snapshot para restaurar al salir del modo ahorro
       ledPreSaveBrightness[id - 1] = brightness;
     }
     analogWrite(device.pin, outBrightness);
-    Serial.printf("💡 LED %d -> state=%d, brightness=%d (out=%d)\n", id, state, brightness, outBrightness);
+    Serial.printf("\xF0\x9F\x92\xA1 LED %d -> state=%d, brightness=%d (out=%d)\n", id, state, brightness, outBrightness);
   } else if (strcmp(type, "Fan") == 0) {
     device.props.fan.speed = speed;
     int pwm = map(speed, 0, 3, 0, 255);
     analogWrite(device.pin, device.state ? pwm : 0);
-    Serial.printf("🌀 FAN %d -> state=%d, speed=%d\n", id, state, speed);
+    Serial.printf("\xF0\x9F\xAA\x80 FAN %d -> state=%d, speed=%d\n", id, state, speed);
   }
 
-  publishDevice(id, device);
+  publishDevices({device});
 }
 
 // ======================================================================
@@ -276,7 +280,7 @@ void onActivityModeChanged(bool enabled) {
         d.state = false;
         analogWrite(d.pin, 0);
       }
-      publishDevice(i + 1, d);
+      publishDevices({d});
     }
     scheduleNextActivityEvent();
   } else {
@@ -314,7 +318,7 @@ void handleActivityModeLoop() {
       if (prev.state) {
         prev.state = false;
         analogWrite(prev.pin, 0);
-        publishDevice(activityCurrentDevice + 1, prev);
+        publishDevices({prev});
       }
     }
 
@@ -338,16 +342,16 @@ void handleActivityModeLoop() {
           d.state = true;
           analogWrite(d.pin, targetBrightness);
         }
-        publishDevice(idx + 1, d);
+        publishDevices({d});
       } else if (d.type == DEVICE_FAN) {
         int pwm = map(d.props.fan.speed, 0, 3, 0, 255);
         d.state = true;
         analogWrite(d.pin, pwm);
-        publishDevice(idx + 1, d);
+        publishDevices({d});
       } else {
         d.state = true;
         analogWrite(d.pin, 1);
-        publishDevice(idx + 1, d);
+        publishDevices({d});
       }
     }
 
@@ -609,12 +613,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println("COMANDO MQTT RECIBIDO.");
 
   if (strcmp(topic, "casa/devices/cmd") == 0) {
-    int id = doc["Id"];
-    bool state = doc["State"];
-    const char* type = doc["Type"] | "";
-    int brightness = doc["Brightness"] | -1;
-    int speed = doc["Speed"] | -1;
-    applyDeviceChange(id, state, type, brightness, speed);
+    JsonArray arr = doc.as<JsonArray>();
+    if (!arr.isNull()) {
+      for (JsonVariant item : arr) {
+        int id = item["Id"] | -1;
+        if (id == -1) continue;
+        bool state = item["State"];
+        const char* type = item["Type"] | "";
+        int brightness = item["Brightness"] | -1;
+        int speed = item["Speed"] | -1;
+        applyDeviceChange(id, state, type, brightness, speed);
+      }
+    } else {
+      int id = doc["Id"];
+      bool state = doc["State"];
+      const char* type = doc["Type"] | "";
+      int brightness = doc["Brightness"] | -1;
+      int speed = doc["Speed"] | -1;
+      applyDeviceChange(id, state, type, brightness, speed);
+    }
   } 
   else if (strcmp(topic, "casa/automations/cmd") == 0) {
     const char* cmd = doc["Cmd"] | "";
@@ -682,6 +699,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       Serial.println("❌ Error: Modo inválido en MQTT");
     }
   }
+
 }
 
 void reconnectMQTT() {
@@ -809,13 +827,11 @@ void setup() {
   devices.push_back({21, true, DEVICE_LED, {.led = {255}}}); 
   devices.push_back({23, true, DEVICE_LED, {.led = {255}}}); 
   devices.push_back({22, true, DEVICE_LED}); // TV
-  
   // Publicar estado inicial
   for (int i = 0; i < devices.size(); i++) {
     pinMode(devices[i].pin, OUTPUT);
-    publishDevice(i+1, devices[i]);
-  };
-  // Crear automation
+  }
+  publishDevices(devices);
   Automation auto1;
   auto1.startHour = 8;
   auto1.startMinute = 0;

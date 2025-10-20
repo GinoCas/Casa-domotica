@@ -74,7 +74,7 @@ namespace CasaBackend.Casa.API.Controllers
             return Ok(result.ToJson());
         }
         [HttpPut("/device/control")]
-        public async Task<IActionResult> ControlDevice(ArduinoDeviceDto dto)
+        public async Task<IActionResult> ControlDevice([FromBody] IEnumerable<ArduinoDeviceDto> dto)
         {
             await _mqttPublisher.PublishAsync("casa/devices/cmd", dto);
             return Ok(dto);
