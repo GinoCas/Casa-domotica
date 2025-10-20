@@ -1,26 +1,29 @@
 import { Automation } from "@/src/core/entities/Automation";
+import { getDeviceById, toggleDevices } from "@/src/services/DeviceActions";
 import useAutomationStore from "@/stores/useAutomationStore";
-import useDeviceStore from "@/stores/useDeviceStore";
 import useModeStore from "@/stores/useModeStore";
 import { useEffect } from "react";
-import { toggleDevice } from "@/src/services/DeviceActions";
 
 function triggerAutomation(auto: Automation, end: boolean) {
-  const { getDeviceById } = useDeviceStore.getState();
+  const updates: { deviceId: number; newState: boolean }[] = [];
   auto.devices.forEach((automationDevice) => {
     const deviceResult = getDeviceById(automationDevice.id);
 
     if (deviceResult.isSuccess) {
-      const device = deviceResult.data as any; // The type is wrong in the store, so using any
+      const device = deviceResult.data as any;
       const targetState = end
         ? !automationDevice.autoState
         : automationDevice.autoState;
       if (end && device.state === false) {
         return;
       }
-      toggleDevice(automationDevice.id, targetState);
+      updates.push({ deviceId: automationDevice.id, newState: targetState });
     }
   });
+
+  if (updates.length > 0) {
+    toggleDevices(updates);
+  }
 }
 
 export default function useAutomation() {

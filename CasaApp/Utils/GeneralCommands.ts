@@ -1,7 +1,7 @@
 import useDeviceStore from "@/stores/useDeviceStore";
 import useRoomStore from "@/stores/useRoomStore";
 import { Device } from "@/src/core/entities/Device";
-import { toggleDevice } from "@/src/services/DeviceActions";
+import { toggleDevices } from "@/src/services/DeviceActions";
 
 function getRandomDevices(arr: Device[], n: number): Device[] {
   if (n > arr.length)
@@ -19,9 +19,11 @@ export async function turnOnLedRandom() {
     const leds = deviceList.filter((d) => d.deviceType === "Led");
     const randomDevices = getRandomDevices(leds, Math.min(3, leds.length));
 
-    await Promise.all(
-      randomDevices.map((device) => toggleDevice(device.id, true)),
-    );
+    const updates = randomDevices.map((device) => ({
+      deviceId: device.id,
+      newState: true,
+    }));
+    await toggleDevices(updates);
   } catch (err) {
     console.log("Error al activar el modo actividad", err);
   }
@@ -49,9 +51,11 @@ export async function turnOnAllLedsOfRoom(roomName: string) {
       );
     }
 
-    for (const device of targetDevices) {
-      await toggleDevice(device.id, true);
-    }
+    const updates = targetDevices.map((device) => ({
+      deviceId: device.id,
+      newState: true,
+    }));
+    if (updates.length > 0) await toggleDevices(updates);
   } catch (err) {
     console.log("Error al encender las luces de la habitación", err);
   }
@@ -79,9 +83,11 @@ export async function turnOffAllLedsOfRoom(roomName: string) {
       );
     }
 
-    for (const device of targetDevices) {
-      await toggleDevice(device.id, false);
-    }
+    const updates = targetDevices.map((device) => ({
+      deviceId: device.id,
+      newState: false,
+    }));
+    if (updates.length > 0) await toggleDevices(updates);
   } catch (err) {
     console.log("Error al apagar las luces de la habitación", err);
   }
@@ -96,7 +102,7 @@ export async function toggleTv(state: boolean) {
       console.log("No se encontró un dispositivo de TV registrado");
       return;
     }
-    await toggleDevice(tv.id, state);
+    await toggleDevices([{ deviceId: tv.id, newState: state }]);
   } catch (err) {
     console.log("Error al cambiar el estado de la TV", err);
   }

@@ -43,13 +43,14 @@ export class UpdateDeviceUseCase {
 export class ControlDeviceUseCase {
   constructor(private deviceRepository: IDeviceRepository) {}
 
-  async execute(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
+  async execute(dtos: ArduinoDeviceDto[]): Promise<Result<boolean>> {
     try {
-      if (dto.Id <= 0) {
-        return Result.failure(["Device ID must be greater than 0"]);
+      const invalid = dtos.find((d) => d.Id <= 0);
+      if (invalid) {
+        return Result.failure(["All Device IDs must be greater than 0"]);
       }
 
-      return await this.deviceRepository.controlDevice(dto);
+      return await this.deviceRepository.controlDevice(dtos);
     } catch (error) {
       return Result.fromError(error as Error);
     }

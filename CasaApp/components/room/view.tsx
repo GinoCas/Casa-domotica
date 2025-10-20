@@ -18,6 +18,8 @@ import {
   toggleDevice,
   updateDevice,
   refreshDevices,
+  getDeviceById,
+  setDeviceBrightness,
 } from "@/src/services/DeviceActions";
 
 interface RoomViewProps {
@@ -31,8 +33,6 @@ export function RoomView({
   loadingRoomDevices,
   unassignedDevices,
 }: RoomViewProps) {
-  const getDeviceById = useDeviceStore((s) => s.getDeviceById);
-  const setDeviceBrightness = useDeviceStore((s) => s.setDeviceBrightness);
   const isLoadingDevices = useDeviceStore((s) => s.isLoadingDevices);
   const {
     currentRoom,
@@ -53,18 +53,15 @@ export function RoomView({
     return devices.filter((d) => !unassignedDevices.includes(d));
   }, [devices, unassignedDevices]);
 
-  const openBrightnessModal = useCallback(
-    (device: Device) => {
-      if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
-        const deviceResult = getDeviceById(device.id);
-        if (deviceResult.isSuccess) {
-          setSelectedDevice(deviceResult.data);
-          setisModalOpen(true);
-        }
+  const openBrightnessModal = useCallback((device: Device) => {
+    if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
+      const deviceResult = getDeviceById(device.id);
+      if (deviceResult.isSuccess) {
+        setSelectedDevice(deviceResult.data);
+        setisModalOpen(true);
       }
-    },
-    [getDeviceById],
-  );
+    }
+  }, []);
 
   const debouncedBrightnessChange = useMemo(
     () =>
@@ -72,7 +69,7 @@ export function RoomView({
         changeSaveEnergyMode(false);
         setDeviceBrightness(deviceId, value);
       }, 300),
-    [changeSaveEnergyMode, setDeviceBrightness],
+    [changeSaveEnergyMode],
   );
 
   const handleBrightnessChange = (value: number) => {

@@ -26,9 +26,9 @@ export class DeviceService {
     return await useCase.execute(deviceId, dto);
   }
 
-  async controlDevice(dto: ArduinoDeviceDto): Promise<Result<boolean>> {
+  async controlDevice(dtos: ArduinoDeviceDto[]): Promise<Result<boolean>> {
     const useCase = this.container.getControlDeviceUseCase();
-    return await useCase.execute(dto);
+    return await useCase.execute(dtos);
   }
 }
 

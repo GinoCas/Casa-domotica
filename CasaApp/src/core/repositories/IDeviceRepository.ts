@@ -7,5 +7,5 @@ export interface IDeviceRepository {
   getAll(): Promise<Result<Device[]>>;
   getById(id: number): Promise<Result<Device>>;
   updateDevice(deviceId: number, dto: DeviceDto): Promise<Result<boolean>>;
-  controlDevice(dto: ArduinoDeviceDto): Promise<Result<boolean>>;
+  controlDevice(dtos: ArduinoDeviceDto[]): Promise<Result<boolean>>;
 }
