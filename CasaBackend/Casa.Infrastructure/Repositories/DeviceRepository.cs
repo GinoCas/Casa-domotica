@@ -88,5 +88,67 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 ? CoreResult<DeviceEntity>.Success(result.Data)
                 : CoreResult<DeviceEntity>.Failure(result.Errors);
         }
+
+        // Batch retrieval by IDs
+        public async Task<CoreResult<IEnumerable<DeviceEntity>>> GetByDeviceIdsAsync(IEnumerable<int> ids)
+        {
+            if (!ids.Any()) return CoreResult<IEnumerable<DeviceEntity>>.Success([]);
+
+            var models = _dbContext.Devices.Where(d => ids.Contains(d.Id));
+            var allCapabilities = await _capabilityService.GetAllCapabilitiesAsync();
+
+            var entities = new List<DeviceEntity>();
+            foreach (var model in models)
+            {
+                var dto = new DeviceContextDto
+                {
+                    DeviceModel = model,
+                    Capabilities = allCapabilities.ContainsKey(model.Id) ? allCapabilities[model.Id] : []
+                };
+                var fabric = _deviceFactory.Fabric(dto);
+                if (fabric.IsSuccess) entities.Add(fabric.Data);
+            }
+            return CoreResult<IEnumerable<DeviceEntity>>.Success(entities);
+        }
+
+        public async Task<CoreResult<IEnumerable<DeviceEntity>>> UpsertDevicesAsync(IEnumerable<DeviceEntity> devices)
+        {
+            if (!devices.Any()) return CoreResult<IEnumerable<DeviceEntity>>.Success([]);
+            var ids = devices.Select(d => d.Id);
+            var existingModels = await _dbContext.Devices.Where(d => ids.Contains(d.Id)).ToListAsync();
+
+            var deviceDict = devices.ToDictionary(d => d.Id);
+            var existingDict = existingModels.ToDictionary(d => d.Id);
+            var newModels = new List<DeviceModel>();
+
+            foreach (var device in devices)
+            {
+                if (existingDict.TryGetValue(device.Id, out var model))
+                {
+                    _mapper.Map(device, model);
+                }
+                else
+                {
+                    newModels.Add(_mapper.Map<DeviceModel>(device));
+                }
+            }
+            if (newModels.Count > 0)
+            {
+                _dbContext.Devices.AddRange(newModels);
+                foreach (var model in newModels)
+                {
+                    if (!deviceDict.TryGetValue(model.Id, out var entity)) continue;
+
+                    foreach (var capability in entity.Capabilities)
+                    {
+                        var capabilityModel = _mapper.Map<ICapabilityModel>(capability);
+                        capabilityModel.DeviceId = model.Id;
+                        _dbContext.Add(capabilityModel);
+                    }
+                }
+            }
+            if (_dbContext.ChangeTracker.HasChanges()) await _dbContext.SaveChangesAsync();
+            return CoreResult<IEnumerable<DeviceEntity>>.Success(devices);
+        }
     }
 }
