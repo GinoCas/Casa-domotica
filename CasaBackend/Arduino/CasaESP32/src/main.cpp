@@ -92,10 +92,10 @@ void updateSimTime() {
   }
 }
 
-void publishDevices(const arx::stdx::vector<Device, 12>& devicesToPublish) {
+void publishDevices() {
   StaticJsonDocument<1024> doc;
   JsonArray arr = doc.createNestedArray("Data");
-  for (size_t i = 0; i < devicesToPublish.size(); i++) {
+  for (size_t i = 0; i < devices.size(); i++) {
     const Device &d = devices[i];
     JsonObject obj = arr.createNestedObject();
     obj["Id"] = i + 1;
@@ -128,7 +128,6 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
   if (strcmp(type, "") == 0) {
     digitalWrite(device.pin, device.state ? HIGH : LOW);
     Serial.printf("\xF0\x9F\x92\xA1 Device %d -> state=%d\n", id, state);
-    publishDevices({device});
     return;
   }
 
@@ -146,8 +145,6 @@ void applyDeviceChange(int id, bool state, const char* type, int brightness, int
     analogWrite(device.pin, device.state ? pwm : 0);
     Serial.printf("\xF0\x9F\xAA\x80 FAN %d -> state=%d, speed=%d\n", id, state, speed);
   }
-
-  publishDevices({device});
 }
 
 // ======================================================================
@@ -180,12 +177,15 @@ void checkAutomations() {
       for (auto ad : a.devices) {
         applyDeviceChange(ad.Id, a.state, "", -1, -1);
       }
+      publishDevices();
     } else if (!shouldBeActive && a.isCurrentlyActive) {
       a.isCurrentlyActive = false;
       Serial.printf("⚙️ Desactivando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
       for (auto ad : a.devices) {
         applyDeviceChange(ad.Id, !a.state, "", -1, -1);
       }
+      // Publicar una sola vez por desactivación de automatización
+      publishDevices();
     }
   }
 }
@@ -275,13 +275,14 @@ void onActivityModeChanged(bool enabled) {
       } else if (d.type == DEVICE_FAN) {
         activityPreFanSpeed[i] = d.props.fan.speed;
       }
-      // Apagar dispositivos al entrar en modo actividad y publicar
+      // Apagar dispositivos al entrar en modo actividad (sin publicar por dispositivo)
       if (d.state) {
         d.state = false;
         analogWrite(d.pin, 0);
       }
-      publishDevices({d});
     }
+    // Publicar una sola vez el estado agregado
+    publishDevices();
     scheduleNextActivityEvent();
   } else {
     // Restaurar estados/parametros previos al salir del modo actividad
@@ -303,6 +304,8 @@ void onActivityModeChanged(bool enabled) {
         activityPreLedBrightness[i] = -1;
         activityPreFanSpeed[i] = -1;
       }
+      // Publicar una sola vez al finalizar restauración
+      publishDevices();
     }
     activitySnapshotValid = false;
   }
@@ -312,13 +315,12 @@ void handleActivityModeLoop() {
   if (!activityMode) return;
   unsigned long now = millis();
   if (now >= activityNextEventAt) {
-    // Apagar el dispositivo anterior si estaba encendido y publicar el cambio
+    // Apagar el dispositivo anterior si estaba encendido
     if (activityCurrentDevice >= 0 && activityCurrentDevice < devices.size()) {
       Device &prev = devices[activityCurrentDevice];
       if (prev.state) {
         prev.state = false;
         analogWrite(prev.pin, 0);
-        publishDevices({prev});
       }
     }
 
@@ -342,18 +344,18 @@ void handleActivityModeLoop() {
           d.state = true;
           analogWrite(d.pin, targetBrightness);
         }
-        publishDevices({d});
       } else if (d.type == DEVICE_FAN) {
         int pwm = map(d.props.fan.speed, 0, 3, 0, 255);
         d.state = true;
         analogWrite(d.pin, pwm);
-        publishDevices({d});
       } else {
         d.state = true;
         analogWrite(d.pin, 1);
-        publishDevices({d});
       }
     }
+
+    // Publicar una sola vez cambios de modo actividad
+    publishDevices();
 
     scheduleNextActivityEvent();
   }
@@ -391,6 +393,8 @@ void handlePutDevice() {
       int speed = item["Speed"] | -1;
       applyDeviceChange(id, state, type, brightness, speed);
     }
+    // Publicar una sola vez al terminar el lote
+    publishDevices();
   } else {
     int id = doc["Id"] | -1;
     if (id != -1) {
@@ -638,6 +642,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
         int speed = item["Speed"] | -1;
         applyDeviceChange(id, state, type, brightness, speed);
       }
+      // Publicar una sola vez al terminar el lote
+      publishDevices();
     } else {
       int id = doc["Id"];
       bool state = doc["State"];
@@ -845,7 +851,7 @@ void setup() {
   for (int i = 0; i < devices.size(); i++) {
     pinMode(devices[i].pin, OUTPUT);
   }
-  publishDevices(devices);
+  publishDevices();
   Automation auto1;
   auto1.startHour = 8;
   auto1.startMinute = 0;
