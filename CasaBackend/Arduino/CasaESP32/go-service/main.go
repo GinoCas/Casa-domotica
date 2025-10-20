@@ -66,11 +66,17 @@ func mustConnectMQTT() mqtt.Client {
 	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", mqttHost, mqttPort)).SetClientID("CasaGoService").SetKeepAlive(60*time.Second)
 	c := mqtt.NewClient(opts)
 	if t:=c.Connect(); t.Wait() && t.Error()!=nil { log.Fatalf("MQTT connect error: %v", t.Error()) }
+	log.Printf("MQTT conectado a %s:%d", mqttHost, mqttPort)
 	return c
 }
 func publish[T any](topic string, data T) {
 	payload, _ := json.Marshal(Envelope[T]{Data: data})
-	client.Publish(topic, 0, false, payload)
+	tok := client.Publish(topic, 0, false, payload)
+	if tok.Wait() && tok.Error() != nil {
+		log.Printf("MQTT publish error topic=%s: %v", topic, tok.Error())
+	} else {
+		log.Printf("MQTT published topic=%s bytes=%d", topic, len(payload))
+	}
 }
 
 // Publicaciones
@@ -129,23 +135,39 @@ func onActivityModeChanged(enabled bool) {
 	mu.Lock(); defer mu.Unlock()
 	activityCurrentDevice = -1
 	if enabled {
+		mu.Lock()
 		activitySnapshotValid = true
 		for i, d := range devices {
 			activityPreState[i+1] = d.State
 			if d.Type==TypeLed { activityPreLed[i+1] = d.Brightness } else if d.Type==TypeFan { activityPreFan[i+1] = d.Speed }
 			d.State=false
 		}
-		publishDevices(); scheduleNextActivityEvent()
+		mu.Unlock()
+		publishDevices()
+		scheduleNextActivityEvent()
 	} else {
 		if activitySnapshotValid {
+			type change struct{ id int; state bool; typ string; br *int; sp *int }
+			changes := make([]change, 0, len(devices))
+
+			mu.Lock()
 			for i, d := range devices {
 				ps := activityPreState[i+1]
-				if d.Type==TypeLed { br:=activityPreLed[i+1]; applyDeviceChange(i+1, ps, TypeLed, &br, nil) } else if d.Type==TypeFan { sp:=activityPreFan[i+1]; applyDeviceChange(i+1, ps, TypeFan, nil, &sp) } else { applyDeviceChange(i+1, ps, d.Type, nil, nil) }
+				var brPtr, spPtr *int
+				if d.Type==TypeLed { v := activityPreLed[i+1]; brPtr = &v } else if d.Type==TypeFan { v := activityPreFan[i+1]; spPtr = &v }
+				changes = append(changes, change{ id: i+1, state: ps, typ: d.Type, br: brPtr, sp: spPtr })
 				delete(activityPreState,i+1); delete(activityPreLed,i+1); delete(activityPreFan,i+1)
 			}
+			activitySnapshotValid=false
+			mu.Unlock()
+
+			for _, ch := range changes {
+				applyDeviceChange(ch.id, ch.state, ch.typ, ch.br, ch.sp)
+			}
 			publishDevices()
+		} else {
+			activitySnapshotValid=false
 		}
-		activitySnapshotValid=false
 	}
 }
 func handleActivityModeLoop() {
@@ -164,24 +186,36 @@ func handleActivityModeLoop() {
 // Automations
 func isDayActive(bitmask byte, weekday int) bool { return (bitmask & (1<<weekday)) != 0 }
 func checkAutomations() {
-	sim.Tick(); if activityMode { return }
-	mu.Lock(); defer mu.Unlock()
-	current := sim.Hour*60 + sim.Minute
-	for i := range automations {
-		a := &automations[i]
-		if !isDayActive(a.Days, sim.Weekday) { continue }
-		start := a.StartHour*60 + a.StartMinute; end := a.EndHour*60 + a.EndMinute
-		active := current>=start && current<end
-		if active && !a.Active {
-			a.Active=true; a.LastTriggered=time.Now()
-			for _,ad := range a.Devices { applyDeviceChange(ad.Id, a.State, "", nil, nil) }
-			publishDevices()
-		} else if !active && a.Active {
-			a.Active=false
-			for _,ad := range a.Devices { applyDeviceChange(ad.Id, !a.State, "", nil, nil) }
-			publishDevices()
-		}
-	}
+    sim.Tick()
+    if activityMode { return }
+    // Primero calculamos las acciones bajo lock, y las ejecutamos fuera
+    type action struct{ id int; state bool }
+    actions := make([]action, 0, 8)
+
+    mu.Lock()
+    current := sim.Hour*60 + sim.Minute
+    for i := range automations {
+        a := &automations[i]
+        if !isDayActive(a.Days, sim.Weekday) { continue }
+        start := a.StartHour*60 + a.StartMinute
+        end := a.EndHour*60 + a.EndMinute
+        active := current>=start && current<end
+        if active && !a.Active {
+            a.Active=true; a.LastTriggered=time.Now()
+            for _,ad := range a.Devices { actions = append(actions, action{ id: ad.Id, state: a.State }) }
+        } else if !active && a.Active {
+            a.Active=false
+            for _,ad := range a.Devices { actions = append(actions, action{ id: ad.Id, state: !a.State }) }
+        }
+    }
+    mu.Unlock()
+
+    if len(actions) > 0 {
+        for _, act := range actions {
+            applyDeviceChange(act.id, act.state, "", nil, nil)
+        }
+        publishDevices()
+    }
 }
 
 // HTTP
@@ -218,6 +252,7 @@ func handlePutDevice(w http.ResponseWriter, r *http.Request) {
 		if it.Brightness != nil { br = it.Brightness }
 		if it.Speed != nil { sp = it.Speed }
 		applyDeviceChange(it.Id, it.State, it.Type, br, sp)
+		publishDevices()
 	}
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Keep-Alive", "timeout=5, max=50")
@@ -383,25 +418,26 @@ func handleNotFound(w http.ResponseWriter, r *http.Request) {
 }
 
 func onMQTTMessage(c mqtt.Client, m mqtt.Message) {
-	var raw any; if err:=json.Unmarshal(m.Payload(), &raw); err!=nil { return }
-	b, _ := json.Marshal(raw)
-	topic := m.Topic()
-	if topic=="casa/devices/cmd" {
-		if len(b)>0 && b[0]=='[' { var arr []ArduinoDeviceDto; _=json.Unmarshal(b,&arr); for _,it:=range arr { var br, sp *int; if it.Brightness!=nil { br=it.Brightness }; if it.Speed!=nil { sp=it.Speed }; applyDeviceChange(it.Id, it.State, it.Type, br, sp) }; publishDevices() } else { var it ArduinoDeviceDto; _=json.Unmarshal(b,&it); var br, sp *int; if it.Brightness!=nil { br=it.Brightness }; if it.Speed!=nil { sp=it.Speed }; applyDeviceChange(it.Id, it.State, it.Type, br, sp) }
-	} else if topic=="casa/automations/cmd" {
-		var dto map[string]any; _=json.Unmarshal(b,&dto); if cmd,ok:=dto["Cmd"].(string); ok && (cmd=="erase" || cmd=="delete") { id := int(dto["Id"].(float64)); mu.Lock(); idx:=id-1; if idx>=0 && idx<len(automations) { automations=append(automations[:idx], automations[idx+1:]...); publishAutomationErase(id) }; mu.Unlock(); return }
-		var a ArduinoAutomationDto; _=json.Unmarshal(b,&a); id := a.Id; mu.Lock(); if id==-1 { automations=append(automations, Automation{ StartHour:a.StartHour, StartMinute:a.StartMinute, EndHour:a.EndHour, EndMinute:a.EndMinute, Days:a.Days, State:a.State, Devices:a.Devices }); id=len(automations); publishAutomation(automations[id-1], id) } else if id>0 && id<=len(automations) { automations[id-1]=Automation{ StartHour:a.StartHour, StartMinute:a.StartMinute, EndHour:a.EndHour, EndMinute:a.EndMinute, Days:a.Days, State:a.State, Devices:a.Devices }; publishAutomation(automations[id-1], id) } ; mu.Unlock()
-	} else if topic=="casa/modes/cmd" {
-		var dto ArduinoModeDto; _=json.Unmarshal(b,&dto); nm:=strings.ToLower(dto.Name); if nm=="activity" { activityMode=dto.State; onActivityModeChanged(activityMode); publishMode("Activity", activityMode) } else if nm=="save-energy" || nm=="saveenergy" || nm=="save_energy" { saveEnergyMode=dto.State; onSaveEnergyModeChanged(saveEnergyMode); publishMode("SaveEnergy", saveEnergyMode) }
-	}
+    log.Printf("MQTT recibido topic=%s bytes=%d", m.Topic(), len(m.Payload()))
+    var raw any; if err:=json.Unmarshal(m.Payload(), &raw); err!=nil { return }
+    b, _ := json.Marshal(raw)
+    topic := m.Topic()
+    if topic=="casa/devices/cmd" {
+        if len(b)>0 && b[0]=='[' { var arr []ArduinoDeviceDto; _=json.Unmarshal(b,&arr); for _,it:=range arr { var br, sp *int; if it.Brightness!=nil { br=it.Brightness }; if it.Speed!=nil { sp=it.Speed }; applyDeviceChange(it.Id, it.State, it.Type, br, sp) }; publishDevices() } else { var it ArduinoDeviceDto; _=json.Unmarshal(b,&it); var br, sp *int; if it.Brightness!=nil { br=it.Brightness }; if it.Speed!=nil { sp=it.Speed }; applyDeviceChange(it.Id, it.State, it.Type, br, sp); publishDevices() }
+    } else if topic=="casa/automations/cmd" {
+        var dto map[string]any; _=json.Unmarshal(b,&dto); if cmd,ok:=dto["Cmd"].(string); ok && (cmd=="erase" || cmd=="delete") { id := int(dto["Id"].(float64)); mu.Lock(); idx:=id-1; if idx>=0 && idx<len(automations) { automations=append(automations[:idx], automations[idx+1:]...); publishAutomationErase(id) } ; mu.Unlock() ; return }
+        var a ArduinoAutomationDto; _=json.Unmarshal(b,&a); id := a.Id; mu.Lock(); if id==-1 { automations=append(automations, Automation{ StartHour:a.StartHour, StartMinute:a.StartMinute, EndHour:a.EndHour, EndMinute:a.EndMinute, Days:a.Days, State:a.State, Devices:a.Devices }); id=len(automations); publishAutomation(automations[id-1], id) } else if id>0 && id<=len(automations) { automations[id-1] = Automation{ StartHour:a.StartHour, StartMinute:a.StartMinute, EndHour:a.EndHour, EndMinute:a.EndMinute, Days:a.Days, State:a.State, Devices:a.Devices }; publishAutomation(automations[id-1], id) } ; mu.Unlock()
+    } else if topic=="casa/modes/cmd" {
+        var dto ArduinoModeDto; _=json.Unmarshal(b,&dto); nm:=strings.ToLower(dto.Name); if nm=="activity" { activityMode=dto.State; onActivityModeChanged(activityMode); publishMode("Activity", activityMode) } else if nm=="save-energy" || nm=="saveenergy" || nm=="save_energy" { saveEnergyMode=dto.State; onSaveEnergyModeChanged(saveEnergyMode); publishMode("Save-Energy", saveEnergyMode) }
+    }
 }
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	client = mustConnectMQTT()
-	if token := client.Subscribe("casa/devices/cmd", 0, onMQTTMessage); token.Wait() && token.Error()!=nil { log.Println("sub error:", token.Error()) }
-	if token := client.Subscribe("casa/automations/cmd", 0, onMQTTMessage); token.Wait() && token.Error()!=nil { log.Println("sub error:", token.Error()) }
-	if token := client.Subscribe("casa/modes/cmd", 0, onMQTTMessage); token.Wait() && token.Error()!=nil { log.Println("sub error:", token.Error()) }
+	if token := client.Subscribe("casa/devices/cmd", 0, onMQTTMessage); token.Wait() && token.Error()!=nil { log.Println("sub error:", token.Error()) } else { log.Println("MQTT suscrito a casa/devices/cmd") }
+	if token := client.Subscribe("casa/automations/cmd", 0, onMQTTMessage); token.Wait() && token.Error()!=nil { log.Println("sub error:", token.Error()) } else { log.Println("MQTT suscrito a casa/automations/cmd") }
+	if token := client.Subscribe("casa/modes/cmd", 0, onMQTTMessage); token.Wait() && token.Error()!=nil { log.Println("sub error:", token.Error()) } else { log.Println("MQTT suscrito a casa/modes/cmd") }
 
 	// Inicializar estado
 	sim.Init(8,0,1) // 1=Lunes

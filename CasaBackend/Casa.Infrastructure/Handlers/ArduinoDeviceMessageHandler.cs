@@ -35,6 +35,8 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
                 _logger.LogWarning("Lista de dispositivos vacía recibida por MQTT.");
                 return;
             }
+            _logger.LogInformation("MQTT 'casa/devices' recibido: {Count} dispositivos: {Ids}", dto.Count(), string.Join(", ", dto.Select(d => d.Id)));
+
             var ids = dto.Select(d => d.Id).Distinct().ToList();
             var existingResult = await _deviceRepository.GetByDeviceIdsAsync(ids);
             if(!existingResult.IsSuccess)
@@ -83,6 +85,10 @@ namespace CasaBackend.Casa.Infrastructure.Handlers
             if (!upsertResult.IsSuccess)
             {
                 _logger.LogError("Error en upsert de dispositivos: {Errors}", string.Join(", ", upsertResult.Errors));
+            }
+            else
+            {
+                _logger.LogInformation("Upsert OK: {Count} dispositivos actualizados/creados: {Ids}", entitiesToUpsert.Count, string.Join(", ", entitiesToUpsert.Select(e => e.Id)));
             }
         }
     }

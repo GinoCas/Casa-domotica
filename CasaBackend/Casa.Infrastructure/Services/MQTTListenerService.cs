@@ -87,6 +87,7 @@ namespace CasaBackend.Casa.Infrastructure.Services
         {
             var topic = e.ApplicationMessage.Topic;
             var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+            Console.WriteLine($"MQTT mensaje recibido: Topic={topic}, bytes={payload.Length}");
 
             // Create a new scope for each message to resolve scoped services
             using (var scope = _serviceProvider.CreateScope())
