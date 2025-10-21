@@ -31,7 +31,6 @@ struct Device {
     Led led;
     Fan fan;
   } props;
-  time_t lastModified;
 };
 
 struct AutomationDevice {
@@ -95,7 +94,7 @@ void updateSimTime() {
   }
 }
 
-void publishChangedDevices() {
+void publishChangedDevices(time_t modifiedTime = mktime(&simTime)) {
   if(changedDevicesIds.empty()){
     return;
   }
@@ -106,6 +105,7 @@ void publishChangedDevices() {
     JsonObject obj = arr.createNestedObject();
     obj["Id"] = idx + 1;
     obj["State"] = d.state;
+    obj["LastModified"] = modifiedTime;
     switch (d.type) {
       case DEVICE_LED:
         obj["Type"] = "Led";
@@ -131,11 +131,9 @@ void publishChangedDevices() {
 
 void applyDeviceChange(int id, bool state, const char* type, int brightness, int speed) {
   if (id <= 0 || id > devices.size()) return;
-  time_t now = mktime(&simTime);
   Device& device = devices[id - 1];
   changedDevicesIds.push_back(id - 1);
   device.state = state;
-  device.lastModified = now;
   
   bool isLed = (strcmp(type, "Led") == 0) || (strcmp(type, "") == 0 && device.type == DEVICE_LED);
   bool isFan = (strcmp(type, "Fan") == 0) || (strcmp(type, "") == 0 && device.type == DEVICE_FAN);
@@ -196,14 +194,14 @@ void checkAutomations() {
       for (auto ad : a.devices) {
         applyDeviceChange(ad.Id, a.state, "", -1, -1);
       }
-      publishChangedDevices();
+      publishChangedDevices(now);
     } else if (!shouldBeActive && a.isCurrentlyActive) {
       a.isCurrentlyActive = false;
       Serial.printf("⚙️ Desactivando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
       for (auto ad : a.devices) {
         applyDeviceChange(ad.Id, !a.state, "", -1, -1);
       }
-      publishChangedDevices();
+      publishChangedDevices(now);
     }
   }
 }
@@ -414,13 +412,29 @@ void handlePutDevice() {
       applyDeviceChange(id, state, type, brightness, speed);
     }
   }
-  publishChangedDevices();
+  const time_t time = mktime(&simTime);
+  publishChangedDevices(time);
 
   unsigned long proc = millis() - start;
   server.sendHeader("Connection", "keep-alive");
   server.sendHeader("Keep-Alive", "timeout=5, max=50");
   server.sendHeader("X-Proc-Time", String(proc));
-  server.send(200, "application/json", "{\"status\":\"true\"}");
+
+  StaticJsonDocument<196> outDoc;
+  outDoc["status"] = "true";
+  outDoc["LastModified"] = time;
+
+  struct tm* tm_info = localtime(&time);
+  if (tm_info != nullptr) {
+    char buff[32];
+    snprintf(buff, sizeof(buff), "%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec);
+    outDoc["LastModifiedText"] = buff;
+    outDoc["WeekDay"] = tm_info->tm_wday; // 0=Dom .. 6=Sab
+  }
+
+  String payload;
+  serializeJson(outDoc, payload);
+  server.send(200, "application/json", payload);
 }
 
 // 🔹 Nuevo endpoint: /automation
@@ -660,7 +674,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       int speed = doc["Speed"] | -1;
       applyDeviceChange(id, state, type, brightness, speed);
     }
-    publishChangedDevices();
+    publishChangedDevices(mktime(&simTime));
   } 
   else if (strcmp(topic, "casa/automations/cmd") == 0) {
     const char* cmd = doc["Cmd"] | "";
@@ -828,7 +842,7 @@ void setup() {
   simTime.tm_mday = 1; // Día del mes (no es crítico para la simulación)
   simTime.tm_mon = 0;  // Enero (no es crítico)
   simTime.tm_year = 2024 - 1900; // Años desde 1900
-  mktime(&simTime); // Normaliza y calcula el día de la semana (tm_wday)
+  time_t now = mktime(&simTime); // Normaliza y calcula el día de la semana (tm_wday)
 
   selectAndConnectWiFi();
 
@@ -870,7 +884,7 @@ void setup() {
   }
   
   // Publicar estado inicial
-  publishChangedDevices();
+  publishChangedDevices(now);
   Automation auto1;
   auto1.startHour = 8;
   auto1.startMinute = 0;

@@ -66,7 +66,7 @@ namespace CasaBackend.Casa.API.Controllers
             _logger.LogInformation("Dispositivo {DeviceId} encontrado exitosamente", id);
             return Ok(result.ToJson());
         }
-        [HttpGet("/device/modified-after")]
+        [HttpGet("/device/date")]
         public async Task<IActionResult> GetDevicesModifiedAfter([FromQuery] DateTime dateUtc)
         {
             var result = await _getDeviceUseCase.ExecuteModifiedAfterAsync(dateUtc);
