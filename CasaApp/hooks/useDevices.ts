@@ -1,21 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo /* , useRef */ } from "react";
 import useDeviceStore from "@/stores/useDeviceStore";
 import { deviceService } from "@/src/services/DeviceService";
 import useRoomStore from "@/stores/useRoomStore";
-import useModeStore from "@/stores/useModeStore";
+/* import useModeStore from "@/stores/useModeStore";
 import { modeService } from "@/src/services/ModeService";
-import { refreshDevices as refreshDevicesAction } from "@/src/services/DeviceActions";
-import { Device } from "@/src/core/entities/Device";
+import { refreshDevices as refreshDevicesAction } from "@/src/services/DeviceActions"; */
 
 export default function useDevices() {
-  const [roomDevices, setRoomDevices] = useState<Device[]>([]);
-  const [unassignedDevices, setUnassignedDevices] = useState<Device[]>([]);
-  const [loadingRoomDevices, setLoadingRoomDevices] = useState(true);
-
   const { currentRoom, rooms } = useRoomStore();
 
   // Optimización: usar selectores específicos para evitar re-renders innecesarios
   const devices = useDeviceStore((state) => state.devices);
+  const isLoadingDevices = useDeviceStore((state) => state.isLoadingDevices);
   const handleLoadDevices = useDeviceStore((state) => state.handleLoadDevices);
   const changeLoadingDevices = useDeviceStore(
     (state) => state.changeLoadingDevices,
@@ -24,11 +20,11 @@ export default function useDevices() {
   // Memoizar la conversión de objeto a array solo cuando devices cambie
   const deviceList = useMemo(() => Object.values(devices), [devices]);
 
-  const { activityMode } = useModeStore();
+  /*   const { activityMode } = useModeStore();
 
   const wasActiveRef = useRef<boolean>(false);
   const activityDisabledAtRef = useRef<number | null>(null);
-
+ */
   useEffect(() => {
     const loadDevices = async () => {
       changeLoadingDevices(true);
@@ -42,10 +38,10 @@ export default function useDevices() {
       changeLoadingDevices(false);
     };
     loadDevices();
-  }, [handleLoadDevices, changeLoadingDevices]);
+  }, []);
 
   // Polling condicionado por modo actividad: solo activo y cada 5s
-  useEffect(() => {
+  /*   useEffect(() => {
     if (!activityMode) return;
 
     const interval = setInterval(async () => {
@@ -68,10 +64,10 @@ export default function useDevices() {
     }, 7000);
 
     return () => clearInterval(interval);
-  }, [activityMode, handleLoadDevices]);
+  }, [activityMode, handleLoadDevices]); */
 
   // Al desactivar modo actividad: esperar hasta que lastChanged cambie y refrescar
-  useEffect(() => {
+  /* useEffect(() => {
     if (!activityMode && wasActiveRef.current) {
       changeLoadingDevices(true); // Mostrar loader mientras esperamos
       activityDisabledAtRef.current = Date.now();
@@ -114,21 +110,8 @@ export default function useDevices() {
     if (activityMode) {
       wasActiveRef.current = true;
     }
-  }, [activityMode, changeLoadingDevices]);
+  }, [activityMode, changeLoadingDevices]); */
 
-  // Optimización: memoizar el cálculo de dispositivos no asignados
-  const unassignedDevicesMemo = useMemo(() => {
-    const allDeviceIdsInRooms = rooms.flatMap((room) => room.deviceIds);
-    return deviceList.filter(
-      (device) => !allDeviceIdsInRooms.includes(device.id),
-    );
-  }, [deviceList, rooms]);
-
-  useEffect(() => {
-    setUnassignedDevices(unassignedDevicesMemo);
-  }, [unassignedDevicesMemo]);
-
-  // Optimización: memoizar el cálculo de dispositivos de la habitación
   const roomDevicesMemo = useMemo(() => {
     if (currentRoom?.name === "Todas") {
       return deviceList;
@@ -137,15 +120,17 @@ export default function useDevices() {
     }
   }, [currentRoom, deviceList]);
 
-  useEffect(() => {
-    setLoadingRoomDevices(true);
-    setRoomDevices(roomDevicesMemo);
-    setLoadingRoomDevices(false);
-  }, [roomDevicesMemo]);
+  const unassignedDevices = useMemo(() => {
+    const allDeviceIdsInRooms = rooms.flatMap((room) => room.deviceIds);
+    return deviceList.filter(
+      (device) => !allDeviceIdsInRooms.includes(device.id),
+    );
+  }, [deviceList, rooms]);
 
   return {
-    roomDevices,
-    loadingRoomDevices,
+    roomDevicesMemo,
+    deviceList,
+    isLoadingDevices,
     unassignedDevices,
   };
 }

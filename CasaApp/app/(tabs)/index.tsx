@@ -1,13 +1,13 @@
+import { Text } from "react-native";
 import { TimePickerTest } from "@/components/room/time-picker";
 import { RoomView } from "@/components/room/view";
 import { Container } from "@/components/ui/container";
 import useDevices from "@/hooks/useDevices";
 import useSpeechStore from "@/stores/useSpeechStore";
-import { Text } from "react-native";
 
 export default function Home() {
   const { results, voice, cmdVoice } = useSpeechStore();
-  const { roomDevices, loadingRoomDevices, unassignedDevices } = useDevices();
+  const { roomDevicesMemo, isLoadingDevices, unassignedDevices } = useDevices();
 
   return (
     <Container>
@@ -16,8 +16,8 @@ export default function Home() {
       <Text>{voice}</Text>
       <Text>{cmdVoice}</Text>
       <RoomView
-        devices={roomDevices}
-        loadingRoomDevices={loadingRoomDevices}
+        devices={roomDevicesMemo}
+        loadingRoomDevices={isLoadingDevices}
         unassignedDevices={unassignedDevices}
       />
     </Container>

@@ -10,7 +10,7 @@ interface DeviceStoreState {
 }
 
 const useDeviceStore = create<DeviceStoreState>()(
-  immer((set, get) => ({
+  immer((set) => ({
     devices: {},
     isLoadingDevices: false,
     handleLoadDevices: (newDevices: Device[]) => {
