@@ -6,6 +6,22 @@
 #include <WiFiUdp.h>
 #include <time.h>
 
+const char* mqttStateToString(int s) {
+  switch (s) {
+    case -4: return "MQTT_CONNECTION_TIMEOUT";
+    case -3: return "MQTT_CONNECTION_LOST";
+    case -2: return "MQTT_CONNECT_FAILED";
+    case -1: return "MQTT_DISCONNECTED";
+    case 0:  return "MQTT_CONNECTED";
+    case 1:  return "MQTT_CONNECT_BAD_PROTOCOL";
+    case 2:  return "MQTT_CONNECT_BAD_CLIENT_ID";
+    case 3:  return "MQTT_CONNECT_UNAVAILABLE";
+    case 4:  return "MQTT_CONNECT_BAD_CREDENTIALS";
+    case 5:  return "MQTT_CONNECT_UNAUTHORIZED";
+    default: return "UNKNOWN";
+  }
+}
+
 struct tm simTime = { 0 };
 unsigned long lastSimTimeUpdate = 0;
 
@@ -98,7 +114,7 @@ void publishChangedDevices(time_t modifiedTime = mktime(&simTime)) {
   if(changedDevicesIds.empty()){
     return;
   }
-  StaticJsonDocument<1024> doc;
+  StaticJsonDocument<2048> doc;
   JsonArray arr = doc.createNestedArray("Data");
   for (int idx : changedDevicesIds) {
     const Device &d = devices[idx];
@@ -125,8 +141,16 @@ void publishChangedDevices(time_t modifiedTime = mktime(&simTime)) {
   }
   String json;
   serializeJson(doc, json);
-  client.publish("casa/devices", json.c_str());
-  Serial.println("Publicado cambio MQTT: " + json);
+  Serial.printf("📏 JSON real=%u bytes\n", (unsigned)json.length());
+
+  bool ok = client.publish("casa/devices", json.c_str());
+  if(!ok){
+      int st = client.state();
+      Serial.printf("❌ Publish falló: state=%d (%s), conectado=%d\n", st, mqttStateToString(st), client.connected() ? 1 : 0);
+  }else{
+      Serial.println("Publicado cambio MQTT: " + json);
+  }
+  changedDevicesIds.clear();
 }
 
 void applyDeviceChange(int id, bool state, const char* type, int brightness, int speed) {
@@ -847,6 +871,7 @@ void setup() {
   selectAndConnectWiFi();
 
   client.setServer(mqttServer, mqttPort);
+  client.setBufferSize(4096);
   espClient.setNoDelay(true);
   client.setCallback(callback);
   reconnectMQTT();

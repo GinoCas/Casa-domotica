@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace CasaBackend.Casa.InterfaceAdapter.DTOs
 {
     public class ArduinoDeviceDto
@@ -7,6 +9,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.DTOs
         public string? Type { get; set; } = string.Empty;
         public int? Brightness { get; set; }
         public int? Speed { get; set; }
-        public DateTime LastModified { get; set; }
+		[JsonConverter(typeof(Newtonsoft.Json.Converters.UnixDateTimeConverter))]
+		public DateTime LastModified { get; set; }
     }
 }

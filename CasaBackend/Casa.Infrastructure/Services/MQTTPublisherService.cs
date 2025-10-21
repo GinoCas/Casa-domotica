@@ -60,7 +60,7 @@ namespace CasaBackend.Casa.Infrastructure.Services
                 .WithTopic(topic)
                 .WithPayload(Encoding.UTF8.GetBytes(payload))
                 .Build();
-
+			Console.WriteLine("Enviando mensaje por MQTT:" + payload + " en topic:" + topic);
             await _mqttClient.PublishAsync(message);
         }
     }
