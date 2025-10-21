@@ -60,7 +60,7 @@ const DeviceModal = ({
       <View style={styles.field}>
         <Text style={styles.label}>Habitación</Text>
         <Picker
-          style={{ width: 150 }}
+          style={{ width: "auto" }}
           selectedValue={roomId}
           onValueChange={(itemValue: number) => setRoomId(itemValue)}
         >
