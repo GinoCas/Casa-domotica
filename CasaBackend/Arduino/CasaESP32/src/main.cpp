@@ -22,8 +22,6 @@ const char* mqttStateToString(int s) {
   }
 }
 
-struct tm simTime = { 0 };
-unsigned long lastSimTimeUpdate = 0;
 
 enum DeviceType {
   DEVICE_LED,
@@ -100,17 +98,47 @@ WebServer server(80);
 // ========================== FUNCIONES BASE ============================
 // ======================================================================
 
-void updateSimTime() {
-  unsigned long now = millis();
-  if (now - lastSimTimeUpdate >= 1000) { // 1 segundo real = 1 minuto simulado
-    lastSimTimeUpdate = now;
-    simTime.tm_min++;
-    mktime(&simTime); // Normaliza la estructura tm (maneja desbordes)
-    //Serial.printf("🕒 Hora simulada: %02d:%02d | Día: %d\n", simTime.tm_hour, simTime.tm_min, simTime.tm_wday);
+
+String toIso8601(time_t t) {
+  struct tm* tm_info = gmtime(&t);
+  char buff[25];
+  if (tm_info != nullptr) {
+    snprintf(buff, sizeof(buff), "%04d-%02d-%02dT%02d:%02d:%02dZ",
+             tm_info->tm_year + 1900, tm_info->tm_mon + 1, tm_info->tm_mday,
+             tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec);
+    return String(buff);
+  }
+  return String("");
+}
+
+bool timeSynced = false;
+
+inline bool isTimeValid(time_t t) {
+  return t > 1700000000;
+}
+
+time_t nowUtc() {
+  return time(nullptr);
+}
+
+void initNtp() {
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+  for (int i = 0; i < 20; ++i) {
+    delay(250);
+    time_t t = time(nullptr);
+    if (isTimeValid(t)) {
+      timeSynced = true;
+      Serial.println("⏱️ NTP sincronizado correctamente");
+      break;
+    }
+    Serial.println("⌛ Esperando NTP...");
+  }
+  if (!timeSynced) {
+    Serial.println("⚠️ NTP no disponible");
   }
 }
 
-void publishChangedDevices(time_t modifiedTime = mktime(&simTime)) {
+void publishChangedDevices(time_t modifiedTime = nowUtc()) {
   if(changedDevicesIds.empty()){
     return;
   }
@@ -121,7 +149,7 @@ void publishChangedDevices(time_t modifiedTime = mktime(&simTime)) {
     JsonObject obj = arr.createNestedObject();
     obj["Id"] = idx + 1;
     obj["State"] = d.state;
-    obj["LastModified"] = modifiedTime;
+    obj["LastModified"] = toIso8601(modifiedTime);
     switch (d.type) {
       case DEVICE_LED:
         obj["Type"] = "Led";
@@ -198,16 +226,19 @@ bool isDayActive(byte bitmask, int weekday) {
 }
 
 void checkAutomations() {
-  updateSimTime();
   if (activityMode) return;
-  time_t now = mktime(&simTime);
+  time_t now = nowUtc();
+  struct tm* tm_info = localtime(&now);
+  if (tm_info == nullptr) {
+    return;
+  }
 
   for (auto& a : automations) {
-    if (!isDayActive(a.days, simTime.tm_wday)) continue;
+    if (!isDayActive(a.days, tm_info->tm_wday)) continue;
 
     int start = a.startHour * 60 + a.startMinute;
     int end = a.endHour * 60 + a.endMinute;
-    int currentTime = simTime.tm_hour * 60 + simTime.tm_min;
+    int currentTime = tm_info->tm_hour * 60 + tm_info->tm_min;
 
     bool shouldBeActive = (currentTime >= start && currentTime < end);
 
@@ -436,8 +467,8 @@ void handlePutDevice() {
       applyDeviceChange(id, state, type, brightness, speed);
     }
   }
-  const time_t time = mktime(&simTime);
-  publishChangedDevices(time);
+  const time_t time = nowUtc();
+publishChangedDevices(time);
 
   unsigned long proc = millis() - start;
   server.sendHeader("Connection", "keep-alive");
@@ -446,7 +477,7 @@ void handlePutDevice() {
 
   StaticJsonDocument<196> outDoc;
   outDoc["status"] = "true";
-  outDoc["LastModified"] = time;
+  outDoc["LastModified"] = toIso8601(time);
 
   struct tm* tm_info = localtime(&time);
   if (tm_info != nullptr) {
@@ -523,55 +554,6 @@ void handlePutAutomation() {
       server.send(404, "application/json", "{\"error\":\"automation not found\"}");
     }
   }
-}
-
-// NUEVO endpoint: /time para sincronizar la hora simulada
-void handlePutTime() {
-  unsigned long start = millis();
-  if (!server.hasArg("plain")) {
-    server.sendHeader("Connection", "keep-alive");
-    server.sendHeader("Keep-Alive", "timeout=5, max=50");
-    server.send(400, "application/json", "{\"error\":\"no body\"}");
-    return;
-  }
-
-  StaticJsonDocument<256> doc;
-  DeserializationError error = deserializeJson(doc, server.arg("plain"));
-  if (error) {
-    server.sendHeader("Connection", "keep-alive");
-    server.sendHeader("Keep-Alive", "timeout=5, max=50");
-    server.send(400, "application/json", "{\"error\":\"invalid JSON\"}");
-    return;
-  }
-
-  int hour = doc["Hour"] | -1;
-  int minute = doc["Minute"] | -1;
-  int second = doc["Second"] | 0;
-  int weekDay = doc["WeekDay"] | -1; // 0=Domingo .. 6=Sabado
-
-  if (hour < 0 || minute < 0 || weekDay < 0) {
-    server.sendHeader("Connection", "keep-alive");
-    server.sendHeader("Keep-Alive", "timeout=5, max=50");
-    server.send(400, "application/json", "{\"error\":\"missing fields\"}");
-    return;
-  }
-
-  simTime.tm_hour = hour;
-  simTime.tm_min = minute;
-  simTime.tm_sec = second;
-
-  int currentWday = simTime.tm_wday;
-  int deltaDays = (weekDay - currentWday + 7) % 7;
-  simTime.tm_mday += deltaDays;
-  mktime(&simTime);
-  lastSimTimeUpdate = millis();
-  Serial.printf("\xF0\x9F\x95\x92 Sincronizado: %02d:%02d:%02d | Día: %d\n", simTime.tm_hour, simTime.tm_min, simTime.tm_sec, simTime.tm_wday);
-
-  unsigned long proc = millis() - start;
-  server.sendHeader("Connection", "keep-alive");
-  server.sendHeader("Keep-Alive", "timeout=5, max=50");
-  server.sendHeader("X-Proc-Time", String(proc));
-  server.send(200, "application/json", "{\"data\":true}");
 }
 
 void handlePutMode() {
@@ -698,7 +680,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       int speed = doc["Speed"] | -1;
       applyDeviceChange(id, state, type, brightness, speed);
     }
-    publishChangedDevices(mktime(&simTime));
+    publishChangedDevices(nowUtc());
   } 
   else if (strcmp(topic, "casa/automations/cmd") == 0) {
     const char* cmd = doc["Cmd"] | "";
@@ -859,16 +841,10 @@ void setup() {
   activitySnapshotValid = false;
   randomSeed(micros());
 
-  // Inicializar la hora simulada
-  simTime.tm_hour = 8;
-  simTime.tm_min = 0;
-  simTime.tm_sec = 0;
-  simTime.tm_mday = 1; // Día del mes (no es crítico para la simulación)
-  simTime.tm_mon = 0;  // Enero (no es crítico)
-  simTime.tm_year = 2024 - 1900; // Años desde 1900
-  time_t now = mktime(&simTime); // Normaliza y calcula el día de la semana (tm_wday)
+  time_t now = nowUtc();
 
   selectAndConnectWiFi();
+  initNtp();
 
   client.setServer(mqttServer, mqttPort);
   client.setBufferSize(4096);
@@ -879,7 +855,6 @@ void setup() {
   server.on("/device", HTTP_PUT, handlePutDevice);
   server.on("/automation", HTTP_PUT, handlePutAutomation);
   server.on("/mode", HTTP_PUT, handlePutMode);
-  server.on("/time", HTTP_PUT, handlePutTime);
   server.on("/", handleAlive);
   server.onNotFound(handleNotFound);
   server.begin();
@@ -941,7 +916,6 @@ void loop() {
   // Reconexión MQTT no bloqueante
   reconnectMQTT();
 
-  updateSimTime();
 
   static unsigned long lastAutoCheck = 0;
   if (millis() - lastAutoCheck > 1000) {
