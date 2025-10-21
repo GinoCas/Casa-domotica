@@ -23,7 +23,9 @@ export class HttpClient {
 
   async get<T>(endpoint: string): Promise<Result<T>> {
     try {
+      console.log("obteniendo datos:", `${this.baseUrl}/${endpoint}`);
       const response = await fetch(`${this.baseUrl}/${endpoint}`);
+      console.log("datos obtenidos en:", `${this.baseUrl}/${endpoint}`);
       return await this.handleResponse<T>(response);
     } catch (error) {
       return Result.fromError(error as Error);

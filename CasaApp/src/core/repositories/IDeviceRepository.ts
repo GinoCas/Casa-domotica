@@ -8,4 +8,5 @@ export interface IDeviceRepository {
   getById(id: number): Promise<Result<Device>>;
   updateDevice(deviceId: number, dto: DeviceDto): Promise<Result<boolean>>;
   controlDevice(dtos: ArduinoDeviceDto[]): Promise<Result<boolean>>;
+  getModifiedAfter(dateUtc: string): Promise<Result<Device[]>>;
 }

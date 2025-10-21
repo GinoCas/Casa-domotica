@@ -56,3 +56,18 @@ export class ControlDeviceUseCase {
     }
   }
 }
+
+export class GetDevicesModifiedAfterUseCase {
+  constructor(private deviceRepository: IDeviceRepository) {}
+
+  async execute(dateUtc: string): Promise<Result<Device[]>> {
+    try {
+      if (!dateUtc || typeof dateUtc !== "string") {
+        return Result.failure(["dateUtc must be a valid ISO string"]);
+      }
+      return await this.deviceRepository.getModifiedAfter(dateUtc);
+    } catch (error) {
+      return Result.fromError(error as Error);
+    }
+  }
+}

@@ -30,6 +30,11 @@ export class DeviceService {
     const useCase = this.container.getControlDeviceUseCase();
     return await useCase.execute(dtos);
   }
+
+  async getDevicesModifiedAfter(dateUtc: string): Promise<Result<Device[]>> {
+    const useCase = this.container.getGetDevicesModifiedAfterUseCase();
+    return await useCase.execute(dateUtc);
+  }
 }
 
 export const deviceService = new DeviceService();

@@ -7,6 +7,7 @@ import {
   GetDeviceByIdUseCase,
   UpdateDeviceUseCase,
   ControlDeviceUseCase,
+  GetDevicesModifiedAfterUseCase,
 } from "../application/usecases/DeviceUseCases";
 import {
   GetAllRoomsUseCase,
@@ -41,6 +42,7 @@ export class DependencyContainer {
   private getDeviceByIdUseCase: GetDeviceByIdUseCase;
   private updateDeviceUseCase: UpdateDeviceUseCase;
   private controlDeviceUseCase: ControlDeviceUseCase;
+  private getDevicesModifiedAfterUseCase: GetDevicesModifiedAfterUseCase;
 
   private getAllRoomsUseCase: GetAllRoomsUseCase;
   private addDeviceToRoomUseCase: AddDeviceToRoomUseCase;
@@ -82,6 +84,9 @@ export class DependencyContainer {
     this.getDeviceByIdUseCase = new GetDeviceByIdUseCase(this.deviceRepository);
     this.updateDeviceUseCase = new UpdateDeviceUseCase(this.deviceRepository);
     this.controlDeviceUseCase = new ControlDeviceUseCase(this.deviceRepository);
+    this.getDevicesModifiedAfterUseCase = new GetDevicesModifiedAfterUseCase(
+      this.deviceRepository,
+    );
     this.getAllRoomsUseCase = new GetAllRoomsUseCase(this.roomRepository);
     this.addDeviceToRoomUseCase = new AddDeviceToRoomUseCase(
       this.roomRepository,
@@ -127,6 +132,9 @@ export class DependencyContainer {
   public getControlDeviceUseCase(): ControlDeviceUseCase {
     return this.controlDeviceUseCase;
   }
+  public getGetDevicesModifiedAfterUseCase(): GetDevicesModifiedAfterUseCase {
+    return this.getDevicesModifiedAfterUseCase;
+  }
 
   public getGetAllRoomsUseCase(): GetAllRoomsUseCase {
     return this.getAllRoomsUseCase;
@@ -164,6 +172,8 @@ export class DependencyContainer {
         return this.updateDeviceUseCase as T;
       case "controlDevice":
         return this.controlDeviceUseCase as T;
+      case "getDevicesModifiedAfter":
+        return this.getDevicesModifiedAfterUseCase as T;
       case "getAllRooms":
         return this.getAllRoomsUseCase as T;
       case "addDeviceToRoom":

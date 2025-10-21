@@ -20,6 +20,10 @@ export class ApiDeviceRepository implements IDeviceRepository {
     return await this.httpClient.get<Device>(`device/${id}`);
   }
 
+  async getModifiedAfter(dateUtc: string): Promise<Result<Device[]>> {
+    return await this.httpClient.get<Device[]>(`device/date?dateUtc=${encodeURIComponent(dateUtc)}`);
+  }
+
   async executeCommand(
     deviceId: number,
     command: string,
