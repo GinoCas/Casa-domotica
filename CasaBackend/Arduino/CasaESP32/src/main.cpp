@@ -31,6 +31,7 @@ struct Device {
     Led led;
     Fan fan;
   } props;
+  time_t lastModified;
 };
 
 struct AutomationDevice {
@@ -52,6 +53,7 @@ struct Automation {
 
 // --- Listas de dispositivos y automatizaciones ---
 arx::stdx::vector<Device, 12> devices;
+arx::stdx::vector<int, 12> changedDevicesIds;
 arx::stdx::vector<Automation, 20> automations;
 
 bool saveEnergyMode = false;
@@ -93,13 +95,16 @@ void updateSimTime() {
   }
 }
 
-void publishDevices() {
+void publishChangedDevices() {
+  if(changedDevicesIds.empty()){
+    return;
+  }
   StaticJsonDocument<1024> doc;
   JsonArray arr = doc.createNestedArray("Data");
-  for (size_t i = 0; i < devices.size(); i++) {
-    const Device &d = devices[i];
+  for (int idx : changedDevicesIds) {
+    const Device &d = devices[idx];
     JsonObject obj = arr.createNestedObject();
-    obj["Id"] = i + 1;
+    obj["Id"] = idx + 1;
     obj["State"] = d.state;
     switch (d.type) {
       case DEVICE_LED:
@@ -126,9 +131,12 @@ void publishDevices() {
 
 void applyDeviceChange(int id, bool state, const char* type, int brightness, int speed) {
   if (id <= 0 || id > devices.size()) return;
+  time_t now = mktime(&simTime);
   Device& device = devices[id - 1];
+  changedDevicesIds.push_back(id - 1);
   device.state = state;
-
+  device.lastModified = now;
+  
   bool isLed = (strcmp(type, "Led") == 0) || (strcmp(type, "") == 0 && device.type == DEVICE_LED);
   bool isFan = (strcmp(type, "Fan") == 0) || (strcmp(type, "") == 0 && device.type == DEVICE_FAN);
 
@@ -188,15 +196,14 @@ void checkAutomations() {
       for (auto ad : a.devices) {
         applyDeviceChange(ad.Id, a.state, "", -1, -1);
       }
-      publishDevices();
+      publishChangedDevices();
     } else if (!shouldBeActive && a.isCurrentlyActive) {
       a.isCurrentlyActive = false;
       Serial.printf("⚙️ Desactivando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
       for (auto ad : a.devices) {
         applyDeviceChange(ad.Id, !a.state, "", -1, -1);
       }
-      // Publicar una sola vez por desactivación de automatización
-      publishDevices();
+      publishChangedDevices();
     }
   }
 }
@@ -288,12 +295,10 @@ void onActivityModeChanged(bool enabled) {
       }
       // Apagar dispositivos al entrar en modo actividad (sin publicar por dispositivo)
       if (d.state) {
-        d.state = false;
-        analogWrite(d.pin, 0);
+        applyDeviceChange(i+1, false, "", -1, -1);
       }
     }
-    // Publicar una sola vez el estado agregado
-    publishDevices();
+    publishChangedDevices();
     scheduleNextActivityEvent();
   } else {
     // Restaurar estados/parametros previos al salir del modo actividad
@@ -315,8 +320,7 @@ void onActivityModeChanged(bool enabled) {
         activityPreLedBrightness[i] = -1;
         activityPreFanSpeed[i] = -1;
       }
-      // Publicar una sola vez al finalizar restauración
-      publishDevices();
+      publishChangedDevices();
     }
     activitySnapshotValid = false;
   }
@@ -325,50 +329,46 @@ void onActivityModeChanged(bool enabled) {
 void handleActivityModeLoop() {
   if (!activityMode) return;
   unsigned long now = millis();
-  if (now >= activityNextEventAt) {
+  if (now >= activityNextEventAt) 
+  {
     // Apagar el dispositivo anterior si estaba encendido
     if (activityCurrentDevice >= 0 && activityCurrentDevice < devices.size()) {
       Device &prev = devices[activityCurrentDevice];
       if (prev.state) {
-        prev.state = false;
-        analogWrite(prev.pin, 0);
+        applyDeviceChange(activityCurrentDevice + 1, false, "", -1, -1);
       }
     }
 
-    if (devices.size() > 0) {
+    if (devices.size() > 0) 
+    {
       int idx = random(0, devices.size());
       if (devices.size() > 1 && idx == activityCurrentDevice) {
         idx = (idx + 1) % devices.size();
       }
       Device &d = devices[idx];
       activityCurrentDevice = idx;
-
-      if (d.type == DEVICE_LED) {
+      if (d.type == DEVICE_LED) 
+      {
         int targetBrightness = d.props.led.brightness;
         if (saveEnergyMode) {
-          // Guardar el brillo deseado para restaurar al salir del modo ahorro
           ledPreSaveBrightness[idx] = targetBrightness;
           int outBr = targetBrightness > 128 ? 128 : targetBrightness;
-          d.state = true;
-          analogWrite(d.pin, outBr);
+          applyDeviceChange(idx + 1, true, "", outBr, -1);
         } else {
-          d.state = true;
-          analogWrite(d.pin, targetBrightness);
+          // Activar LED con brillo normal
+          applyDeviceChange(idx + 1, true, "", targetBrightness, -1);
         }
       } else if (d.type == DEVICE_FAN) {
+        // Calcular PWM según velocidad y activar
         int pwm = map(d.props.fan.speed, 0, 3, 0, 255);
-        d.state = true;
-        analogWrite(d.pin, pwm);
+        applyDeviceChange(idx + 1, true, "", -1, pwm);
       } else {
-        d.state = true;
-        analogWrite(d.pin, 1);
+        // Otros dispositivos (por ejemplo TV o genérico)
+        applyDeviceChange(idx + 1, true, "", -1, -1);
       }
+      publishChangedDevices();
+      scheduleNextActivityEvent();
     }
-
-    // Publicar una sola vez cambios de modo actividad
-    publishDevices();
-
-    scheduleNextActivityEvent();
   }
 }
 
@@ -404,8 +404,6 @@ void handlePutDevice() {
       int speed = item["Speed"] | -1;
       applyDeviceChange(id, state, type, brightness, speed);
     }
-    // Publicar una sola vez al terminar el lote
-    publishDevices();
   } else {
     int id = doc["Id"] | -1;
     if (id != -1) {
@@ -416,6 +414,7 @@ void handlePutDevice() {
       applyDeviceChange(id, state, type, brightness, speed);
     }
   }
+  publishChangedDevices();
 
   unsigned long proc = millis() - start;
   server.sendHeader("Connection", "keep-alive");
@@ -653,8 +652,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
         int speed = item["Speed"] | -1;
         applyDeviceChange(id, state, type, brightness, speed);
       }
-      // Publicar una sola vez al terminar el lote
-      publishDevices();
     } else {
       int id = doc["Id"];
       bool state = doc["State"];
@@ -663,6 +660,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       int speed = doc["Speed"] | -1;
       applyDeviceChange(id, state, type, brightness, speed);
     }
+    publishChangedDevices();
   } 
   else if (strcmp(topic, "casa/automations/cmd") == 0) {
     const char* cmd = doc["Cmd"] | "";
@@ -872,7 +870,7 @@ void setup() {
   }
   
   // Publicar estado inicial
-  publishDevices();
+  publishChangedDevices();
   Automation auto1;
   auto1.startHour = 8;
   auto1.startMinute = 0;

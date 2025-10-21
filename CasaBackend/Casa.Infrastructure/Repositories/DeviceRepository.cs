@@ -111,6 +111,25 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             return CoreResult<IEnumerable<DeviceEntity>>.Success(entities);
         }
 
+        public async Task<CoreResult<IEnumerable<DeviceEntity>>> GetDevicesModifiedAfterAsync(DateTime dateUtc)
+        {
+            var models = await _dbContext.Devices
+                .Where(d => d.LastModified >= dateUtc)
+                .ToListAsync();
+
+            var allCapabilities = await _capabilityService.GetAllCapabilitiesAsync();
+            var entities = new List<DeviceEntity>();
+            foreach (var model in models)
+            {
+                var dto = new DeviceContextDto
+                {
+                    DeviceModel = model,
+                    Capabilities = allCapabilities.ContainsKey(model.Id) ? allCapabilities[model.Id] : []
+                };
+                entities.Add(_deviceFactory.Fabric(dto).Data);
+            }
+            return CoreResult<IEnumerable<DeviceEntity>>.Success(entities);
+        }
         public async Task<CoreResult<IEnumerable<DeviceEntity>>> UpsertDevicesAsync(IEnumerable<DeviceEntity> devices)
         {
             if (!devices.Any()) return CoreResult<IEnumerable<DeviceEntity>>.Success([]);

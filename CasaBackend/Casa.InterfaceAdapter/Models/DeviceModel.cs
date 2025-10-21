@@ -14,5 +14,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
         public string Description { get; set; } = string.Empty;
         [Column("devi_type")]
         public string DeviceType { get; set; } = string.Empty;
+        [Column("devi_last_modified")]
+        public DateTime LastModified { get; set; }
     }
 }

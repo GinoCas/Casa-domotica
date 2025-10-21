@@ -19,6 +19,7 @@ CREATE TABLE device(
 	devi_type VARCHAR(50),
 	devi_name VARCHAR(100),
 	devi_description VARCHAR(100),
+	devi_last_modified DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),
 	PRIMARY KEY(devi_id),
 );
 

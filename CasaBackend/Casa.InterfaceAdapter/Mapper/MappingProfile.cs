@@ -19,7 +19,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
             CreateMap<CommandDto, CommandEntity>();
             CreateMap<ArduinoDeviceDto, DeviceEntity>()
                 .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.Type))
-                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State));
+                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State))
+                .ForMember(dest => dest.LastModified, opt => opt.MapFrom(src => src.LastModified == default ? System.DateTime.UtcNow : src.LastModified));
 
             CreateMap<DeviceEntity, DeviceModel>()
                 .ForMember(dest => dest.DeviceType, opt => opt.MapFrom(src => src.DeviceType.ToString()))
