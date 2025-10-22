@@ -7,6 +7,7 @@ using CasaBackend.Casa.InterfaceAdapter.Presenters.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace CasaBackend.Casa.API.Controllers
 {
@@ -47,6 +48,14 @@ namespace CasaBackend.Casa.API.Controllers
                 return BadRequest(result.ToJson());
             }
             _logger.LogInformation("Automation {AutomationId} found successfully", id);
+            return Ok(result.ToJson());
+        }
+
+        [HttpGet("/automation/date")]
+        public async Task<IActionResult> GetAutomationsModifiedAfter([FromQuery] DateTime dateUtc)
+        {
+            _logger.LogInformation("Obteniendo automatizaciones modificadas desde {date}", dateUtc);
+            var result = await _getAutomationUseCase.ExecuteModifiedAfterAsync(dateUtc);
             return Ok(result.ToJson());
         }
 

@@ -4,7 +4,7 @@ import GlobalStyles from "@/Utils/globalStyles";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { Switch } from "../ui/switch";
 import { Automation } from "@/src/core/entities/Automation";
-import useAutomationStore from "@/stores/useAutomationStore";
+import { controlAutomation } from "@/src/services/AutomationActions";
 
 export default function AutomationCard({
   automation,
@@ -14,7 +14,6 @@ export default function AutomationCard({
   onPress: () => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(automation?.state);
-  const { controlAutomation } = useAutomationStore();
 
   const handleToggle = async () => {
     const newState = !isEnabled;

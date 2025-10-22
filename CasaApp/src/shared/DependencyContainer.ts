@@ -20,6 +20,7 @@ import {
   GetAutomationByIdUseCase,
   UpdateAutomationUseCase,
   ControlAutomationUseCase,
+  GetAutomationsModifiedAfterUseCase,
 } from "../application/usecases/AutomationUseCases";
 import { ApiModeRepository } from "../infrastructure/repositories/ApiModeRepository";
 import {
@@ -51,6 +52,7 @@ export class DependencyContainer {
   private deleteAutomationUseCase: DeleteAutomationUseCase;
   private updateAutomationUseCase: UpdateAutomationUseCase;
   private controlAutomationUseCase: ControlAutomationUseCase;
+  private getAutomationsModifiedAfterUseCase: GetAutomationsModifiedAfterUseCase;
   private controlModeUseCase: ControlModeUseCase;
   private getModesUseCase: GetModesUseCase;
 
@@ -104,6 +106,8 @@ export class DependencyContainer {
     this.controlAutomationUseCase = new ControlAutomationUseCase(
       this.automationRepository,
     );
+    this.getAutomationsModifiedAfterUseCase =
+      new GetAutomationsModifiedAfterUseCase(this.automationRepository);
     this.controlModeUseCase = new ControlModeUseCase(this.modeRepository);
     this.getModesUseCase = new GetModesUseCase(this.modeRepository);
   }
@@ -153,6 +157,9 @@ export class DependencyContainer {
   public getControlAutomationUseCase(): ControlAutomationUseCase {
     return this.controlAutomationUseCase;
   }
+  public getGetAutomationsModifiedAfterUseCase(): GetAutomationsModifiedAfterUseCase {
+    return this.getAutomationsModifiedAfterUseCase;
+  }
 
   public getDependency<T>(token: string): T {
     switch (token) {
@@ -180,6 +187,8 @@ export class DependencyContainer {
         return this.updateAutomationUseCase as T;
       case "controlAutomation":
         return this.controlAutomationUseCase as T;
+      case "getAutomationsModifiedAfter":
+        return this.getAutomationsModifiedAfterUseCase as T;
       case "controlMode":
         return this.controlModeUseCase as T;
       case "getAllModes":

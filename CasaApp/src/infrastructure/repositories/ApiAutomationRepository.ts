@@ -85,4 +85,22 @@ export class ApiAutomationRepository implements IAutomationRepository {
     }
     return Result.success(true);
   }
+
+  async getModifiedAfter(dateUtc: string): Promise<Result<Automation[]>> {
+    const encoded = encodeURIComponent(dateUtc);
+    const result = await this.httpClient.get<any[]>(
+      `automation/date?dateUtc=${encoded}`,
+    );
+    if (!result.isSuccess) {
+      return result as Result<Automation[]>;
+    }
+    try {
+      const automations = result.data.map((automation: any) =>
+        Automation.fromApiResponse(automation),
+      );
+      return Result.success(automations);
+    } catch (error) {
+      return Result.fromError(error as Error);
+    }
+  }
 }

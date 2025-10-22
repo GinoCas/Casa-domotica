@@ -3,6 +3,14 @@ import { getDeviceById, toggleDevices } from "@/src/services/DeviceActions";
 import useAutomationStore from "@/stores/useAutomationStore";
 import useModeStore from "@/stores/useModeStore";
 import { useEffect } from "react";
+import { automationService } from "@/src/services/AutomationService";
+import {
+  mergeAutomations,
+  loadAutomations,
+  deleteAutomation,
+  controlAutomation,
+  updateAutomation,
+} from "@/src/services/AutomationActions";
 
 function triggerAutomation(auto: Automation, end: boolean) {
   const updates: { deviceId: number; newState: boolean }[] = [];
@@ -27,18 +35,11 @@ function triggerAutomation(auto: Automation, end: boolean) {
 }
 
 export default function useAutomation() {
-  const {
-    automations,
-    isLoadingAutomation,
-    fetchAllAutomations,
-    deleteAutomation,
-    controlAutomation,
-    updateAutomation,
-  } = useAutomationStore();
+  const { automations, isLoadingAutomation } = useAutomationStore();
 
   useEffect(() => {
-    fetchAllAutomations();
-  }, [fetchAllAutomations]);
+    loadAutomations();
+  }, []);
 
   const getAutomationById = (id: number) => {
     return automations.find((auto) => auto.id === id);
@@ -62,11 +63,11 @@ export default function useAutomation() {
   return {
     automations,
     isLoadingAutomation,
-    deleteAutomation,
-    controlAutomation,
-    updateAutomation,
+    deleteAutomation: deleteAutomation,
+    controlAutomation: controlAutomation,
+    updateAutomation: updateAutomation,
     getAutomationById,
     checkAutomationsTriggers,
-    fetchAllAutomations,
+    fetchAllAutomations: loadAutomations,
   };
 }

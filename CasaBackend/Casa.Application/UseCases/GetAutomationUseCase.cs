@@ -26,5 +26,13 @@ namespace CasaBackend.Casa.Application.UseCases
                 ? CoreResult<IEnumerable<TView>>.Success(result.Data.Select(_presenter.Present).ToList())
                 : CoreResult<IEnumerable<TView>>.Failure(result.Errors);
         }
+
+        public async Task<CoreResult<IEnumerable<TView>>> ExecuteModifiedAfterAsync(DateTime dateUtc)
+        {
+            var result = await _repository.GetAutomationsModifiedAfterAsync(dateUtc);
+            return result.IsSuccess
+                ? CoreResult<IEnumerable<TView>>.Success(result.Data.Select(_presenter.Present).ToList())
+                : CoreResult<IEnumerable<TView>>.Failure(result.Errors);
+        }
     }
 }

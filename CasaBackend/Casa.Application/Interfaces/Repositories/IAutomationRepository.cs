@@ -1,4 +1,4 @@
-﻿using CasaBackend.Casa.Core;
+using CasaBackend.Casa.Core;
 
 namespace CasaBackend.Casa.Application.Interfaces.Repositories
 {
@@ -6,6 +6,7 @@ namespace CasaBackend.Casa.Application.Interfaces.Repositories
     {
         Task<CoreResult<TEntity>> GetByAutomationIdAsync(int id);
         Task<CoreResult<IEnumerable<TEntity>>> GetAllAutomationsAsync();
+        Task<CoreResult<IEnumerable<TEntity>>> GetAutomationsModifiedAfterAsync(DateTime dateUtc);
         Task<CoreResult<TEntity>> CreateAutomationAsync(TEntity entity);
         Task<CoreResult<TEntity>> UpdateAutomationAsync(TEntity entity);
         Task<CoreResult<bool>> DeleteAutomationAsync(int id);

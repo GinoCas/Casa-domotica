@@ -9,4 +9,5 @@ export interface IAutomationRepository {
   delete(id: number): Promise<Result<boolean>>;
   update(automationId: number, dto: AutomationDto): Promise<Result<Automation>>;
   control(automation: ArduinoAutomationDto): Promise<Result<boolean>>;
+  getModifiedAfter(dateUtc: string): Promise<Result<Automation[]>>;
 }

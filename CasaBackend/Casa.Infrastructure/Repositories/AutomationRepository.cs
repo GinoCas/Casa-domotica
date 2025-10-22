@@ -32,7 +32,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             var model = await _context.Automations.FindAsync(id);
             if (model == null)
             {
-                return CoreResult<bool>.Failure(["Automatización no encontrada."]);
+                return CoreResult<bool>.Failure(["AutomatizaciÃ³n no encontrada."]);
             }
             _context.Automations.Remove(model);
             await _context.SaveChangesAsync();
@@ -48,6 +48,16 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             return CoreResult<IEnumerable<AutomationEntity>>.Success(entities);
         }
 
+        public async Task<CoreResult<IEnumerable<AutomationEntity>>> GetAutomationsModifiedAfterAsync(DateTime dateUtc)
+        {
+            var models = await _context.Automations
+                .Include(a => a.Devices)
+                .Where(a => a.LastModified >= dateUtc)
+                .ToListAsync();
+            var entities = _mapper.Map<IEnumerable<AutomationEntity>>(models);
+            return CoreResult<IEnumerable<AutomationEntity>>.Success(entities);
+        }
+
         public async Task<CoreResult<AutomationEntity>> GetByAutomationIdAsync(int id)
         {
             var model = await _context.Automations
@@ -55,7 +65,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 .FirstOrDefaultAsync(a => a.Id == id);
             if (model == null)
             {
-                return CoreResult<AutomationEntity>.Failure(["Automatización no encontrada."]);
+                return CoreResult<AutomationEntity>.Failure(["AutomatizaciÃ³n no encontrada."]);
             }
             var entity = _mapper.Map<AutomationEntity>(model);
             return CoreResult<AutomationEntity>.Success(entity);
@@ -66,7 +76,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             var model = await _context.Automations.FindAsync(entity.Id);
             if (model == null)
             {
-                return CoreResult<AutomationEntity>.Failure(["Automatización no encontrada."]);
+                return CoreResult<AutomationEntity>.Failure(["AutomatizaciÃ³n no encontrada."]);
             }
             _mapper.Map(entity, model);
             await _context.SaveChangesAsync();

@@ -50,6 +50,13 @@ export class AutomationService {
     const useCase = this.container.getUpdateAutomationUseCase();
     return await useCase.execute(id, dto);
   }
+
+  async getAutomationsModifiedAfter(
+    dateUtc: string,
+  ): Promise<Result<Automation[]>> {
+    const useCase = this.container.getGetAutomationsModifiedAfterUseCase();
+    return await useCase.execute(dateUtc);
+  }
 }
 
 export const automationService = new AutomationService();

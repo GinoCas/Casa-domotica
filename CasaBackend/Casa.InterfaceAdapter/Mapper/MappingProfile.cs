@@ -83,6 +83,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.EndTime,
                     opt => opt.MapFrom(src => new TimeSpan(src.EndHour, src.EndMinute, 0)))
                 .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices))
+                .ForMember(dest => dest.LastModified, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ReverseMap()
                 .ForMember(dest => dest.StartHour, opt => opt.MapFrom(src => src.InitTime.Hours))
                 .ForMember(dest => dest.StartMinute, opt => opt.MapFrom(src => src.InitTime.Minutes))
@@ -91,7 +92,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
 
             CreateMap<AutomationDto, AutomationEntity>()
                 .ForMember(dest => dest.Description, opt =>
-                    opt.Condition(src => !string.IsNullOrWhiteSpace(src.Description)));
+                    opt.Condition(src => !string.IsNullOrWhiteSpace(src.Description)))
+                .ForMember(dest => dest.LastModified, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
             CreateMap<AutomationEntity, AutomationViewModel>();
 

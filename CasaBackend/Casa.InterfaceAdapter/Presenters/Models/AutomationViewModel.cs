@@ -10,6 +10,7 @@ namespace CasaBackend.Casa.InterfaceAdapter.Presenters.Models
         public string InitTime { get; set; }
         public string EndTime { get; set; }
         public byte Days { get; set; }
+        public DateTime LastModified { get; set; }
         public ICollection<AutomationDeviceViewModel> Devices { get; set; }
     }
 }

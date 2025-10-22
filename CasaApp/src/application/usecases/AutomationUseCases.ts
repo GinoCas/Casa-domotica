@@ -66,3 +66,18 @@ export class ControlAutomationUseCase {
     }
   }
 }
+
+export class GetAutomationsModifiedAfterUseCase {
+  constructor(private automationRepository: IAutomationRepository) {}
+
+  async execute(dateUtc: string): Promise<Result<Automation[]>> {
+    try {
+      if (!dateUtc || typeof dateUtc !== "string") {
+        return Result.failure(["dateUtc must be a valid ISO string"]);
+      }
+      return await this.automationRepository.getModifiedAfter(dateUtc);
+    } catch (error) {
+      return Result.fromError(error as Error);
+    }
+  }
+}

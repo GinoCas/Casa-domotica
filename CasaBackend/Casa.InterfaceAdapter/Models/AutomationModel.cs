@@ -23,6 +23,9 @@ namespace CasaBackend.Casa.InterfaceAdapter.Models
         [Column("auto_days")]
         public byte Days { get; set; }
 
+        [Column("auto_last_modified")]
+        public DateTime LastModified { get; set; }
+
         public ICollection<AutomationDeviceModel> Devices { get; set; } = new List<AutomationDeviceModel>();
     }
 }
