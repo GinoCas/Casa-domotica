@@ -138,12 +138,23 @@ export class Automation {
   }
 
   static fromApiResponse(data: any): Automation {
+    const toLocalHHmmFromUtc = (time?: string): string => {
+      if (!time) return "";
+      const [h, m] = time.split(":").map(Number);
+      const d = new Date(Date.UTC(2000, 0, 1, h, m)); // año/mes/día irrelevante
+      const hh = d.toLocaleString("en-US", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return hh;
+    };
     return new Automation(
       data.id,
       data.name,
       data.description,
-      data.initTime,
-      data.endTime,
+      toLocalHHmmFromUtc(data.initTime),
+      toLocalHHmmFromUtc(data.endTime),
       data.devices ?? [],
       data.state,
       data.days ?? 0,
