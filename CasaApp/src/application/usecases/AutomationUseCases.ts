@@ -28,26 +28,6 @@ export class GetAutomationByIdUseCase {
   }
 }
 
-export class CreateAutomationUseCase {
-  constructor(private automationRepository: IAutomationRepository) {}
-
-  async execute(): Promise<Result<Automation>> {
-    try {
-      const newAutomation = new AutomationDto(
-        "New Automation",
-        false,
-        "Description",
-        "08:00",
-        "20:00",
-        [],
-      );
-      return await this.automationRepository.create(newAutomation);
-    } catch (error) {
-      return Result.fromError(error as Error);
-    }
-  }
-}
-
 export class DeleteAutomationUseCase {
   constructor(private automationRepository: IAutomationRepository) {}
 
@@ -63,9 +43,12 @@ export class DeleteAutomationUseCase {
 export class UpdateAutomationUseCase {
   constructor(private automationRepository: IAutomationRepository) {}
 
-  async execute(automation: Automation): Promise<Result<Automation>> {
+  async execute(
+    automationId: number,
+    dto: AutomationDto,
+  ): Promise<Result<Automation>> {
     try {
-      return await this.automationRepository.update(automation);
+      return await this.automationRepository.update(automationId, dto);
     } catch (error) {
       return Result.fromError(error as Error);
     }

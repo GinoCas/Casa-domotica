@@ -1,4 +1,3 @@
-// Implementación del repositorio de Automatización con soporte de control vía Arduino
 import { IAutomationRepository } from "@/src/core/repositories/IAutomationRepository";
 import { HttpClient } from "../api/HttpClient";
 import { Result } from "@/src/shared/Result";
@@ -42,30 +41,12 @@ export class ApiAutomationRepository implements IAutomationRepository {
     }
   }
 
-  async create(automationDto: AutomationDto): Promise<Result<Automation>> {
-    const result = await this.httpClient.post<any>(
-      "automation/create",
-      automationDto,
-    );
-    if (!result.isSuccess) {
-      return result as Result<Automation>;
-    }
-
-    try {
-      const automation = Automation.fromApiResponse(result.data);
-      return Result.success(automation);
-    } catch (error) {
-      return Result.fromError(error as Error);
-    }
-  }
-
   async delete(id: number): Promise<Result<boolean>> {
-    // Primero intentamos enviar al Arduino local
     let result = await this.localClient.delete<boolean>(`automation/${id}`);
-
     if (!result.isSuccess) {
-      // Si falla (Arduino no accesible), enviamos al backend para que publique por MQTT
-      result = await this.httpClient.delete<any>(`automation/erase/${id}`);
+      result = await this.httpClient.delete<any>(
+        `automation/control/erase/${id}`,
+      );
     }
 
     if (!result.isSuccess) {
@@ -75,15 +56,17 @@ export class ApiAutomationRepository implements IAutomationRepository {
     return Result.success(true);
   }
 
-  async update(automation: Automation): Promise<Result<Automation>> {
-    const result = await this.httpClient.put<any>(
-      `automation/update/${automation.id}`,
-      automation,
+  async update(
+    automationId: number,
+    dto: AutomationDto,
+  ): Promise<Result<Automation>> {
+    const result = await this.httpClient.patch<Automation>(
+      `automation/update/${automationId}`,
+      dto,
     );
     if (!result.isSuccess) {
       return result as Result<Automation>;
     }
-
     try {
       const updatedAutomation = Automation.fromApiResponse(result.data);
       return Result.success(updatedAutomation);
@@ -93,18 +76,13 @@ export class ApiAutomationRepository implements IAutomationRepository {
   }
 
   async control(dto: ArduinoAutomationDto): Promise<Result<boolean>> {
-    // Primero intentamos enviar al Arduino local
     let result = await this.localClient.put<boolean>(`automation`, dto);
     if (!result.isSuccess) {
-      // Si falla (Arduino no accesible), enviamos al backend para que publique por MQTT
       result = await this.httpClient.put<boolean>(`automation/control`, dto);
     }
-
     if (!result.isSuccess) {
       return Result.failure(result.errors);
     }
-
-    // El endpoint de control devuelve el DTO o un status; lo tratamos como éxito lógico
     return Result.success(true);
   }
 }

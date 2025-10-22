@@ -14,13 +14,13 @@ export default function AutomationCard({
   onPress: () => void;
 }) {
   const [isEnabled, setIsEnabled] = useState(automation?.state);
-  const { updateAutomation } = useAutomationStore();
+  const { controlAutomation } = useAutomationStore();
 
   const handleToggle = async () => {
     const newState = !isEnabled;
     setIsEnabled(newState);
     const updatedAutomation = automation.withState(newState);
-    await updateAutomation(updatedAutomation);
+    await controlAutomation(updatedAutomation);
   };
 
   return (

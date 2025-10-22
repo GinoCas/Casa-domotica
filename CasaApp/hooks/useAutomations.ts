@@ -31,8 +31,8 @@ export default function useAutomation() {
     automations,
     isLoadingAutomation,
     fetchAllAutomations,
-    createAutomation,
     deleteAutomation,
+    controlAutomation,
     updateAutomation,
   } = useAutomationStore();
 
@@ -62,8 +62,8 @@ export default function useAutomation() {
   return {
     automations,
     isLoadingAutomation,
-    createAutomation,
     deleteAutomation,
+    controlAutomation,
     updateAutomation,
     getAutomationById,
     checkAutomationsTriggers,

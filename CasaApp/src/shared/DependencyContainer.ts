@@ -15,7 +15,6 @@ import {
 } from "../application/usecases/RoomUseCases";
 import { ApiAutomationRepository } from "../infrastructure/repositories/ApiAutomationRepository";
 import {
-  CreateAutomationUseCase,
   DeleteAutomationUseCase,
   GetAllAutomationsUseCase,
   GetAutomationByIdUseCase,
@@ -49,7 +48,6 @@ export class DependencyContainer {
 
   private getAllAutomationsUseCase: GetAllAutomationsUseCase;
   private getAutomationByIdUseCase: GetAutomationByIdUseCase;
-  private createAutomationUseCase: CreateAutomationUseCase;
   private deleteAutomationUseCase: DeleteAutomationUseCase;
   private updateAutomationUseCase: UpdateAutomationUseCase;
   private controlAutomationUseCase: ControlAutomationUseCase;
@@ -95,9 +93,6 @@ export class DependencyContainer {
       this.automationRepository,
     );
     this.getAutomationByIdUseCase = new GetAutomationByIdUseCase(
-      this.automationRepository,
-    );
-    this.createAutomationUseCase = new CreateAutomationUseCase(
       this.automationRepository,
     );
     this.deleteAutomationUseCase = new DeleteAutomationUseCase(
@@ -149,9 +144,6 @@ export class DependencyContainer {
   public getGetAutomationByIdUseCase(): GetAutomationByIdUseCase {
     return this.getAutomationByIdUseCase;
   }
-  public getCreateAutomationUseCase(): CreateAutomationUseCase {
-    return this.createAutomationUseCase;
-  }
   public getDeleteAutomationUseCase(): DeleteAutomationUseCase {
     return this.deleteAutomationUseCase;
   }
@@ -182,8 +174,6 @@ export class DependencyContainer {
         return this.getAllAutomationsUseCase as T;
       case "getAutomationById":
         return this.getAutomationByIdUseCase as T;
-      case "createAutomation":
-        return this.createAutomationUseCase as T;
       case "deleteAutomation":
         return this.deleteAutomationUseCase as T;
       case "updateAutomation":

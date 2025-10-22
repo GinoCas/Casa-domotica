@@ -43,9 +43,10 @@ export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
     getAutomationById,
-    createAutomation,
-    updateAutomation,
+    //createAutomation,
+    controlAutomation,
     deleteAutomation,
+    //updateAutomation,
   } = useAutomation();
 
   const devices = useDeviceStore((s) => s.devices);
@@ -64,7 +65,7 @@ export default function AutomationId() {
       setLoadingAutomation(true);
       let automation: Automation | null | undefined;
       if (id === "-1") {
-        automation = await createAutomation();
+        //automation = await createAutomation();
       } else {
         automation = getAutomationById(Number(id));
       }
@@ -91,7 +92,7 @@ export default function AutomationId() {
         ? currentAutomation.withInitTime(getTimeString(selectedDate as Date))
         : currentAutomation.withEndTime(getTimeString(selectedDate as Date));
     setCurrentAutomation(newAutomationState);
-    updateAutomation(newAutomationState);
+    controlAutomation(newAutomationState);
   };
 
   const showTimepicker = (value: "initTime" | "endTime") => {
@@ -110,14 +111,14 @@ export default function AutomationId() {
     if (!currentAutomation) return;
     const updatedDevices = currentAutomation.devices.map((device) => {
       if (device.id === selectedDevice.id) {
-        return { ...device, state: !newState };
+        return { ...device, autoState: newState };
       }
       return device;
     });
     const updatedAuto = currentAutomation.withDevices(updatedDevices);
 
     setCurrentAutomation(updatedAuto);
-    updateAutomation(updatedAuto);
+    controlAutomation(updatedAuto);
   };
 
   const handleCancel = () => setCurrentAutomation(originalAutomation);
@@ -132,7 +133,7 @@ export default function AutomationId() {
     const daysValue = weekDays.reduce((acc, day) => acc + day, 0);
     const updatedAutomation = currentAutomation.withDays(daysValue);
     setCurrentAutomation(updatedAutomation);
-    updateAutomation(updatedAutomation);
+    controlAutomation(updatedAutomation);
   };
 
   const getWeekDaysFromValue = (value: number) => {
@@ -203,14 +204,20 @@ export default function AutomationId() {
   const handleConfirm = async () => {
     if (!currentAutomation) return;
     let devices: AutomationDevice[] = [];
+    const currentStates = new Map(
+      currentAutomation.devices.map((d) => [d.id, d.autoState]),
+    );
     selectedDevices.forEach((op) => {
-      devices = [...devices, { id: op.deviceId, autoState: true }];
+      const autoState = currentStates.has(op.deviceId)
+        ? (currentStates.get(op.deviceId) as boolean)
+        : true;
+      devices = [...devices, { id: op.deviceId, autoState }];
     });
     const updatedAutomation = currentAutomation.withDevices(devices);
     setCurrentAutomation(updatedAutomation);
     setShowDeviceSelector(false);
     setLoadingAutomation(true);
-    await updateAutomation(updatedAutomation);
+    await controlAutomation(updatedAutomation);
     setLoadingAutomation(false);
   };
 

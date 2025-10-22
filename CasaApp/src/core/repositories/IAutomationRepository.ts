@@ -6,8 +6,7 @@ import { ArduinoAutomationDto } from "@/src/application/dtos/ArduinoAutomationDt
 export interface IAutomationRepository {
   getAll(): Promise<Result<Automation[]>>;
   getById(id: number): Promise<Result<Automation>>;
-  create(automationDto: AutomationDto): Promise<Result<Automation>>;
   delete(id: number): Promise<Result<boolean>>;
-  update(automation: Automation): Promise<Result<Automation>>;
+  update(automationId: number, dto: AutomationDto): Promise<Result<Automation>>;
   control(automation: ArduinoAutomationDto): Promise<Result<boolean>>;
 }

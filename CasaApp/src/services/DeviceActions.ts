@@ -61,6 +61,7 @@ export async function toggleDevice(deviceId: number, newState: boolean) {
   ]);
   if (result.isSuccess) {
     applyLocalDevicesState([{ deviceId, newState }]);
+    useDeviceStore.getState().setLastModified(new Date());
   } else {
     console.error("Error toggling device state:", result.errors);
   }
@@ -73,6 +74,7 @@ export async function toggleDevices(
   const result = await deviceService.controlDevice(dtos);
   if (result.isSuccess) {
     applyLocalDevicesState(updates);
+    useDeviceStore.getState().setLastModified(new Date());
   }
 }
 
@@ -86,6 +88,7 @@ export async function setDeviceBrightness(
 
   if (result.isSuccess) {
     applyLocalDevicesBrightness([{ deviceId, brightness }]);
+    useDeviceStore.getState().setLastModified(new Date());
   } else {
     console.error(
       `Error setting brightness for device ${deviceId}:`,
@@ -138,4 +141,13 @@ export async function refreshDevices() {
   } finally {
     changeLoadingDevices(false);
   }
+}
+
+export function mergeDevices(changedDevices: Device[]) {
+  const { devices, handleLoadDevices } = useDeviceStore.getState();
+  const merged: Record<number, Device> = { ...devices };
+  for (const d of changedDevices) {
+    merged[d.id] = d;
+  }
+  handleLoadDevices(Object.values(merged));
 }

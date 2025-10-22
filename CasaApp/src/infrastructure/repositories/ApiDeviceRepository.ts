@@ -1,4 +1,3 @@
-// Implementación concreta del repositorio de Device
 import { IDeviceRepository } from "../../core/repositories/IDeviceRepository";
 import { Device } from "../../core/entities/Device";
 import { Result } from "../../shared/Result";
@@ -21,7 +20,9 @@ export class ApiDeviceRepository implements IDeviceRepository {
   }
 
   async getModifiedAfter(dateUtc: string): Promise<Result<Device[]>> {
-    return await this.httpClient.get<Device[]>(`device/date?dateUtc=${encodeURIComponent(dateUtc)}`);
+    return await this.httpClient.get<Device[]>(
+      `device/date?dateUtc=${encodeURIComponent(dateUtc)}`,
+    );
   }
 
   async executeCommand(
@@ -47,7 +48,6 @@ export class ApiDeviceRepository implements IDeviceRepository {
     return Result.success(result.data);
   }
 
-  // Implementación de IDeviceCommandRepository
   async setState(deviceId: number, state: boolean): Promise<Result<boolean>> {
     return await this.executeCommand(deviceId, "SetState", { state });
   }

@@ -1,13 +1,20 @@
+import { AutomationDto } from "@/src/application/dtos/AutomationDto";
 import { Automation } from "@/src/core/entities/Automation";
 import { automationService } from "@/src/services/AutomationService";
+import { Result } from "@/src/shared/Result";
 import { create } from "zustand";
 
 interface AutomationState {
   automations: Automation[];
   isLoadingAutomation: boolean;
   fetchAllAutomations: () => Promise<void>;
-  createAutomation: () => Promise<Automation | null>;
-  updateAutomation: (updatedAuto: Automation) => Promise<void>;
+  //createAutomation: () => Promise<Automation | null>;
+  controlAutomation: (updatedAuto: Automation) => Promise<void>;
+  updateAutomation: (
+    id: number,
+    name: string,
+    description: string,
+  ) => Promise<void>;
   deleteAutomation: (id: number) => Promise<void>;
 }
 
@@ -26,9 +33,9 @@ const useAutomationStore = create<AutomationState>((set, get) => ({
   },
   createAutomation: async () => {
     set({ isLoadingAutomation: true });
-    const result = await automationService.createAutomation();
+    const result = await Result.failure(["Not implemented."]); //await automationService.controlAutomation();
     if (result.isSuccess) {
-      set((state) => ({ automations: [...state.automations, result.data] }));
+      //set((state) => ({ automations: [...state.automations, result.data] }));
       set({ isLoadingAutomation: false });
       return result.data;
     } else {
@@ -48,13 +55,31 @@ const useAutomationStore = create<AutomationState>((set, get) => ({
       set({ isLoadingAutomation: false });
     }
   },
-  updateAutomation: async (updatedAuto) => {
+  controlAutomation: async (updatedAuto) => {
     set({ isLoadingAutomation: true });
-    const result = await automationService.updateAutomation(updatedAuto);
+    const result = await automationService.controlAutomation(updatedAuto);
     if (result.isSuccess) {
+      console.log("Data automation:", result.data);
       set((state) => {
         const updatedAutomations = state.automations.map((auto) =>
           auto.id === updatedAuto.id ? result.data : auto,
+        );
+        return { automations: updatedAutomations, loading: false };
+      });
+    } else {
+      set({ isLoadingAutomation: false });
+    }
+  },
+  updateAutomation: async (id, name, description) => {
+    set({ isLoadingAutomation: true });
+    const result = await automationService.updateAutomation(
+      id,
+      new AutomationDto(name, description),
+    );
+    if (result.isSuccess) {
+      set((state) => {
+        const updatedAutomations = state.automations.map((auto) =>
+          auto.id === id ? result.data : auto,
         );
         return { automations: updatedAutomations, loading: false };
       });
