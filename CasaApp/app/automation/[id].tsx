@@ -321,10 +321,14 @@ export default function AutomationId() {
               }}
               renderItem={({ item }) => {
                 const device = getDeviceById(item.id).data;
+                const autoDevice: Device = {
+                  ...device,
+                  state: item.autoState,
+                };
                 return (
                   <DeviceCard
                     key={item.id}
-                    device={device}
+                    device={autoDevice}
                     handleToogleEnabled={handleToggleEnabled}
                   />
                 );
