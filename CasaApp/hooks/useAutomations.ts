@@ -1,7 +1,4 @@
-import { Automation } from "@/src/core/entities/Automation";
-import { getDeviceById, toggleDevices } from "@/src/services/DeviceActions";
 import useAutomationStore from "@/stores/useAutomationStore";
-import useModeStore from "@/stores/useModeStore";
 import { useEffect } from "react";
 import { automationService } from "@/src/services/AutomationService";
 import {
@@ -10,29 +7,8 @@ import {
   deleteAutomation,
   controlAutomation,
   updateAutomation,
+  createAutomation,
 } from "@/src/services/AutomationActions";
-
-function triggerAutomation(auto: Automation, end: boolean) {
-  const updates: { deviceId: number; newState: boolean }[] = [];
-  auto.devices.forEach((automationDevice) => {
-    const deviceResult = getDeviceById(automationDevice.id);
-
-    if (deviceResult.isSuccess) {
-      const device = deviceResult.data as any;
-      const targetState = end
-        ? !automationDevice.autoState
-        : automationDevice.autoState;
-      if (end && device.state === false) {
-        return;
-      }
-      updates.push({ deviceId: automationDevice.id, newState: targetState });
-    }
-  });
-
-  if (updates.length > 0) {
-    toggleDevices(updates);
-  }
-}
 
 export default function useAutomation() {
   const { automations, isLoadingAutomation } = useAutomationStore();
@@ -41,23 +17,28 @@ export default function useAutomation() {
     loadAutomations();
   }, []);
 
+  // ISO-8601: YYYY-MM-DDTHH:MM:SSZ
+  const toIso8601Seconds = (date: Date) =>
+    date.toISOString().replace(/\.\d{3}Z$/, "Z");
+
+  useEffect(() => {
+    const intervalMs = 2500;
+    const interval = setInterval(async () => {
+      const baseline = useAutomationStore.getState().lastModified;
+      const result = await automationService.getAutomationsModifiedAfter(
+        toIso8601Seconds(baseline),
+      );
+      if (result.isSuccess && result.data.length) {
+        mergeAutomations(result.data);
+        useAutomationStore.getState().setLastModified(new Date());
+      }
+    }, intervalMs);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const getAutomationById = (id: number) => {
     return automations.find((auto) => auto.id === id);
-  };
-
-  const checkAutomationsTriggers = (time: string) => {
-    const { activityMode } = useModeStore.getState();
-    if (activityMode) return;
-
-    const matchingAutomations = automations.filter(
-      (auto) =>
-        (auto.initTime.trim() === time || auto.endTime.trim() === time) &&
-        auto.state,
-    );
-
-    matchingAutomations.forEach((auto) => {
-      triggerAutomation(auto, auto.endTime.trim() === time);
-    });
   };
 
   return {
@@ -66,8 +47,8 @@ export default function useAutomation() {
     deleteAutomation: deleteAutomation,
     controlAutomation: controlAutomation,
     updateAutomation: updateAutomation,
+    createAutomation,
     getAutomationById,
-    checkAutomationsTriggers,
     fetchAllAutomations: loadAutomations,
   };
 }

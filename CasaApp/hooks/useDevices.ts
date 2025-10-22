@@ -5,6 +5,7 @@ import useRoomStore from "@/stores/useRoomStore";
 /* import useModeStore from "@/stores/useModeStore";
 import { modeService } from "@/src/services/ModeService";
 import { refreshDevices as refreshDevicesAction } from "@/src/services/DeviceActions"; */
+import { mergeDevices } from "@/src/services/DeviceActions";
 
 export default function useDevices() {
   const { currentRoom, rooms } = useRoomStore();
@@ -40,6 +41,26 @@ export default function useDevices() {
     loadDevices();
   }, []);
 
+  // ISO-8601: YYYY-MM-DDTHH:MM:SSZ
+  const toIso8601Seconds = (date: Date) =>
+    date.toISOString().replace(/\.\d{3}Z$/, "Z");
+
+  useEffect(() => {
+    const intervalMs = 2500;
+    const interval = setInterval(async () => {
+      const baseline = useDeviceStore.getState().lastModified;
+      const result = await deviceService.getDevicesModifiedAfter(
+        toIso8601Seconds(baseline),
+      );
+      if (result.isSuccess && result.data.length) {
+        mergeDevices(result.data);
+        useDeviceStore.getState().setLastModified(new Date());
+      }
+    }, intervalMs);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Polling condicionado por modo actividad: solo activo y cada 5s
   /*   useEffect(() => {
     if (!activityMode) return;
@@ -52,19 +73,17 @@ export default function useDevices() {
     }, 5000);
     return () => clearInterval(interval);
   }, [handleLoadDevices, activityMode]);
-
-  useEffect(() => {
-    if (activityMode) return; // Evitar doble polling si está en modo actividad
-
+  */
+  /*useEffect(() => {
     const interval = setInterval(async () => {
       const devicesResult = await deviceService.getDeviceList();
       if (devicesResult.isSuccess) {
         handleLoadDevices(devicesResult.data);
       }
-    }, 7000);
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, [activityMode, handleLoadDevices]); */
+  }, []);*/
 
   // Al desactivar modo actividad: esperar hasta que lastChanged cambie y refrescar
   /* useEffect(() => {

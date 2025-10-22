@@ -92,3 +92,58 @@ export function mergeAutomations(changedAutomations: Automation[]) {
   for (const a of changedAutomations) merged.set(a.id, a);
   handleLoadAutomations(Array.from(merged.values()));
 }
+
+export async function createAutomation(): Promise<Automation | null> {
+  const { automations, setLastModified } = useAutomationStore.getState();
+  console.log("Creando automatizacion...");
+  const baseInit = "00:00";
+  const baseEnd = "00:01";
+  const newAuto = new Automation(
+    -1,
+    "Nueva Automatización",
+    "",
+    baseInit,
+    baseEnd,
+    [],
+    false,
+    0,
+  );
+
+  const baseline = new Date();
+  setLastModified(baseline);
+  const control = await automationService.controlAutomation(newAuto);
+  if (!control.isSuccess) {
+    console.log(
+      "No se pudo enviar la automatización al Arduino",
+      control.errors,
+    );
+    return null;
+  }
+
+  const toIso8601Seconds = (date: Date) =>
+    date.toISOString().replace(/\.\d{3}Z$/, "Z");
+
+  const timeoutMs = 12000; // 12s
+  const pollIntervalMs = 1500;
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const result = await automationService.getAutomationsModifiedAfter(
+      toIso8601Seconds(baseline),
+    );
+    if (result.isSuccess && result.data.length > 0) {
+      const created = result.data.find(
+        (remote) => !automations.some((local) => local.id === remote.id),
+      );
+      if (created) {
+        console.log("Automatización creada");
+        mergeAutomations([created]);
+        setLastModified(new Date());
+        return created;
+      }
+    }
+    await new Promise((r) => setTimeout(r, pollIntervalMs));
+  }
+  console.warn(`Timeout de esperando confirmación de la automatización.`);
+  return null;
+}

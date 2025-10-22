@@ -43,10 +43,9 @@ export default function AutomationId() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
     getAutomationById,
-    //createAutomation,
+    createAutomation,
     controlAutomation,
     deleteAutomation,
-    //updateAutomation,
   } = useAutomation();
 
   const devices = useDeviceStore((s) => s.devices);
@@ -65,11 +64,12 @@ export default function AutomationId() {
       setLoadingAutomation(true);
       let automation: Automation | null | undefined;
       if (id === "-1") {
-        //automation = await createAutomation();
+        automation = await createAutomation();
       } else {
         automation = getAutomationById(Number(id));
       }
       if (automation === null || automation === undefined) {
+        setLoadingAutomation(false);
         return;
       }
 
@@ -297,7 +297,7 @@ export default function AutomationId() {
           </View>
 
           <View style={styles.devicesContainer}>
-            <Text style={{ fontWeight: "600" }}>Devices </Text>
+            <Text style={{ fontWeight: "600" }}>Dispositivos </Text>
             <Chip text={currentAutomation.devices.length.toString() || "0"} />
           </View>
 
@@ -309,7 +309,7 @@ export default function AutomationId() {
                 alignItems: "center",
               }}
             >
-              <Text>No devices added yet.</Text>
+              <Text>No hay dispositivos añadidos todavía.</Text>
             </View>
           ) : (
             <FlatList
@@ -333,7 +333,7 @@ export default function AutomationId() {
           )}
           <View>
             <DottedButton
-              label="Add Device"
+              label="Añadir dispositivos"
               icon={
                 <Feather
                   name="plus"
@@ -341,7 +341,7 @@ export default function AutomationId() {
                   color={GlobalStyles.enabledColor}
                 />
               }
-              onPress={() => setShowDeviceSelector(!showDeviceSelector)}
+              onPress={() => setShowDeviceSelector(true)}
             />
             <CustomModal
               isOpen={showDeviceSelector}

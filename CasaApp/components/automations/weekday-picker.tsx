@@ -81,7 +81,7 @@ const WeekDayPicker = ({
 
   return (
     <View>
-      <Text>Enable on</Text>
+      <Text>Días habilitados</Text>
       <View
         style={{
           flexDirection: "row",
