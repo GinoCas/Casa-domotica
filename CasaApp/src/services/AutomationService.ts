@@ -23,12 +23,14 @@ export class AutomationService {
     const baseline = await getAll.execute();
     if (!baseline.isSuccess) return Result.failure(baseline.errors);
 
-    // Construimos un payload por defecto para Arduino
+    // Construimos un payload por defecto para Arduino (convertido a UTC)
+    const defaultInit = parseTimeString("08:00");
+    const defaultEnd = parseTimeString("20:00");
     const dto = new ArduinoAutomationDto(
-      8, // StartHour
-      0, // StartMinute
-      20, // EndHour
-      0, // EndMinute
+      defaultInit.getUTCHours(),
+      defaultInit.getUTCMinutes(),
+      defaultEnd.getUTCHours(),
+      defaultEnd.getUTCMinutes(),
       127, // Days (todos los días)
       false, // State inicial apagado
       [], // Devices vacíos
@@ -64,16 +66,24 @@ export class AutomationService {
   }
 
   async updateAutomation(automation: Automation): Promise<Result<Automation>> {
-    const { initTime, endTime, days, state, devices, id } = automation;
+    const updateUseCase = this.container.getUpdateAutomationUseCase();
+    const updateResult = await updateUseCase.execute(automation);
+
+    if (!updateResult.isSuccess) {
+      return Result.failure(updateResult.errors);
+    }
+
+    const updated = updateResult.data;
+    const { initTime, endTime, days, state, devices, id } = updated;
 
     const initDate = parseTimeString(initTime);
     const endDate = parseTimeString(endTime);
 
     const dto = new ArduinoAutomationDto(
-      initDate.getHours(),
-      initDate.getMinutes(),
-      endDate.getHours(),
-      endDate.getMinutes(),
+      initDate.getUTCHours(),
+      initDate.getUTCMinutes(),
+      endDate.getUTCHours(),
+      endDate.getUTCMinutes(),
       days,
       state,
       devices.map((d) => ({ Id: d.id, State: d.autoState })),
@@ -82,14 +92,11 @@ export class AutomationService {
 
     const controlUseCase = this.container.getControlAutomationUseCase();
     const controlResult = await controlUseCase.execute(dto);
+    // Si falla el control, aún devolvemos la actualización (persistida en backend)
 
-    if (!controlResult.isSuccess) {
-      return Result.failure(controlResult.errors);
-    }
-
-    // A diferencia de la creación, la actualización no devuelve la entidad completa.
-    // Devolvemos la automatización que recibimos, asumiendo que la actualización fue exitosa.
-    return Result.success(automation);
+    return controlResult.isSuccess
+      ? Result.success(updated)
+      : Result.success(updated);
   }
 }
 

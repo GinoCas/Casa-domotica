@@ -53,14 +53,14 @@ struct AutomationDevice {
 };
 
 struct Automation {
-  int startHour;
-  int startMinute;
-  int endHour;
-  int endMinute;
-  byte days;  // bitmask: Dom=1, Lun=2, Mar=4, Mie=8, Jue=16, Vie=32, Sab=64
-  bool state; // encender o apagar
-  arx::stdx::vector<AutomationDevice, 12> devices; // IDs de dispositivos afectados
+  uint8_t startHour;
+  uint8_t startMinute;
+  uint8_t endHour;
+  uint8_t endMinute;
   time_t lastTriggered;
+  byte days;  // bitmask: Dom=1, Lun=2, Mar=4, Mie=8, Jue=16, Vie=32, Sab=64
+  bool state;
+  arx::stdx::vector<AutomationDevice, 12> devices; // IDs de dispositivos afectados
   bool isCurrentlyActive;
 };
 
@@ -123,7 +123,7 @@ time_t nowUtc() {
 
 void initNtp() {
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-  for (int i = 0; i < 20; ++i) {
+  while(!timeSynced) {
     delay(250);
     time_t t = time(nullptr);
     if (isTimeValid(t)) {
@@ -132,9 +132,6 @@ void initNtp() {
       break;
     }
     Serial.println("⌛ Esperando NTP...");
-  }
-  if (!timeSynced) {
-    Serial.println("⚠️ NTP no disponible");
   }
 }
 
@@ -227,20 +224,31 @@ bool isDayActive(byte bitmask, int weekday) {
 
 void checkAutomations() {
   if (activityMode) return;
+  Serial.println("Chequeando automatizaciones..");
   time_t now = nowUtc();
-  struct tm* tm_info = localtime(&now);
+  struct tm* tm_info = gmtime(&now);
   if (tm_info == nullptr) {
     return;
   }
 
   for (auto& a : automations) {
-    if (!isDayActive(a.days, tm_info->tm_wday)) continue;
-
     int start = a.startHour * 60 + a.startMinute;
     int end = a.endHour * 60 + a.endMinute;
     int currentTime = tm_info->tm_hour * 60 + tm_info->tm_min;
+    bool crossesMidnight = end < start;
 
-    bool shouldBeActive = (currentTime >= start && currentTime < end);
+    bool shouldBeActive = false;
+    if (!crossesMidnight) {
+      if (!isDayActive(a.days, tm_info->tm_wday)) continue;
+      shouldBeActive = (currentTime >= start && currentTime < end);
+    } else {
+      // Parte antes de medianoche (start..24:00) se evalúa con el día actual
+      bool activeTodayPart = (currentTime >= start) && isDayActive(a.days, tm_info->tm_wday);
+      // Parte después de medianoche (00:00..end) pertenece al día anterior
+      int prevWday = (tm_info->tm_wday + 6) % 7;
+      bool activePrevDayPart = (currentTime < end) && isDayActive(a.days, prevWday);
+      shouldBeActive = activeTodayPart || activePrevDayPart;
+    }
 
     if (shouldBeActive && !a.isCurrentlyActive) {
       a.isCurrentlyActive = true;
@@ -841,10 +849,10 @@ void setup() {
   activitySnapshotValid = false;
   randomSeed(micros());
 
-  time_t now = nowUtc();
-
   selectAndConnectWiFi();
   initNtp();
+
+  time_t now = nowUtc();
 
   client.setServer(mqttServer, mqttPort);
   client.setBufferSize(4096);
