@@ -58,6 +58,7 @@ struct Automation {
   uint8_t endHour;
   uint8_t endMinute;
   time_t lastTriggered;
+  time_t lastModified;
   byte days;  // bitmask: Dom=1, Lun=2, Mar=4, Mie=8, Jue=16, Vie=32, Sab=64
   bool state;
   arx::stdx::vector<AutomationDevice, 12> devices; // IDs de dispositivos afectados
@@ -279,6 +280,7 @@ void publishAutomation(const Automation& a, int index) {
   obj["EndMinute"] = a.endMinute;
   obj["Days"] = a.days;
   obj["State"] = a.state;
+  obj["LastModified"] = toIso8601(a.lastModified);
 
   JsonArray devs = obj.createNestedArray("Devices");
   for (auto ad : a.devices) {
@@ -297,6 +299,7 @@ String publishAutomationErase(int id) {
   StaticJsonDocument<128> doc;
   JsonObject obj = doc.createNestedObject("Data");
   obj["Id"] = id;
+  obj["LastModified"] = toIso8601(nowUtc());
   String output;
   serializeJson(doc, output);
   client.publish("casa/automations/erase", output.c_str());
@@ -530,6 +533,8 @@ void handlePutAutomation() {
   a.state = doc["State"];
   a.lastTriggered = 0;
   a.isCurrentlyActive = false;
+  time_t time = nowUtc();
+  a.lastModified = time;
   
   for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
     AutomationDevice dev;
@@ -545,7 +550,20 @@ void handlePutAutomation() {
     server.sendHeader("Connection", "keep-alive");
     server.sendHeader("Keep-Alive", "timeout=5, max=50");
     server.sendHeader("X-Proc-Time", String(proc));
-    server.send(200, "application/json", "{\"status\":\"automation added\"}");
+
+    StaticJsonDocument<196> outDoc;
+    outDoc["status"] = "automation added";
+    outDoc["LastModified"] = toIso8601(time);
+    struct tm* tm_info = localtime(&time);
+    if (tm_info != nullptr) {
+      char buff[32];
+      snprintf(buff, sizeof(buff), "%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec);
+      outDoc["LastModifiedText"] = buff;
+      outDoc["WeekDay"] = tm_info->tm_wday;
+    }
+    String payload;
+    serializeJson(outDoc, payload);
+    server.send(200, "application/json", payload);
   } else {
     int index = automationId - 1;
     if (index >= 0 && index < automations.size()) {
@@ -555,7 +573,20 @@ void handlePutAutomation() {
       server.sendHeader("Connection", "keep-alive");
       server.sendHeader("Keep-Alive", "timeout=5, max=50");
       server.sendHeader("X-Proc-Time", String(proc));
-      server.send(200, "application/json", "{\"status\":\"automation updated\"}");
+
+      StaticJsonDocument<196> outDoc;
+      outDoc["status"] = "automation updated";
+      outDoc["LastModified"] = toIso8601(time);
+      struct tm* tm_info = localtime(&time);
+      if (tm_info != nullptr) {
+        char buff[32];
+        snprintf(buff, sizeof(buff), "%02d:%02d:%02d", tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec);
+        outDoc["LastModifiedText"] = buff;
+        outDoc["WeekDay"] = tm_info->tm_wday;
+      }
+      String payload;
+      serializeJson(outDoc, payload);
+      server.send(200, "application/json", payload);
     } else {
       server.sendHeader("Connection", "keep-alive");
       server.sendHeader("Keep-Alive", "timeout=5, max=50");
@@ -714,6 +745,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       a.state = doc["State"];
       a.lastTriggered = 0;
       a.isCurrentlyActive = false;
+      a.lastModified = nowUtc();
       for (JsonVariant ad : doc["Devices"].as<JsonArray>()) {
         AutomationDevice dev;
         dev.Id = ad["Id"];
@@ -902,6 +934,7 @@ void setup() {
   auto1.state = true;
   auto1.lastTriggered = 0;
   auto1.isCurrentlyActive = false;
+  auto1.lastModified = nowUtc();
 
   AutomationDevice dev1 = {1, true};
   AutomationDevice dev2 = {2, true};

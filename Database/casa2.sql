@@ -46,6 +46,7 @@ CREATE TABLE automation(
 	auto_days TINYINT NOT NULL DEFAULT 0, -- Bitmask: Domingo=1, Lunes=2, Martes=4, Miercoles=8, Jueves=16, Viernes=32, Sabado=64
 	auto_initTime TIME NOT NULL,
 	auto_endTime TIME NOT NULL,
+	auto_last_modified DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),
 	PRIMARY KEY(auto_id)
 );
 
@@ -54,6 +55,7 @@ CREATE TABLE automation_device(
 	aude_state BIT DEFAULT(0) NOT NULL,
 	aude_automationId INT NOT NULL,
 	aude_deviceId INT NOT NULL,
+	aude_last_modified DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),
 	PRIMARY KEY(aude_id),
 	CONSTRAINT FK_aude_automationId FOREIGN KEY (aude_automationId)
         REFERENCES automation(auto_id)
@@ -78,7 +80,6 @@ CREATE TABLE velocity(
 	PRIMARY KEY(velo_id)
 );
 
--- Mode table for Activity/SaveEnergy global states
 CREATE TABLE mode(
 	mode_id INT NOT NULL IDENTITY(1,1),
 	mode_name VARCHAR(100) NOT NULL,
@@ -87,7 +88,6 @@ CREATE TABLE mode(
 	PRIMARY KEY(mode_id)
 );
 
--- Seed initial modes
 INSERT INTO mode (mode_name, mode_state) VALUES ('Activity', 0);
 INSERT INTO mode (mode_name, mode_state) VALUES ('SaveEnergy', 0);
 

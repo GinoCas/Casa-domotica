@@ -89,7 +89,6 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 : CoreResult<DeviceEntity>.Failure(result.Errors);
         }
 
-        // Batch retrieval by IDs
         public async Task<CoreResult<IEnumerable<DeviceEntity>>> GetByDeviceIdsAsync(IEnumerable<int> ids)
         {
             if (!ids.Any()) return CoreResult<IEnumerable<DeviceEntity>>.Success([]);
