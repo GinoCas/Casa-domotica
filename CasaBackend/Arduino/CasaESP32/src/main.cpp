@@ -255,14 +255,14 @@ void checkAutomations() {
       a.lastTriggered = now;
       Serial.printf("⚙️ Activando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
       for (auto ad : a.devices) {
-        applyDeviceChange(ad.Id, a.state, "", -1, -1);
+        applyDeviceChange(ad.Id, ad.State, "", -1, -1);
       }
       publishChangedDevices(now);
     } else if (!shouldBeActive && a.isCurrentlyActive) {
       a.isCurrentlyActive = false;
       Serial.printf("⚙️ Desactivando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
       for (auto ad : a.devices) {
-        applyDeviceChange(ad.Id, !a.state, "", -1, -1);
+        applyDeviceChange(ad.Id, !ad.State, "", -1, -1);
       }
       publishChangedDevices(now);
     }
@@ -934,7 +934,6 @@ void loop() {
   // Modo actividad: prender dispositivos al azar con intervalos
   handleActivityModeLoop();
 
-  // Evitar retrasos innecesarios, ceder CPU a WiFi
   delay(0);
 }
 

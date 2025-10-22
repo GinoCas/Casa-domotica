@@ -14,17 +14,14 @@ namespace CasaBackend.Casa.API.Controllers
     [AllowAnonymous]
     public class AutomationController(
         GetAutomationUseCase<AutomationEntity, AutomationViewModel> getAutomationUseCase,
-        CreateAutomationUseCase<AutomationEntity, AutomationDto> createAutomationUseCase,
         UpdateAutomationUseCase updateAutomationUseCase,
-        EraseAutomationUseCase<AutomationEntity> eraseAutomationUseCase,
         IMQTTPublisher mqttPublisher,
         IValidator<AutomationDto> automationValidator,
-        ILogger<AutomationController> logger) : ControllerBase
+        ILogger<AutomationController> logger
+        ) : ControllerBase
     {
         private readonly GetAutomationUseCase<AutomationEntity, AutomationViewModel> _getAutomationUseCase = getAutomationUseCase;
-        private readonly CreateAutomationUseCase<AutomationEntity, AutomationDto> _createAutomationUseCase = createAutomationUseCase;
         private readonly UpdateAutomationUseCase _updateAutomationUseCase = updateAutomationUseCase;
-        private readonly EraseAutomationUseCase<AutomationEntity> _deleteAutomationUseCase = eraseAutomationUseCase;
         private readonly IMQTTPublisher _mqttPublisher = mqttPublisher;
         private readonly IValidator<AutomationDto> _automationValidator = automationValidator;
         private readonly ILogger<AutomationController> _logger = logger;
@@ -53,29 +50,7 @@ namespace CasaBackend.Casa.API.Controllers
             return Ok(result.ToJson());
         }
 
-        [HttpPost("/automation/create")]
-        public async Task<IActionResult> CreateAutomation(AutomationDto automation)
-        {
-            _logger.LogInformation("Creating automation");
-            var validationResult = await ValidateDtoAsync(_automationValidator, automation);
-            if (!validationResult.IsSuccess)
-            {
-                _logger.LogWarning("Validation failed for automation: {Errors}",
-                    string.Join(", ", validationResult.Errors));
-                return BadRequest(validationResult.ToJson());
-            }
-            var result = await _createAutomationUseCase.ExecuteAsync(automation);
-            if (!result.IsSuccess)
-            {
-                _logger.LogWarning("Error creating automation: {Errors}",
-                    string.Join(", ", result.Errors));
-                return BadRequest(result.ToJson());
-            }
-            _logger.LogInformation("Automation created successfully with ID: {AutomationId}", result.Data);
-            return Ok(result.ToJson());
-        }
-
-        [HttpPut("/automation/update/{id}")]
+        [HttpPatch("/automation/update/{id}")]
         public async Task<IActionResult> UpdateAutomation(int id, [FromBody] AutomationDto dto)
         {
             _logger.LogInformation("Editing automation with ID: {AutomationId}", id);
@@ -107,11 +82,11 @@ namespace CasaBackend.Casa.API.Controllers
             return Ok(dto);
         }
 
-        [HttpDelete("/automation/erase/{id}")]
-        public async Task<IActionResult> EraseAutomation(int id)
+        [HttpDelete("/automation/control/erase/{id}")]
+        public async Task<IActionResult> ControlEraseAutomation(int id)
         {
             _logger.LogInformation("Erasing automation with ID: {AutomationId}", id);
-            
+
             await _mqttPublisher.PublishAsync("casa/automations/cmd", new { Cmd = "erase", Id = id });
             return Ok(id);
         }

@@ -69,7 +69,6 @@ builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<DimmableModel
 builder.Services.AddScoped<ICapabilityProvider, CapabilityProvider<VelocityModel>>();
 
 //Validadores
-builder.Services.AddValidatorsFromAssemblyContaining<CommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AutomationValidator>();
 
 //Presentadores
@@ -104,7 +103,6 @@ builder.Services.AddScoped<IFactory<DeviceEntity, DeviceContextDto>, DeviceFacto
 
 builder.Services.AddScoped<IFactory<IEnumerable<ICapabilityEntity>, DeviceType>, CapabilityFactory>();
 //Casos de uso
-builder.Services.AddScoped<DoDeviceCommandUseCase<CommandDto>>();
 builder.Services.AddScoped<GetDeviceUseCase<DeviceEntity, DeviceViewModel>>();
 builder.Services.AddScoped<UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel>>();
 
@@ -113,9 +111,7 @@ builder.Services.AddScoped<CreateRoomUseCase<RoomEntity, CreateRoomDto>>();
 builder.Services.AddScoped<AddDeviceToRoomUseCase<RoomEntity>>();
 
 builder.Services.AddScoped<GetAutomationUseCase<AutomationEntity, AutomationViewModel>>();
-builder.Services.AddScoped<CreateAutomationUseCase<AutomationEntity, AutomationDto>>();
 builder.Services.AddScoped<UpdateAutomationUseCase>();
-builder.Services.AddScoped<EraseAutomationUseCase<AutomationEntity>>();
 
 // Services
 builder.Services.AddScoped<CapabilityService>();

@@ -32,7 +32,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             var model = await _context.Automations.FindAsync(id);
             if (model == null)
             {
-                return CoreResult<bool>.Failure(["Automatizacion no encontrada."]);
+                return CoreResult<bool>.Failure(["Automatización no encontrada."]);
             }
             _context.Automations.Remove(model);
             await _context.SaveChangesAsync();
@@ -55,7 +55,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
                 .FirstOrDefaultAsync(a => a.Id == id);
             if (model == null)
             {
-                return CoreResult<AutomationEntity>.Failure(["Automatizacion no encontrada."]);
+                return CoreResult<AutomationEntity>.Failure(["Automatización no encontrada."]);
             }
             var entity = _mapper.Map<AutomationEntity>(model);
             return CoreResult<AutomationEntity>.Success(entity);
@@ -66,7 +66,7 @@ namespace CasaBackend.Casa.Infrastructure.Repositories
             var model = await _context.Automations.FindAsync(entity.Id);
             if (model == null)
             {
-                return CoreResult<AutomationEntity>.Failure(["Automatizacion no encontrada."]);
+                return CoreResult<AutomationEntity>.Failure(["Automatización no encontrada."]);
             }
             _mapper.Map(entity, model);
             await _context.SaveChangesAsync();

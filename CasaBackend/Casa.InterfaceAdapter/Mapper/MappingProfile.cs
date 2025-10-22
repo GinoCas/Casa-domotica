@@ -90,7 +90,8 @@ namespace CasaBackend.Casa.InterfaceAdapter.Mapper
                 .ForMember(dest => dest.EndMinute, opt => opt.MapFrom(src => src.EndTime.Minutes));
 
             CreateMap<AutomationDto, AutomationEntity>()
-                .ForMember(dest => dest.Devices, opt => opt.MapFrom(src => src.Devices));
+                .ForMember(dest => dest.Description, opt =>
+                    opt.Condition(src => !string.IsNullOrWhiteSpace(src.Description)));
 
             CreateMap<AutomationEntity, AutomationViewModel>();
 

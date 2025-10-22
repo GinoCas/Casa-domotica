@@ -20,25 +20,19 @@ namespace CasaBackend.Casa.API.Controllers
 	[AllowAnonymous]
 	public class DeviceController : ControllerBase
 	{
-		private readonly DoDeviceCommandUseCase<CommandDto> _doDeviceCommandUseCase;
         private readonly GetDeviceUseCase<DeviceEntity, DeviceViewModel> _getDeviceUseCase;
         private readonly UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel> _updateDeviceUseCase;
-		private readonly IValidator<CommandDto> _commandValidator;
 		private readonly ILogger<DeviceController> _logger;
         private readonly IMQTTPublisher _mqttPublisher;
 
         public DeviceController(
-            DoDeviceCommandUseCase<CommandDto> doDeviceCommandUseCase,
             GetDeviceUseCase<DeviceEntity, DeviceViewModel> getDeviceUseCase,
             UpdateDeviceUseCase<DeviceEntity, DeviceDto, DeviceViewModel> updateDeviceUseCase,
-            IValidator<CommandDto> commandValidator,
             IMQTTPublisher mqttPublisher,
             ILogger<DeviceController> logger)
         {
-            _doDeviceCommandUseCase = doDeviceCommandUseCase;
             _getDeviceUseCase = getDeviceUseCase;
             _updateDeviceUseCase = updateDeviceUseCase;
-            _commandValidator = commandValidator;
             _mqttPublisher = mqttPublisher;
             _logger = logger;
         }

@@ -27,10 +27,6 @@ namespace CasaBackend.Casa.Application.UseCases
             }
             _mapper.Map(dto, entity.Data);
             entity.Data.Devices.Clear();
-            foreach (var deviceDto in dto.Devices)
-            {
-                entity.Data.Devices.Add(new AutomationDeviceEntity { DeviceId = deviceDto.Id, State = deviceDto.State, AutomationId = entity.Data.Id });
-            }
 
             var result = await _repository.UpdateAutomationAsync(entity.Data);
 
