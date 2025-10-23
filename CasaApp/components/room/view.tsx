@@ -138,6 +138,7 @@ export function RoomView({
                   <DeviceCard
                     handleToogleEnabled={handleToggleEnabled}
                     device={device}
+                    onBrightnessPress={() => openBrightnessModal(device)}
                     onCardPress={() => handlePressDevice(device)}
                   />
                 </View>
