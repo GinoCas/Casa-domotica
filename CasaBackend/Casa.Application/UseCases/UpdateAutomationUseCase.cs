@@ -26,7 +26,6 @@ namespace CasaBackend.Casa.Application.UseCases
                 return CoreResult<AutomationViewModel>.Failure(entity.Errors);
             }
             _mapper.Map(dto, entity.Data);
-            entity.Data.Devices.Clear();
 
             var result = await _repository.UpdateAutomationAsync(entity.Data);
 
