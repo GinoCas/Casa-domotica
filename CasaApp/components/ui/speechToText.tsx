@@ -2,6 +2,7 @@ import { Text, View } from "react-native";
 import Voice from "@react-native-voice/voice";
 import { useEffect, useState, useRef } from "react";
 import {
+  toggleAllDevices,
   toggleTv,
   turnOffAllLedsOfRoom,
   turnOnAllLedsOfRoom,
@@ -21,7 +22,6 @@ export default function SpeechToText() {
   const [partialResults, setPartialResults] = useState([]);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const SILENCE_TIMEOUT_MS = 7000;
-  // Inicializar listeners solo una vez
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
     Voice.onSpeechPartialResults = writeSpeech;
@@ -264,14 +264,22 @@ export default function SpeechToText() {
           toggleTv(true);
           return;
         }
-        turnOnAllLedsOfRoom(location);
+        if (device === "led") {
+          turnOnAllLedsOfRoom(location);
+          return;
+        }
+        toggleAllDevices(true);
         break;
       case "off":
         if (device === "tv") {
           toggleTv(false);
           return;
         }
-        turnOffAllLedsOfRoom(location);
+        if (device === "led") {
+          turnOffAllLedsOfRoom(location);
+          return;
+        }
+        toggleAllDevices(false);
         break;
       default:
         console.log("Acción no reconocida");

@@ -174,7 +174,6 @@ export function RoomView({
         <Loader size="large" />
       </View>
     );
-
   if (devices.length === 0)
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

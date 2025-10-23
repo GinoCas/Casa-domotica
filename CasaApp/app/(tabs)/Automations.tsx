@@ -47,13 +47,13 @@ export default function Home() {
         />
       </View>
       <DottedButton
-        label="Add Automation"
+        label="Añadir automatización"
         icon={
           <Feather name="plus" size={24} color={GlobalStyles.enabledColor} />
         }
         onPress={() => {
           if (automations.length === 20) {
-            alert("You have reached the maximum number of automations (20).");
+            alert("Alcanzaste el limite permitido de automatizaciones (20).");
           } else {
             handleAutomationPress(-1);
           }
