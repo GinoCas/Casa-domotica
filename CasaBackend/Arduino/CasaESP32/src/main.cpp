@@ -225,12 +225,15 @@ bool isDayActive(byte bitmask, int weekday) {
 
 void checkAutomations() {
   if (activityMode) return;
-  Serial.println("Chequeando automatizaciones..");
   time_t now = nowUtc();
   struct tm* tm_info = gmtime(&now);
   if (tm_info == nullptr) {
     return;
   }
+  char buffer[30];
+  strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tm_info);
+  Serial.print("Hora actual UTC: ");
+  Serial.println(buffer);
 
   for (auto& a : automations) {
     int start = a.startHour * 60 + a.startMinute;
@@ -241,14 +244,14 @@ void checkAutomations() {
     bool shouldBeActive = false;
     if (!crossesMidnight) {
       if (!isDayActive(a.days, tm_info->tm_wday)) continue;
-      shouldBeActive = (currentTime >= start && currentTime < end);
+      shouldBeActive = a.state ? (currentTime >= start && currentTime < end) : false;
     } else {
       // Parte antes de medianoche (start..24:00) se evalúa con el día actual
       bool activeTodayPart = (currentTime >= start) && isDayActive(a.days, tm_info->tm_wday);
       // Parte después de medianoche (00:00..end) pertenece al día anterior
       int prevWday = (tm_info->tm_wday + 6) % 7;
       bool activePrevDayPart = (currentTime < end) && isDayActive(a.days, prevWday);
-      shouldBeActive = activeTodayPart || activePrevDayPart;
+      shouldBeActive = a.state ? activeTodayPart || activePrevDayPart : false;
     }
 
     if (shouldBeActive && !a.isCurrentlyActive) {
@@ -259,7 +262,7 @@ void checkAutomations() {
         applyDeviceChange(ad.Id, ad.State, "", -1, -1);
       }
       publishChangedDevices(now);
-    } else if (!shouldBeActive && a.isCurrentlyActive) {
+    } else if ((!shouldBeActive && a.isCurrentlyActive)) {
       a.isCurrentlyActive = false;
       Serial.printf("⚙️ Desactivando automatización | %02d:%02d - %02d:%02d\n", a.startHour, a.startMinute, a.endHour, a.endMinute);
       for (auto ad : a.devices) {
