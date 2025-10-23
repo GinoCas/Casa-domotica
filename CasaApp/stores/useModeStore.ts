@@ -13,17 +13,19 @@ const useModeStore = create<ModeState>()((set) => ({
   saveEnergyMode: false,
   activityMode: false,
   changeActivityMode: async (newState: boolean) => {
+    set((state) => ({ ...state, activityMode: newState }));
     const dto = new ArduinoModeDto("Activity", newState);
     const result = await modeService.controlMode(dto);
-    if (result.isSuccess) {
-      set((state) => ({ ...state, activityMode: newState }));
+    if (!result.isSuccess) {
+      set((state) => ({ ...state, activityMode: !newState }));
     }
   },
   changeSaveEnergyMode: async (newState: boolean) => {
+    set((state) => ({ ...state, saveEnergyMode: newState }));
     const dto = new ArduinoModeDto("SaveEnergy", newState);
     const result = await modeService.controlMode(dto);
-    if (result.isSuccess) {
-      set((state) => ({ ...state, saveEnergyMode: newState }));
+    if (!result.isSuccess) {
+      set((state) => ({ ...state, saveEnergyMode: !newState }));
     }
   },
 }));
