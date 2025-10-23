@@ -86,6 +86,9 @@ export default function StartupAnimation({ onFinish }: Props) {
 
   return (
     <View style={styles.overlay}>
+      <View
+        style={[styles.statusBarArea, { height: Constants.statusBarHeight }]}
+      />
       <View style={styles.centerContent}>
         <Animated.View style={titleContainerStyle}>
           <View style={styles.titleRow}>
@@ -116,6 +119,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "#fff",
     zIndex: 9999,
+  },
+  statusBarArea: {
+    backgroundColor: "#086ce5",
   },
   centerContent: {
     flex: 1,
