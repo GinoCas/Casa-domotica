@@ -9,6 +9,7 @@ import {
   updateAutomation,
   createAutomation,
 } from "@/src/services/AutomationActions";
+import { parseTimeToISO8601String } from "@/Utils/parseTimeString";
 
 export default function useAutomation() {
   const { automations, isLoadingAutomation } = useAutomationStore();
@@ -17,16 +18,12 @@ export default function useAutomation() {
     loadAutomations();
   }, []);
 
-  // ISO-8601: YYYY-MM-DDTHH:MM:SSZ
-  const toIso8601Seconds = (date: Date) =>
-    date.toISOString().replace(/\.\d{3}Z$/, "Z");
-
   useEffect(() => {
     const intervalMs = 10000;
     const interval = setInterval(async () => {
       const baseline = useAutomationStore.getState().lastModified;
       const result = await automationService.getAutomationsModifiedAfter(
-        toIso8601Seconds(baseline),
+        parseTimeToISO8601String(baseline),
       );
       if (result.isSuccess && result.data.length) {
         mergeAutomations(result.data);

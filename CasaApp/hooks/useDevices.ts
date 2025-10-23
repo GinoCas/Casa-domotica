@@ -6,6 +6,7 @@ import useRoomStore from "@/stores/useRoomStore";
 import { modeService } from "@/src/services/ModeService";
 import { refreshDevices as refreshDevicesAction } from "@/src/services/DeviceActions"; */
 import { mergeDevices } from "@/src/services/DeviceActions";
+import { parseTimeToISO8601String } from "@/Utils/parseTimeString";
 
 export default function useDevices() {
   const { currentRoom, rooms } = useRoomStore();
@@ -41,16 +42,12 @@ export default function useDevices() {
     loadDevices();
   }, []);
 
-  // ISO-8601: YYYY-MM-DDTHH:MM:SSZ
-  const toIso8601Seconds = (date: Date) =>
-    date.toISOString().replace(/\.\d{3}Z$/, "Z");
-
   useEffect(() => {
     const intervalMs = 2500;
     const interval = setInterval(async () => {
       const baseline = useDeviceStore.getState().lastModified;
       const result = await deviceService.getDevicesModifiedAfter(
-        toIso8601Seconds(baseline),
+        parseTimeToISO8601String(baseline),
       );
       if (result.isSuccess && result.data.length) {
         mergeDevices(result.data);

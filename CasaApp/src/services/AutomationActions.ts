@@ -2,6 +2,7 @@ import useAutomationStore from "@/stores/useAutomationStore";
 import { Automation } from "../core/entities/Automation";
 import { automationService } from "./AutomationService";
 import { AutomationDto } from "../application/dtos/AutomationDto";
+import { parseTimeToISO8601String } from "@/Utils/parseTimeString";
 
 export async function loadAutomations() {
   const { handleLoadAutomations } = useAutomationStore.getState();
@@ -120,16 +121,13 @@ export async function createAutomation(): Promise<Automation | null> {
     return null;
   }
 
-  const toIso8601Seconds = (date: Date) =>
-    date.toISOString().replace(/\.\d{3}Z$/, "Z");
-
   const timeoutMs = 12000; // 12s
   const pollIntervalMs = 1500;
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
     const result = await automationService.getAutomationsModifiedAfter(
-      toIso8601Seconds(baseline),
+      parseTimeToISO8601String(baseline),
     );
     if (result.isSuccess && result.data.length > 0) {
       const created = result.data.find(
