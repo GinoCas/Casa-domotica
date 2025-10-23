@@ -11,7 +11,10 @@ export class Mode {
       data.id,
       data.name,
       data.state,
-      data.lastChanged ?? data.last_changed ?? data.lastchange ?? data.lastChangedAt,
+      data.lastChanged ??
+        data.last_changed ??
+        data.lastchange ??
+        data.lastChangedAt,
     );
   }
 }

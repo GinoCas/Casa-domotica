@@ -28,7 +28,6 @@ namespace CasaBackend.Casa.API.Controllers
             _mqttPublisher = mqttPublisher;
             _logger = logger;
         }
-
         [HttpGet("/device/list")]
 		public async Task<IActionResult> GetDeviceList()
 		{
@@ -37,7 +36,6 @@ namespace CasaBackend.Casa.API.Controllers
             _logger.LogInformation("Lista de dispositivos obtenida correctamente. Total: {Count}", result.Data.Count());
             return Ok(result.ToJson());
         }
-
         [HttpGet("/device/{id}")]
 		public async Task<IActionResult> GetDeviceById(int id)
 		{

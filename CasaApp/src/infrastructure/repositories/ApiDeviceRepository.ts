@@ -25,44 +25,6 @@ export class ApiDeviceRepository implements IDeviceRepository {
     );
   }
 
-  async executeCommand(
-    deviceId: number,
-    command: string,
-    parameters?: Record<string, any>,
-  ): Promise<Result<boolean>> {
-    const commandDto = {
-      deviceId,
-      commandName: command,
-      parameters: parameters ?? {},
-    };
-
-    const result = await this.httpClient.post<boolean>(
-      "device/execute",
-      commandDto,
-    );
-
-    if (!result.isSuccess) {
-      return result as Result<boolean>;
-    }
-
-    return Result.success(result.data);
-  }
-
-  async setState(deviceId: number, state: boolean): Promise<Result<boolean>> {
-    return await this.executeCommand(deviceId, "SetState", { state });
-  }
-
-  async setBrightness(
-    deviceId: number,
-    brightness: number,
-  ): Promise<Result<boolean>> {
-    return await this.executeCommand(deviceId, "SetBrightness", { brightness });
-  }
-
-  async setSpeed(deviceId: number, speed: number): Promise<Result<boolean>> {
-    return await this.executeCommand(deviceId, "SetSpeed", { speed });
-  }
-
   async updateDevice(
     deviceId: number,
     dto: DeviceDto,

@@ -14,7 +14,6 @@ const MultiComboGroup: React.FC<MultiComboGroupProps> = ({
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
   const previousValue = useRef<Option[]>(value);
 
-  // Solo sincronizar si la prop value realmente cambió
   useEffect(() => {
     const hasChanged =
       value.length !== previousValue.current.length ||

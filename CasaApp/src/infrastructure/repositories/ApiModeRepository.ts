@@ -11,10 +11,8 @@ export class ApiModeRepository implements IModeRepository {
   ) {}
 
   async control(dto: ArduinoModeDto): Promise<Result<boolean>> {
-    // Primero intentamos enviar al Arduino local
     let result = await this.localClient.put<boolean>(`mode`, dto);
     if (!result.isSuccess) {
-      // Si falla (Arduino no accesible), enviamos al backend para que publique por MQTT
       result = await this.httpClient.put<boolean>(`mode/control`, dto);
     }
 

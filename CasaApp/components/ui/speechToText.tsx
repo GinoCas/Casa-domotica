@@ -12,7 +12,6 @@ export default function SpeechToText() {
   const {
     isHearing,
     isSpeaking,
-    results,
     changeHearing,
     changeSpeaking,
     handleLoadResults,

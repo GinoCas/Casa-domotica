@@ -15,14 +15,12 @@ export default function TabsLayout() {
   const [isModalOpen, setisModalOpen] = useState(false);
   const [wasHearing, setWasHearing] = useState(false);
 
-  // Marca que hubo escucha una vez abierto el modal
   useEffect(() => {
     if (isModalOpen && isHearing) {
       setWasHearing(true);
     }
   }, [isModalOpen, isHearing]);
 
-  // Cierra el modal solo cuando terminó de escuchar después de haber empezado
   useEffect(() => {
     if (isModalOpen && wasHearing && !isHearing) {
       setisModalOpen(false);

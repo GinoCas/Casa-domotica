@@ -7,7 +7,6 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { CapabilityType, Device, DeviceType } from "@/src/core/entities/Device";
-import { debounce } from "lodash";
 import useModeStore from "@/stores/useModeStore";
 
 interface DeviceCardProps {

@@ -22,7 +22,7 @@ export default function useAutomation() {
     date.toISOString().replace(/\.\d{3}Z$/, "Z");
 
   useEffect(() => {
-    const intervalMs = 2500;
+    const intervalMs = 10000;
     const interval = setInterval(async () => {
       const baseline = useAutomationStore.getState().lastModified;
       const result = await automationService.getAutomationsModifiedAfter(

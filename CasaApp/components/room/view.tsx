@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import CustomModal from "../ui/modal";
 import Slider from "@react-native-community/slider";
 import { debounce } from "lodash";
-import useModeStore from "@/stores/useModeStore";
 import useDeviceStore from "@/stores/useDeviceStore";
 import { Device } from "@/src/core/entities/Device";
 import useRoomStore from "@/stores/useRoomStore";
@@ -41,7 +40,6 @@ export function RoomView({
     addDeviceToRoom,
     getRoomOfDeviceId,
   } = useRoomStore();
-  const { changeSaveEnergyMode } = useModeStore();
 
   const [selectedDevice, setSelectedDevice] = useState<Device>();
   const [selectedDeviceRoom, setSelectedDeviceRoom] = useState<Room>();
@@ -54,6 +52,7 @@ export function RoomView({
   }, [devices, unassignedDevices]);
 
   const openBrightnessModal = useCallback((device: Device) => {
+    console.log(device.capabilities);
     if (device.capabilities.some((c) => c.capabilityType === "Dimmable")) {
       const deviceResult = getDeviceById(device.id);
       if (deviceResult.isSuccess) {
@@ -66,10 +65,9 @@ export function RoomView({
   const debouncedBrightnessChange = useMemo(
     () =>
       debounce((deviceId: number, value: number) => {
-        changeSaveEnergyMode(false);
         setDeviceBrightness(deviceId, value);
       }, 300),
-    [changeSaveEnergyMode],
+    [],
   );
 
   const handleBrightnessChange = (value: number) => {
