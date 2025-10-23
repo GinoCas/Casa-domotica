@@ -21,8 +21,11 @@ export default function Layout() {
   }, [showAnimation, contentOpacity]);
 
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar style="light" backgroundColor="#086ce5" />
+    <>
+      <StatusBar style="light" backgroundColor="#086ce5" translucent={false} />
+      {showAnimation && (
+        <StartupAnimation onFinish={() => setShowAnimation(false)} />
+      )}
       <Animated.View style={{ flex: 1, opacity: contentOpacity }}>
         <Stack
           screenOptions={{
@@ -33,9 +36,6 @@ export default function Layout() {
           <Stack.Screen name="automation/[id]" />
         </Stack>
       </Animated.View>
-      {showAnimation && (
-        <StartupAnimation onFinish={() => setShowAnimation(false)} />
-      )}
-    </View>
+    </>
   );
 }
