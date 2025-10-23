@@ -3,6 +3,7 @@ import { Automation } from "../core/entities/Automation";
 import { automationService } from "./AutomationService";
 import { AutomationDto } from "../application/dtos/AutomationDto";
 import { parseTimeToISO8601String } from "@/Utils/parseTimeString";
+import { Result } from "@/types/Response";
 
 export async function loadAutomations() {
   const { handleLoadAutomations } = useAutomationStore.getState();
@@ -64,7 +65,7 @@ export async function updateAutomation(
   id: number,
   name: string,
   description: string,
-) {
+): Promise<Result<AutomationDto>> {
   const { automations, handleLoadAutomations, setLastModified } =
     useAutomationStore.getState();
   const { changeLoadingAutomation } = useAutomationStore.getState() as any;
@@ -74,13 +75,14 @@ export async function updateAutomation(
     const result = await automationService.updateAutomation(id, dto);
     if (!result.isSuccess) {
       console.log("Error al actualizar automatización", result.errors);
-      return;
+      return Result.failure(result.errors);
     }
     const updatedList = automations.map((auto) =>
       auto.id === id ? result.data : auto,
     );
     handleLoadAutomations(updatedList);
     setLastModified(new Date());
+    return Result.success(result.data);
   } finally {
     changeLoadingAutomation?.(false);
   }

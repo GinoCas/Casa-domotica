@@ -68,13 +68,13 @@ const AutomationHeader = ({
             style={[styles.input, { fontSize: 20, fontWeight: "600" }]}
             value={currentAutomation.name}
             onChangeText={(text) => handleChangeText("name", text)}
-            placeholder="Title"
+            placeholder="Título"
           />
           <TextInput
             style={styles.input}
             value={currentAutomation.description}
             onChangeText={(text) => handleChangeText("description", text)}
-            placeholder="Description"
+            placeholder="Descripción"
             multiline
           />
           <View style={styles.editButtonsContainer}>
@@ -140,8 +140,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "600",
+    maxWidth: 280,
   },
   description: {
     color: "#7f8c8d",

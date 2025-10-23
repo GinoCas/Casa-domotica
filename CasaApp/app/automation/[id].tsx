@@ -36,6 +36,7 @@ import CustomModal from "@/components/ui/modal";
 import WeekDayPicker from "@/components/automations/weekday-picker";
 import { useMemo } from "react";
 import { getDeviceById } from "@/src/services/DeviceActions";
+import { updateAutomation } from "@/src/services/AutomationActions";
 
 const weekDaysOptions = [1, 2, 4, 8, 16, 32, 64];
 
@@ -203,21 +204,17 @@ export default function AutomationId() {
 
   const handleConfirm = async () => {
     if (!currentAutomation) return;
-    let devices: AutomationDevice[] = [];
-    const currentStates = new Map(
-      currentAutomation.devices.map((d) => [d.id, d.autoState]),
-    );
-    selectedDevices.forEach((op) => {
-      const autoState = currentStates.has(op.deviceId)
-        ? (currentStates.get(op.deviceId) as boolean)
-        : true;
-      devices = [...devices, { id: op.deviceId, autoState }];
-    });
-    const updatedAutomation = currentAutomation.withDevices(devices);
-    setCurrentAutomation(updatedAutomation);
     setShowDeviceSelector(false);
     setLoadingAutomation(true);
-    await controlAutomation(updatedAutomation);
+    const result = await updateAutomation(
+      currentAutomation.id,
+      currentAutomation.name,
+      currentAutomation.description,
+    );
+    if (!result.isSuccess) {
+      alert(result.errors.join(","));
+      handleCancel();
+    }
     setLoadingAutomation(false);
   };
 

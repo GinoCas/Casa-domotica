@@ -65,7 +65,7 @@ export class ApiAutomationRepository implements IAutomationRepository {
       dto,
     );
     if (!result.isSuccess) {
-      return result as Result<Automation>;
+      return Result.failure(result.errors);
     }
     try {
       const updatedAutomation = Automation.fromApiResponse(result.data);

@@ -10,18 +10,25 @@ export class HttpClient {
 
   private async handleResponse<T>(response: Response): Promise<Result<T>> {
     try {
+      let json: Result<any>;
       if (!response.ok) {
-        const errorText = await response.text();
-        return Result.failure([`HTTP ${response.status}: ${errorText}`]);
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          json = await response.json();
+          errorMessage += `: ${json.errors}`;
+        } catch {
+          const errorText = await response.text();
+          errorMessage += `: ${errorText}`;
+        }
+        return Result.failure([errorMessage]);
       }
-      const json = await response.json();
-      //console.log("Response:", json.data);
+
+      json = await response.json();
       return Result.success(json.data);
     } catch (error) {
       return Result.fromError(error as Error);
     }
   }
-
   async get<T>(endpoint: string): Promise<Result<T>> {
     try {
       //console.log("obteniendo datos:", `${this.baseUrl}/${endpoint}`);

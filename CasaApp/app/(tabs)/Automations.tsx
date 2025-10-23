@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <Container>
       <Text style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
-        Automations 🤖
+        Automatizaciones 🤖
       </Text>
       <View style={{ flex: 1 }}>
         <FlatList
