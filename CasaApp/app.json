@@ -30,8 +30,8 @@
       [
         "@react-native-voice/voice",
         {
-          "microphonePermission": "Permitir a Casa Domotica acceder al microfono.",
-          "speechRecognitionPermission": "Permitir a Casa Domotica reconocer el habla del usuario."
+          "microphonePermission": "Permitir a Encendé.me acceder al microfono.",
+          "speechRecognitionPermission": "Permitir a Encendé.me reconocer el habla del usuario."
         }
       ]
     ],
