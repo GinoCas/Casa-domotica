@@ -893,7 +893,9 @@ void setup() {
   client.setBufferSize(4096);
   espClient.setNoDelay(true);
   client.setCallback(callback);
-  reconnectMQTT();
+  while(!client.connected()){
+    reconnectMQTT();
+  }
 
   server.on("/device", HTTP_PUT, handlePutDevice);
   server.on("/automation", HTTP_PUT, handlePutAutomation);

@@ -64,6 +64,12 @@ const DeviceModal = ({
           selectedValue={roomId}
           onValueChange={(itemValue: number) => setRoomId(itemValue)}
         >
+          <Picker.Item
+            label="Selecciona una habitación"
+            value={undefined}
+            enabled={false}
+          />
+
           {rooms
             .filter((room) => room.name !== "Todas")
             .map((room) => (

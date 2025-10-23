@@ -17,7 +17,7 @@ export default function Home() {
           marginBottom: 5,
         }}
       >
-        Encedé<Text style={{ color: GlobalStyles.disabledColor }}>.</Text>
+        Encendé<Text style={{ color: GlobalStyles.disabledColor }}>.</Text>
         <Text style={{ color: "#f1c40f" }}>me</Text>
       </Text>
       <Text style={{ textAlign: "center", marginVertical: 4 }}>
