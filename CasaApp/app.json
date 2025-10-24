@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "CasaApp",
+    "name": "Encendé.me",
     "slug": "CasaApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,7 +18,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#086ce5"
       },
       "package": "com.agustingalante.casadomotica"
     },
