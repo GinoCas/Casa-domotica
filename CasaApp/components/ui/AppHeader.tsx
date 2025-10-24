@@ -7,8 +7,9 @@ import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
 import useRooms from "@/hooks/useRooms";
 import Loader from "./Loader";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SettingsModal from "@/components/ui/settings-modal";
+import { modeService } from "@/src/services/ModeService";
 
 export default function AppHeader() {
   const {
@@ -16,10 +17,27 @@ export default function AppHeader() {
     activityMode,
     changeSaveEnergyMode,
     changeActivityMode,
+    handleLoadModes,
   } = useModeStore();
 
   const { currentRoom, rooms, isLoadingRooms, changeCurrentRoom } = useRooms();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    const loadModes = async () => {
+      try {
+        const result = await modeService.getModes();
+        if (result.isSuccess) {
+          handleLoadModes(result.data);
+        } else {
+          console.log("Error al cargar modos", result.errors);
+        }
+      } catch (err) {
+        console.log("Fallo obteniendo modos:", err);
+      }
+    };
+    loadModes();
+  }, [handleLoadModes]);
 
   return (
     <View style={styles.headerWrapper}>
