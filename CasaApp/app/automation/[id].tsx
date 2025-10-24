@@ -20,7 +20,7 @@ import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
 import { parseTimeString } from "@/Utils/parseTimeString";
 import useAutomation from "@/hooks/useAutomations";
-import { Automation } from "@/src/core/entities/Automation";
+import { Automation, AutomationDevice } from "@/src/core/entities/Automation";
 import { Device } from "@/src/core/entities/Device";
 import Loader from "@/components/ui/Loader";
 import MultiComboGroup from "@/components/ui/multi-combo-group";
@@ -202,7 +202,7 @@ export default function AutomationId() {
     getSelectedDevices();
   }, [originalAutomation]);
 
-  const handleConfirm = async () => {
+  const handleConfirmName = async () => {
     if (!currentAutomation) return;
     setShowDeviceSelector(false);
     setLoadingAutomation(true);
@@ -217,7 +217,29 @@ export default function AutomationId() {
     }
     setLoadingAutomation(false);
   };
-
+  const handleConfirmDevices = async () => {
+    if (!currentAutomation) return;
+    setShowDeviceSelector(false);
+    setLoadingAutomation(true);
+    let devices: AutomationDevice[] = [];
+    const currentStates = new Map(
+      currentAutomation.devices.map((d) => [d.id, d.autoState]),
+    );
+    selectedDevices.forEach((op) => {
+      const autoState = currentStates.has(op.deviceId)
+        ? (currentStates.get(op.deviceId) as boolean)
+        : true;
+      devices = [...devices, { id: op.deviceId, autoState }];
+    });
+    const updatedAutomation = currentAutomation.withDevices(devices);
+    setCurrentAutomation(updatedAutomation);
+    const result = await controlAutomation(updatedAutomation);
+    if (!result.isSuccess) {
+      alert(result.errors.join(","));
+      handleCancel();
+    }
+    setLoadingAutomation(false);
+  };
   const styles = StyleSheet.create({
     timeContainer: {
       flexDirection: "row",
@@ -257,7 +279,7 @@ export default function AutomationId() {
         <View style={{ flex: 2 }}>
           <AutomationHeader
             handleCancel={handleCancel}
-            handleSave={handleConfirm}
+            handleSave={handleConfirmName}
             handleDelete={handleDelete}
             currentAutomation={currentAutomation}
             handleChangeText={handleChangeText}
@@ -357,7 +379,7 @@ export default function AutomationId() {
                 <MultiComboGroup
                   options={groupedOptions}
                   onOptionChange={(options) => setSelectedDevices(options)}
-                  onClose={handleConfirm}
+                  onClose={handleConfirmDevices}
                   value={selectedDevices}
                 />
               )}

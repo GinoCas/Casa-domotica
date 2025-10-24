@@ -40,7 +40,9 @@ export async function deleteAutomation(id: number) {
   }
 }
 
-export async function controlAutomation(updatedAuto: Automation) {
+export async function controlAutomation(
+  updatedAuto: Automation,
+): Promise<Result<Automation>> {
   const { automations, handleLoadAutomations, setLastModified } =
     useAutomationStore.getState();
   const { changeLoadingAutomation } = useAutomationStore.getState() as any;
@@ -49,13 +51,14 @@ export async function controlAutomation(updatedAuto: Automation) {
     const result = await automationService.controlAutomation(updatedAuto);
     if (!result.isSuccess) {
       console.log("Error al controlar automatización", result.errors);
-      return;
+      return result;
     }
     const updatedList = automations.map((auto) =>
       auto.id === updatedAuto.id ? result.data : auto,
     );
     handleLoadAutomations(updatedList);
     setLastModified(new Date());
+    return result;
   } finally {
     changeLoadingAutomation?.(false);
   }
