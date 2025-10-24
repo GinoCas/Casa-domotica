@@ -6,7 +6,9 @@
         "distribution": "internal",
         "buildType": "apk",
         "env": {
-          "EXPO_PUBLIC_API_URL": "https://33n9824d-5155.brs.devtunnels.ms"
+          "EXPO_PUBLIC_API_URL": "https://33n9824d-5155.brs.devtunnels.ms",
+          "EXPO_PUBLIC_ARDUINO_LOCAL_IP": "http://192.168.0.148",
+          "EXPO_PUBLIC_HTTP_TIMEOUT_MS": "10000"
         }
       }
     },
@@ -16,7 +18,9 @@
         "distribution": "internal",
         "buildType": "apk",
         "env": {
-          "EXPO_PUBLIC_API_URL": "https://33n9824d-5155.brs.devtunnels.ms"
+          "EXPO_PUBLIC_API_URL": "https://33n9824d-5155.brs.devtunnels.ms",
+          "EXPO_PUBLIC_ARDUINO_LOCAL_IP": "http://192.168.0.148",
+          "EXPO_PUBLIC_HTTP_TIMEOUT_MS": "10000"
         }
       }
     }
