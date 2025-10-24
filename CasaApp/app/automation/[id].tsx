@@ -20,7 +20,7 @@ import GlobalStyles from "@/Utils/globalStyles";
 import getTimeString from "@/Utils/getTimeString";
 import { parseTimeString } from "@/Utils/parseTimeString";
 import useAutomation from "@/hooks/useAutomations";
-import { Automation, AutomationDevice } from "@/src/core/entities/Automation";
+import { Automation } from "@/src/core/entities/Automation";
 import { Device } from "@/src/core/entities/Device";
 import Loader from "@/components/ui/Loader";
 import MultiComboGroup from "@/components/ui/multi-combo-group";

@@ -27,10 +27,13 @@ import {
   ControlModeUseCase,
   GetModesUseCase,
 } from "../application/usecases/ModeUseCases";
+import { Result } from "./Result";
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
 
+  private apiUrl: string = "";
+  private localIp: string = "";
   private httpClient: HttpClient;
   private localClient: HttpClient;
   private deviceRepository: ApiDeviceRepository;
@@ -57,14 +60,11 @@ export class DependencyContainer {
   private getModesUseCase: GetModesUseCase;
 
   private constructor() {
-    // Configuración de la URL base desde las variables de entorno
     const apiUrl = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5155";
-    const localUrl = process.env.EXPO_PUBLIC_ARDUINO_LOCAL_IP || "";
+    const localIp = process.env.EXPO_PUBLIC_ARDUINO_LOCAL_IP || "";
 
-    // Inicialización de dependencias
     this.httpClient = new HttpClient(apiUrl);
-    this.localClient = new HttpClient(localUrl);
-    console.log("LOCAL:", localUrl);
+    this.localClient = new HttpClient(localIp);
     this.deviceRepository = new ApiDeviceRepository(
       this.httpClient,
       this.localClient,
@@ -117,6 +117,26 @@ export class DependencyContainer {
       DependencyContainer.instance = new DependencyContainer();
     }
     return DependencyContainer.instance;
+  }
+
+  public getApiUrl(): string {
+    return this.apiUrl;
+  }
+
+  public getLocalIp(): string {
+    return this.localIp;
+  }
+
+  public setApiUrl(url: string) {
+    this.httpClient.setBaseUrl(url || "");
+  }
+
+  public setLocalUrl(url: string) {
+    this.localClient.setBaseUrl(url || "");
+  }
+
+  public async pingAlive(): Promise<Result<boolean>> {
+    return await this.httpClient.get<boolean>("alive");
   }
 
   public getGetDeviceListUseCase(): GetDeviceListUseCase {
