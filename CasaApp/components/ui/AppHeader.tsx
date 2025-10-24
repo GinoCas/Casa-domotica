@@ -7,6 +7,8 @@ import GlobalStyles from "@/Utils/globalStyles";
 import useModeStore from "@/stores/useModeStore";
 import useRooms from "@/hooks/useRooms";
 import Loader from "./Loader";
+import React, { useState } from "react";
+import SettingsModal from "@/components/ui/settings-modal";
 
 export default function AppHeader() {
   const {
@@ -17,6 +19,7 @@ export default function AppHeader() {
   } = useModeStore();
 
   const { currentRoom, rooms, isLoadingRooms, changeCurrentRoom } = useRooms();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
     <View style={styles.headerWrapper}>
@@ -67,8 +70,20 @@ export default function AppHeader() {
               color={activityMode ? GlobalStyles.enabledColor : "black"}
             />
           </Pressable>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => setIsSettingsOpen(true)}
+          >
+            <Feather name="settings" size={22} color={"black"} />
+          </Pressable>
         </View>
       </View>
+      {isSettingsOpen && (
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
     </View>
   );
 }

@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import AppHeader from "@/components/ui/AppHeader";
 import { useEffect, useRef, useState } from "react";
-import { View, Animated, Easing } from "react-native";
+import { Animated, Easing } from "react-native";
 import StartupAnimation from "@/components/ui/startup-animation";
 
 export default function Layout() {
