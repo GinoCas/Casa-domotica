@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import Voice from "@react-native-voice/voice";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   toggleAllDevices,
   toggleTv,
@@ -12,7 +12,7 @@ import useSpeechStore from "@/stores/useSpeechStore";
 
 export default function SpeechToText() {
   const {
-    isHearing,
+    results,
     isSpeaking,
     changeHearing,
     changeSpeaking,
@@ -21,8 +21,6 @@ export default function SpeechToText() {
     handleLoadCmdVoice,
   } = useSpeechStore();
   const [partialResults, setPartialResults] = useState([]);
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const SILENCE_TIMEOUT_MS = 7000;
   useEffect(() => {
     Voice.onSpeechResults = onSpeechResults;
     Voice.onSpeechPartialResults = writeSpeech;
@@ -45,7 +43,6 @@ export default function SpeechToText() {
     await Voice.stop();
     changeSpeaking(false);
     changeHearing(false);
-    clearSilenceTimer();
   };
 
   const onSpeechResults = (result: any) => {
@@ -55,7 +52,6 @@ export default function SpeechToText() {
 
   const onSpeechStart = (e: any) => {
     changeSpeaking(true);
-    clearSilenceTimer();
   };
 
   const onSpeechError = (e: any) => {
@@ -67,33 +63,6 @@ export default function SpeechToText() {
   const writeSpeech = (result: any) => {
     setPartialResults(result.value);
     changeSpeaking(true);
-    clearSilenceTimer();
-  };
-
-  useEffect(() => {
-    if (isHearing && !isSpeaking) {
-      startSilenceTimer();
-    } else {
-      clearSilenceTimer();
-    }
-  }, [isHearing, isSpeaking]);
-
-  const startSilenceTimer = () => {
-    clearSilenceTimer();
-    silenceTimerRef.current = setTimeout(() => {
-      if (isHearing && !isSpeaking) {
-        try {
-          stopHearing();
-        } catch {}
-      }
-    }, SILENCE_TIMEOUT_MS);
-  };
-
-  const clearSilenceTimer = () => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
   };
 
   const verbs: { [key: string]: string } = {
@@ -192,6 +161,7 @@ export default function SpeechToText() {
   };
 
   const handleVoiceCommands = (results: string[]) => {
+    console.log("resultados:", results);
     for (const text of results) {
       const lowerText = text.toLowerCase();
       if (lowerText.includes("modo cine")) {
@@ -207,20 +177,24 @@ export default function SpeechToText() {
       let usingDevice: string | undefined;
       commandParts.forEach((part, index) => {
         let verb = Object.keys(verbs).find((v) => part.includes(v));
-        const locationKey = Object.keys(locations).find((loc) => part.includes(loc));
-        const deviceSyn = Object.keys(devices).find((syn) => part.includes(syn));
-    
+        const locationKey = Object.keys(locations).find((loc) =>
+          part.includes(loc),
+        );
+        const deviceSyn = Object.keys(devices).find((syn) =>
+          part.includes(syn),
+        );
+
         if (!verb && index !== 0) {
           verb = usingVerb;
         }
-    
+
         let device = deviceSyn ? devices[deviceSyn] : undefined;
         if (!device && index !== 0) {
           if (!locationKey) {
             device = usingDevice;
           }
         }
-    
+
         if (verb) {
           console.log("VOICE:" + `${verb} ${device} en ${locationKey}`);
           handleLoadVoice("VOICE:" + `${verb} ${device} en ${locationKey}`);
@@ -307,12 +281,14 @@ export default function SpeechToText() {
 
   return (
     <View>
-      {!isSpeaking || partialResults[0] === undefined ? (
+      {partialResults[0] === undefined ? (
         <Text style={{ marginTop: 10, color: "gray" }}>
           ¿Puedes prender las luces de la cocina?
         </Text>
-      ) : (
+      ) : isSpeaking ? (
         <Text>{partialResults[0]}</Text>
+      ) : (
+        <Text>{results[0]}</Text>
       )}
     </View>
   );

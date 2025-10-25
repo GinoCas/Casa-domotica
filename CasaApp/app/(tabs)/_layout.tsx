@@ -23,8 +23,11 @@ export default function TabsLayout() {
 
   useEffect(() => {
     if (isModalOpen && wasHearing && !isHearing) {
-      setisModalOpen(false);
-      setWasHearing(false);
+      const timeout = setTimeout(() => {
+        setisModalOpen(false);
+        setWasHearing(false);
+      }, 1000);
+      return () => clearTimeout(timeout);
     }
   }, [isHearing, isModalOpen, wasHearing]);
 
