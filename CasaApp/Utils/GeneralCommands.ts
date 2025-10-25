@@ -23,6 +23,39 @@ export async function toggleAllDevices(state: boolean) {
   }
 }
 
+export async function toggleAllDevicesOfRoom(roomName: string, state: boolean) {
+  const { devices } = useDeviceStore.getState();
+  const deviceList = Object.values(devices);
+  const { getRoomByName } = useRoomStore.getState();
+
+  try {
+    let targetDevices: Device[] = [];
+
+    if (roomName.toLowerCase() === "todas") {
+      targetDevices = deviceList;
+    } else {
+      const roomResult = getRoomByName(roomName);
+      if (!roomResult.isSuccess) {
+        console.log("Habitación no encontrada:", roomResult.errors.join(", "));
+        return;
+      }
+      const targetIds = roomResult.data.deviceIds;
+      targetDevices = deviceList.filter((d) => targetIds.includes(d.id));
+    }
+
+    const updates = targetDevices.map((device) => ({
+      deviceId: device.id,
+      newState: state,
+    }));
+    if (updates.length > 0) await toggleDevices(updates);
+  } catch (err) {
+    console.log(
+      "Error al cambiar el estado de los dispositivos de la habitación",
+      err,
+    );
+  }
+}
+
 export async function turnOnAllLedsOfRoom(roomName: string) {
   const { devices } = useDeviceStore.getState();
   const deviceList = Object.values(devices);

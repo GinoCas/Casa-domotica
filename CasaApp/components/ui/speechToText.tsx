@@ -6,6 +6,7 @@ import {
   toggleTv,
   turnOffAllLedsOfRoom,
   turnOnAllLedsOfRoom,
+  toggleAllDevicesOfRoom,
 } from "@/Utils/GeneralCommands";
 import useSpeechStore from "@/stores/useSpeechStore";
 
@@ -203,20 +204,30 @@ export default function SpeechToText() {
         device: string | undefined;
       }[] = [];
       let usingVerb: string = "";
+      let usingDevice: string | undefined;
       commandParts.forEach((part, index) => {
         let verb = Object.keys(verbs).find((v) => part.includes(v));
-        const locationKey = Object.keys(locations).find((loc) =>
-          part.includes(loc),
-        );
-        const device = Object.keys(devices).find((syn) => part.includes(syn));
-
+        const locationKey = Object.keys(locations).find((loc) => part.includes(loc));
+        const deviceSyn = Object.keys(devices).find((syn) => part.includes(syn));
+    
         if (!verb && index !== 0) {
           verb = usingVerb;
         }
+    
+        let device = deviceSyn ? devices[deviceSyn] : undefined;
+        if (!device && index !== 0) {
+          if (!locationKey) {
+            device = usingDevice;
+          }
+        }
+    
         if (verb) {
           console.log("VOICE:" + `${verb} ${device} en ${locationKey}`);
           handleLoadVoice("VOICE:" + `${verb} ${device} en ${locationKey}`);
           usingVerb = verb;
+          if (deviceSyn) {
+            usingDevice = devices[deviceSyn];
+          }
           let location = "todas";
           if (locationKey) {
             location = locations[locationKey];
@@ -224,7 +235,7 @@ export default function SpeechToText() {
           actions.push({
             verb: verbs[verb],
             location: location,
-            device: device ? devices[device] : undefined,
+            device: device,
           });
         }
       });
@@ -268,6 +279,10 @@ export default function SpeechToText() {
           turnOnAllLedsOfRoom(location);
           return;
         }
+        if (!device && location !== "todas") {
+          toggleAllDevicesOfRoom(location, true);
+          return;
+        }
         toggleAllDevices(true);
         break;
       case "off":
@@ -277,6 +292,10 @@ export default function SpeechToText() {
         }
         if (device === "led") {
           turnOffAllLedsOfRoom(location);
+          return;
+        }
+        if (!device && location !== "todas") {
+          toggleAllDevicesOfRoom(location, false);
           return;
         }
         toggleAllDevices(false);
