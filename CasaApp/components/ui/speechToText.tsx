@@ -184,13 +184,17 @@ export default function SpeechToText() {
           part.includes(syn),
         );
 
+        const refersToPrevDevice = /(^|\s)(del|de\s+(la|las|el|los))\b/.test(
+          part,
+        );
+
         if (!verb && index !== 0) {
           verb = usingVerb;
         }
 
         let device = deviceSyn ? devices[deviceSyn] : undefined;
         if (!device && index !== 0) {
-          if (!locationKey) {
+          if (refersToPrevDevice || !locationKey) {
             device = usingDevice;
           }
         }
