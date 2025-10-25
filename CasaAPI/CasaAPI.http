@@ -1,6 +1,0 @@
-@CasaAPI_HostAddress = http://localhost:5155
-
-GET {{CasaAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
